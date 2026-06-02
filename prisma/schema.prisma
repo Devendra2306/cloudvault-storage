@@ -1,0 +1,240 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String
+  fullName      String?
+  avatarUrl     String?
+  storageUsed   BigInt    @default(0)
+  storageQuota  BigInt    @default(5368709120) // 5GB
+  role          String    @default("user")
+  isVerified    Boolean   @default(false)
+  isActive      Boolean   @default(true)
+  lastLoginAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+
+  folders       Folder[]
+  files         File[]
+  fileSharesSharedBy     FileShare[] @relation("SharedBy")
+  fileSharesSharedWith   FileShare[] @relation("SharedWith")
+  folderSharesSharedBy  FolderShare[] @relation("SharedBy")
+  folderSharesSharedWith FolderShare[] @relation("SharedWith")
+  recentFiles   RecentFile[]
+  analytics     StorageAnalytics[]
+  activityLogs  ActivityLog[]
+  sessions      Session[]
+  verificationTokens VerificationToken[]
+
+  @@index([email])
+  @@index([role])
+}
+
+model Folder {
+  id          String    @id @default(uuid())
+  userId      String
+  parentId    String?
+  name        String
+  path        String
+  color       String?
+  isShared    Boolean   @default(false)
+  shareCount  Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent      Folder?   @relation("FolderHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children    Folder[]  @relation("FolderHierarchy")
+  files       File[]
+  folderShares FolderShare[]
+
+  @@index([userId])
+  @@index([parentId])
+  @@index([path])
+  @@index([deletedAt])
+}
+
+model File {
+  id              String    @id @default(uuid())
+  userId          String
+  folderId        String?
+  name            String
+  originalName    String?
+  mimeType        String?
+  size            BigInt
+  s3Key           String    @unique
+  s3Bucket        String
+  s3Location      String?
+  thumbnailUrl    String?
+  previewUrl      String?
+  isPublic        Boolean   @default(false)
+  isStarred       Boolean   @default(false)
+  viewCount       Int       @default(0)
+  downloadCount   Int       @default(0)
+  lastAccessedAt  DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime?
+  trashedAt       DateTime?
+  trashedBy       String?
+
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  folder          Folder?   @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  shares          FileShare[]
+  recentFiles     RecentFile[]
+
+  @@index([userId])
+  @@index([folderId])
+  @@index([s3Key])
+  @@index([mimeType])
+  @@index([deletedAt])
+  @@index([trashedAt])
+  @@index([isPublic])
+  @@index([isStarred])
+  @@index([createdAt])
+}
+
+model FileShare {
+  id            String    @id @default(uuid())
+  fileId        String
+  sharedBy      String
+  sharedWith    String?
+  shareToken    String    @unique
+  shareType     String    // 'link', 'user', 'email'
+  permission    String    @default("view")
+  password      String?
+  expiresAt     DateTime?
+  viewCount     Int       @default(0)
+  downloadCount Int       @default(0)
+  maxViews      Int?
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  file          File      @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  sharedByUser  User      @relation("SharedBy", fields: [sharedBy], references: [id], onDelete: Cascade)
+  sharedWithUser User?    @relation("SharedWith", fields: [sharedWith], references: [id], onDelete: Cascade)
+
+  @@index([fileId])
+  @@index([sharedBy])
+  @@index([sharedWith])
+  @@index([shareToken])
+  @@index([expiresAt])
+}
+
+model FolderShare {
+  id         String   @id @default(uuid())
+  folderId   String
+  sharedBy   String
+  sharedWith String
+  permission String   @default("view")
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  folder     Folder   @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  sharedByUser User   @relation("SharedBy", fields: [sharedBy], references: [id], onDelete: Cascade)
+  sharedWithUser User @relation("SharedWith", fields: [sharedWith], references: [id], onDelete: Cascade)
+
+  @@unique([folderId, sharedWith])
+  @@index([folderId])
+  @@index([sharedBy])
+  @@index([sharedWith])
+}
+
+model RecentFile {
+  id         String   @id @default(uuid())
+  userId     String
+  fileId     String
+  accessedAt DateTime @default(now())
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  file       File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, fileId])
+  @@index([userId])
+  @@index([accessedAt])
+}
+
+model StorageAnalytics {
+  id                String   @id @default(uuid())
+  userId            String
+  date              DateTime
+  filesUploaded     Int      @default(0)
+  filesDownloaded   Int      @default(0)
+  storageUsed       BigInt   @default(0)
+  storageFreed      BigInt   @default(0)
+  uniqueMimeTypes   Json?
+  createdAt         DateTime @default(now())
+
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@index([userId])
+  @@index([date])
+}
+
+model ActivityLog {
+  id           String   @id @default(uuid())
+  userId       String
+  action       String
+  resourceType String
+  resourceId   String
+  resourceName String?
+  metadata     Json?
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+model Session {
+  id          String   @id @default(uuid())
+  userId      String
+  refreshToken String  @unique
+  deviceInfo  String?
+  ipAddress   String?
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+  revokedAt   DateTime?
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([refreshToken])
+  @@index([expiresAt])
+}
+
+model VerificationToken {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  tokenType String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
+}

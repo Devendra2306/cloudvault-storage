@@ -1,0 +1,208 @@
+{
+  "security": [
+    {
+      "test": "Upload without authentication",
+      "passed": true,
+      "details": "Endpoint requires authentication",
+      "timestamp": "2026-05-30T18:50:48.938Z"
+    },
+    {
+      "test": "Path traversal attack",
+      "passed": true,
+      "details": "Server rejected path traversal",
+      "timestamp": "2026-05-30T18:50:48.950Z"
+    },
+    {
+      "test": "Malicious filename (XSS)",
+      "passed": true,
+      "details": "Server rejected malicious filename",
+      "timestamp": "2026-05-30T18:50:48.951Z"
+    },
+    {
+      "test": "Null byte injection",
+      "passed": true,
+      "details": "Server rejected null byte",
+      "timestamp": "2026-05-30T18:50:48.951Z"
+    },
+    {
+      "test": "Long filename attack",
+      "passed": true,
+      "details": "Server rejected long filename",
+      "timestamp": "2026-05-30T18:50:48.952Z"
+    },
+    {
+      "test": "Executable file upload",
+      "passed": true,
+      "details": "Server rejected executable",
+      "timestamp": "2026-05-30T18:50:48.959Z"
+    },
+    {
+      "test": "Upload without multipart/form-data",
+      "passed": true,
+      "details": "Server rejected non-multipart",
+      "timestamp": "2026-05-30T18:50:48.970Z"
+    },
+    {
+      "test": "Bucket enumeration protection",
+      "passed": false,
+      "details": "List endpoint exposes all files without auth",
+      "timestamp": "2026-05-30T18:50:49.584Z"
+    },
+    {
+      "test": "Signed URL negative expiration",
+      "passed": false,
+      "details": "Server accepted negative expiration",
+      "timestamp": "2026-05-30T18:50:49.595Z"
+    },
+    {
+      "test": "Signed URL excessive expiration",
+      "passed": true,
+      "details": "Server rejected excessive expiration",
+      "timestamp": "2026-05-30T18:50:49.610Z"
+    },
+    {
+      "test": "CORS configuration",
+      "passed": true,
+      "details": "CORS allows all origins (*)",
+      "timestamp": "2026-05-30T18:50:49.613Z"
+    }
+  ],
+  "functionality": [
+    {
+      "test": "JPEG image upload",
+      "passed": true,
+      "details": "Key: uploads/966b8cec-4410-49e7-9c29-7f85264a2181.jpg",
+      "timestamp": "2026-05-30T18:50:49.820Z"
+    },
+    {
+      "test": "PDF document upload",
+      "passed": true,
+      "details": "Key: uploads/44ec2e00-cc29-4dcf-9497-274e099d7b9c.pdf",
+      "timestamp": "2026-05-30T18:50:50.002Z"
+    },
+    {
+      "test": "TXT file upload",
+      "passed": false,
+      "details": "Request failed with status code 500",
+      "timestamp": "2026-05-30T18:50:50.009Z"
+    },
+    {
+      "test": "DOCX file upload",
+      "passed": true,
+      "details": "Key: uploads/ae80df97-70b5-4b55-8643-4a47309a0eb7.docx",
+      "timestamp": "2026-05-30T18:50:50.192Z"
+    },
+    {
+      "test": "Multiple file upload",
+      "passed": false,
+      "details": "Request failed with status code 500",
+      "timestamp": "2026-05-30T18:50:50.200Z"
+    },
+    {
+      "test": "List files",
+      "passed": true,
+      "details": "Found 4 files",
+      "timestamp": "2026-05-30T18:50:50.369Z"
+    },
+    {
+      "test": "Signed URL generation",
+      "passed": false,
+      "details": "Request failed with status code 500",
+      "timestamp": "2026-05-30T18:50:50.373Z"
+    },
+    {
+      "test": "Delete file",
+      "passed": false,
+      "details": "Request failed with status code 500",
+      "timestamp": "2026-05-30T18:50:50.379Z"
+    },
+    {
+      "test": "Empty file upload",
+      "passed": true,
+      "details": "Server rejected empty file",
+      "timestamp": "2026-05-30T18:50:50.382Z"
+    },
+    {
+      "test": "Oversized file upload",
+      "passed": true,
+      "details": "Server rejected oversized file",
+      "timestamp": "2026-05-30T18:50:50.401Z"
+    },
+    {
+      "test": "Unsupported file type",
+      "passed": true,
+      "details": "Server rejected .xyz file",
+      "timestamp": "2026-05-30T18:50:50.414Z"
+    },
+    {
+      "test": "Duplicate filename handling",
+      "passed": false,
+      "details": "Request failed with status code 500",
+      "timestamp": "2026-05-30T18:50:50.420Z"
+    },
+    {
+      "test": "Special characters in filename",
+      "passed": false,
+      "details": "Request failed with status code 500",
+      "timestamp": "2026-05-30T18:50:50.424Z"
+    }
+  ],
+  "performance": [
+    {
+      "test": "50 sequential uploads",
+      "passed": false,
+      "details": "Request failed with status code 500",
+      "timestamp": "2026-05-30T18:50:50.430Z"
+    },
+    {
+      "test": "10 concurrent uploads",
+      "passed": false,
+      "details": "Request failed with status code 500",
+      "timestamp": "2026-05-30T18:50:50.451Z"
+    },
+    {
+      "test": "5MB file upload",
+      "passed": false,
+      "details": "Request failed with status code 500",
+      "timestamp": "2026-05-30T18:50:50.471Z"
+    },
+    {
+      "test": "List files endpoint",
+      "passed": true,
+      "details": "Duration: 168ms",
+      "timestamp": "2026-05-30T18:50:50.639Z"
+    }
+  ],
+  "errors": [
+    {
+      "test": "Missing file upload",
+      "passed": false,
+      "details": "Server returns 400 for missing file",
+      "timestamp": "2026-05-30T18:50:50.644Z"
+    },
+    {
+      "test": "Empty key parameter",
+      "passed": true,
+      "details": "Server returns 400 for empty key",
+      "timestamp": "2026-05-30T18:50:50.646Z"
+    },
+    {
+      "test": "Missing key in delete",
+      "passed": true,
+      "details": "Server returns 400 for missing key",
+      "timestamp": "2026-05-30T18:50:50.672Z"
+    },
+    {
+      "test": "Delete non-existent file",
+      "passed": false,
+      "details": "Server reported success for non-existent file",
+      "timestamp": "2026-05-30T18:50:50.876Z"
+    },
+    {
+      "test": "Invalid expires parameter",
+      "passed": false,
+      "details": "Server accepted invalid expires",
+      "timestamp": "2026-05-30T18:50:50.880Z"
+    }
+  ]
+}
