@@ -24,10 +24,23 @@ const app = express();
 // Security headers
 app.use(helmet());
 
+// Logging middleware for OPTIONS requests
+app.use((req, res, next) => {
+  if (req.method === 'OPTIONS') {
+    console.log('CORS Preflight Request:', {
+      method: req.method,
+      origin: req.headers.origin,
+      path: req.path,
+      headers: req.headers
+    });
+  }
+  next();
+});
+
 // CORS configuration
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',')
-  : ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:5173'];
+  : ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:5173', 'https://cloudvault-storage-2jsb.vercel.app'];
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -38,19 +51,25 @@ app.use(cors({
     }
   },
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
+
+// Global OPTIONS handler for CORS preflight (must be before rate limiter)
+app.options('*', cors());
 
 // Request size limits
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ limit: '1mb', extended: true }));
 
-// Rate limiting
+// Rate limiting (skip OPTIONS requests for CORS preflight)
 const apiLimiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000,
   max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 200,
   message: 'Too many API requests, please try again later',
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => req.method === 'OPTIONS',
 });
 
 const uploadLimiter = rateLimit({
@@ -59,6 +78,7 @@ const uploadLimiter = rateLimit({
   message: 'Too many upload requests, please try again later',
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => req.method === 'OPTIONS',
 });
 
 app.use('/api/v1', apiLimiter);
