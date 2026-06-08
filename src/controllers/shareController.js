@@ -1,6 +1,12 @@
 const { v4: uuidv4 } = require('uuid');
 const prisma = require('../config/database');
 const { NotFoundError, ForbiddenError, ValidationError } = require('../middleware/errorHandler');
+const { sendShareInvitationEmail } = require('../config/email');
+const { createNotification, logActivity } = require('../services/userAccount');
+
+const frontendUrl = () => process.env.FRONTEND_URL || 'http://localhost:3000';
+const shareUrlFor = (token) => `${frontendUrl()}/share/${token}`;
+const sanitizeShare = (share) => ({ ...share, password: share.password ? undefined : null });
 
 /**
  * Create a share link for a file
@@ -8,7 +14,7 @@ const { NotFoundError, ForbiddenError, ValidationError } = require('../middlewar
 const createFileShare = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { shareType, permission, password, expiresAt, maxViews } = req.body;
+    const { shareType, permission, password, expiresAt, maxViews, sharedWithEmail, email } = req.body;
     const userId = req.user.id;
 
     const file = await prisma.file.findUnique({
@@ -23,6 +29,19 @@ const createFileShare = async (req, res, next) => {
       throw new ForbiddenError('You do not have permission to share this file');
     }
 
+    const recipientEmail = sharedWithEmail || email;
+    const sharedWithUser = recipientEmail
+      ? await prisma.user.findUnique({ where: { email: recipientEmail } })
+      : null;
+
+    if (shareType === 'user' && !sharedWithUser) {
+      throw new ValidationError('User with this email not found');
+    }
+
+    if (sharedWithUser?.id === userId) {
+      throw new ValidationError('Cannot share file with yourself');
+    }
+
     // Generate unique share token
     const shareToken = uuidv4();
 
@@ -31,6 +50,7 @@ const createFileShare = async (req, res, next) => {
       data: {
         fileId: id,
         sharedBy: userId,
+        sharedWith: sharedWithUser?.id || null,
         shareToken,
         shareType,
         permission,
@@ -46,13 +66,32 @@ const createFileShare = async (req, res, next) => {
       data: { isPublic: true },
     });
 
-    const shareUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/share/${shareToken}`;
+    const shareUrl = shareUrlFor(shareToken);
+    await logActivity(userId, shareType === 'email' ? 'share_email_created' : 'share_link_created', 'file', id, file.name, req);
+    await createNotification(userId, 'share_created', 'Share created', `"${file.name}" is ready to share.`, { fileId: id, shareId: share.id });
+
+    let emailResult = null;
+    if (shareType === 'email' && recipientEmail) {
+      emailResult = await sendShareInvitationEmail({
+        to: recipientEmail,
+        senderName: req.user.fullName || req.user.email,
+        fileName: file.name,
+        shareUrl,
+        permission,
+        expiresAt,
+        passwordProtected: Boolean(password),
+      });
+      if (sharedWithUser) {
+        await createNotification(sharedWithUser.id, 'share_received', 'New shared file', `${req.user.fullName || req.user.email} shared "${file.name}" with you.`, { fileId: id, shareId: share.id });
+      }
+    }
 
     res.status(201).json({
       success: true,
       data: {
-        ...share,
+        ...sanitizeShare(share),
         shareUrl,
+        email: emailResult,
       },
     });
   } catch (error) {
@@ -121,10 +160,14 @@ const shareFileWithUser = async (req, res, next) => {
       },
     });
 
+    await logActivity(userId, 'share_user_created', 'file', id, file.name, req);
+    await createNotification(userId, 'share_created', 'File shared', `"${file.name}" was shared with ${sharedWithUser.email}.`, { fileId: id, shareId: share.id });
+    await createNotification(sharedWithUser.id, 'share_received', 'New shared file', `${req.user.fullName || req.user.email} shared "${file.name}" with you.`, { fileId: id, shareId: share.id });
+
     res.status(201).json({
       success: true,
       data: {
-        ...share,
+        ...sanitizeShare(share),
         sharedWith: {
           id: sharedWithUser.id,
           email: sharedWithUser.email,
@@ -172,9 +215,9 @@ const listFileShares = async (req, res, next) => {
     });
 
     const sharesWithUrl = shares.map((share) => ({
-      ...share,
+      ...sanitizeShare(share),
       shareUrl: share.shareType === 'link' 
-        ? `${process.env.FRONTEND_URL || 'http://localhost:3000'}/share/${share.shareToken}`
+        ? shareUrlFor(share.shareToken)
         : null,
     }));
 
@@ -223,6 +266,9 @@ const revokeFileShare = async (req, res, next) => {
       where: { id: shareId },
       data: { isActive: false },
     });
+
+    await logActivity(userId, 'share_revoked', 'file', id, file.name, req);
+    await createNotification(userId, 'share_revoked', 'Share revoked', `Sharing for "${file.name}" was revoked.`, { fileId: id, shareId });
 
     res.json({
       success: true,
@@ -298,6 +344,13 @@ const accessSharedFile = async (req, res, next) => {
       where: { id: share.id },
       data: { viewCount: { increment: 1 } },
     });
+
+    await prisma.file.update({
+      where: { id: share.file.id },
+      data: { viewCount: { increment: 1 }, lastAccessedAt: new Date() },
+    });
+
+    await logActivity(share.sharedBy, 'shared_file_viewed', 'file', share.file.id, share.file.name, req);
 
     res.json({
       success: true,
@@ -383,6 +436,10 @@ const shareFolder = async (req, res, next) => {
         shareCount: { increment: 1 },
       },
     });
+
+    await logActivity(userId, 'folder_shared', 'folder', id, folder.name, req);
+    await createNotification(userId, 'folder_shared', 'Folder shared', `"${folder.name}" was shared with ${sharedWithUser.email}.`, { folderId: id, shareId: share.id });
+    await createNotification(sharedWithUser.id, 'folder_shared_with_you', 'New shared folder', `${req.user.fullName || req.user.email} shared "${folder.name}" with you.`, { folderId: id, shareId: share.id });
 
     res.status(201).json({
       success: true,
@@ -485,6 +542,9 @@ const revokeFolderShare = async (req, res, next) => {
       where: { id },
       data: { shareCount: { decrement: 1 } },
     });
+
+    await logActivity(userId, 'folder_share_revoked', 'folder', id, folder.name, req);
+    await createNotification(userId, 'folder_share_revoked', 'Folder share revoked', `Sharing for "${folder.name}" was revoked.`, { folderId: id, shareId });
 
     res.json({
       success: true,

@@ -38,9 +38,24 @@ const BUCKET = process.env.AWS_S3_BUCKET_NAME;
 /**
  * Generate a pre-signed URL for S3 object
  */
-const getSignedFileUrl = async (key, expiresInSeconds = 3600) => {
-  const command = new GetObjectCommand({ Bucket: BUCKET, Key: key });
+const getSignedFileUrl = async (key, expiresInSeconds = 3600, options = {}) => {
+  const command = new GetObjectCommand({
+    Bucket: BUCKET,
+    Key: key,
+    ...(options.responseContentType && { ResponseContentType: options.responseContentType }),
+    ...(options.responseContentDisposition && {
+      ResponseContentDisposition: options.responseContentDisposition,
+    }),
+  });
   return getSignedUrl(s3, command, { expiresIn: expiresInSeconds });
+};
+
+/**
+ * Fetch S3 object for streaming to client
+ */
+const getObjectStream = async (key) => {
+  const command = new GetObjectCommand({ Bucket: BUCKET, Key: key });
+  return s3.send(command);
 };
 
 /**
@@ -84,6 +99,7 @@ module.exports = {
   s3,
   BUCKET,
   getSignedFileUrl,
+  getObjectStream,
   deleteFile,
   listFiles,
 };

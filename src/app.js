@@ -18,6 +18,10 @@ const storageRoutes = require('./routes/storageRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const recentRoutes = require('./routes/recentRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const publicRoutes = require('./routes/publicRoutes');
+const accountRoutes = require('./routes/accountRoutes');
+const billingRoutes = require('./routes/billingRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 
 const app = express();
 
@@ -104,6 +108,10 @@ app.use('/api/v1/storage', storageRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);
 app.use('/api/v1/recent', recentRoutes);
 app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/public', publicRoutes);
+app.use('/api/v1/account', accountRoutes);
+app.use('/api/v1/billing', billingRoutes);
+app.use('/api/v1/notifications', notificationRoutes);
 
 // 404 handler
 app.use(notFoundHandler);

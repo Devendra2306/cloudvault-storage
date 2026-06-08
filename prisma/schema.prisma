@@ -11,20 +11,25 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(uuid())
-  email         String    @unique
-  passwordHash  String
-  fullName      String?
-  avatarUrl     String?
-  storageUsed   BigInt    @default(0)
-  storageQuota  BigInt    @default(5368709120) // 5GB
-  role          String    @default("user")
-  isVerified    Boolean   @default(false)
-  isActive      Boolean   @default(true)
-  lastLoginAt   DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  deletedAt     DateTime?
+  id                 String    @id @default(uuid())
+  email              String    @unique
+  passwordHash       String
+  fullName           String?
+  avatarUrl          String?
+  storageUsed        BigInt    @default(0)
+  storageQuota       BigInt    @default(5368709120)
+  extraStorageBytes  BigInt    @default(0)
+  plan               String    @default("free")
+  trialEndsAt        DateTime?
+  authProvider       String    @default("email")
+  twoFactorEnabled   Boolean   @default(false)
+  role               String    @default("user")
+  isVerified         Boolean   @default(false)
+  isActive           Boolean   @default(true)
+  lastLoginAt        DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  deletedAt          DateTime?
 
   folders       Folder[]
   files         File[]
@@ -37,9 +42,28 @@ model User {
   activityLogs  ActivityLog[]
   sessions      Session[]
   verificationTokens VerificationToken[]
+  notifications      Notification[]
 
   @@index([email])
   @@index([role])
+  @@index([plan])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String
+  title     String
+  body      String?
+  read      Boolean  @default(false)
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([read])
+  @@index([createdAt])
 }
 
 model Folder {
@@ -82,6 +106,7 @@ model File {
   previewUrl      String?
   isPublic        Boolean   @default(false)
   isStarred       Boolean   @default(false)
+  tags            Json      @default("[]")
   viewCount       Int       @default(0)
   downloadCount   Int       @default(0)
   lastAccessedAt  DateTime?

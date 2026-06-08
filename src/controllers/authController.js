@@ -6,24 +6,20 @@ const {
   generateRefreshToken,
   verifyRefreshToken,
 } = require('../config/jwt');
-const { sendVerificationEmail, sendPasswordResetEmail } = require('../config/email');
+const { sendVerificationEmail, sendPasswordResetEmail, sendWelcomeEmail } = require('../config/email');
+const { verifyFirebaseIdToken } = require('../config/firebase');
+const {
+  formatAccountUser,
+  newUserTrialData,
+  logActivity,
+} = require('../services/userAccount');
 const {
   AuthenticationError,
   ValidationError,
   NotFoundError,
 } = require('../middleware/errorHandler');
 
-const formatAuthUser = (user) => ({
-  id: user.id,
-  email: user.email,
-  fullName: user.fullName,
-  avatarUrl: user.avatarUrl || null,
-  storageUsed: Number(user.storageUsed || 0),
-  storageQuota: Number(user.storageQuota || 0),
-  role: user.role,
-  isVerified: user.isVerified,
-  createdAt: user.createdAt,
-});
+const formatAuthUser = (user) => formatAccountUser(user);
 
 const createAuthPayload = async (user, req) => {
   const accessToken = generateAccessToken({ userId: user.id });
@@ -71,7 +67,9 @@ const register = async (req, res, next) => {
         email,
         passwordHash,
         fullName,
-        storageQuota: parseInt(process.env.DEFAULT_STORAGE_QUOTA) || 5368709120, // 5GB
+        authProvider: 'email',
+        ...newUserTrialData(),
+        storageQuota: BigInt(parseInt(process.env.DEFAULT_STORAGE_QUOTA, 10) || 5368709120),
       },
       select: {
         id: true,
@@ -103,6 +101,14 @@ const register = async (req, res, next) => {
     } catch (emailError) {
       console.error('Failed to send verification email:', emailError);
       // Continue anyway, user can request new email
+    }
+
+    // Send welcome email
+    try {
+      await sendWelcomeEmail(email, fullName);
+    } catch (emailError) {
+      console.error('Failed to send welcome email:', emailError);
+      // Continue anyway, welcome email is not critical
     }
 
     const authPayload = await createAuthPayload(user, req);
@@ -149,6 +155,7 @@ const login = async (req, res, next) => {
       data: { lastLoginAt: new Date() },
     });
 
+    await logActivity(user.id, 'login', 'auth', user.id, user.email, req);
     const authPayload = await createAuthPayload(user, req);
 
     res.json({
@@ -295,7 +302,7 @@ const forgotPassword = async (req, res, next) => {
         userId: user.id,
         token: resetToken,
         tokenType: 'password_reset',
-        expiresAt: new Date(Date.now() + 60 * 60 * 1000), // 1 hour
+        expiresAt: new Date(Date.now() + 15 * 60 * 1000),
       },
     });
 
@@ -373,6 +380,63 @@ const resetPassword = async (req, res, next) => {
   }
 };
 
+/**
+ * Login or register via Firebase ID token (Google, GitHub, Microsoft)
+ */
+const firebaseAuth = async (req, res, next) => {
+  try {
+    const { idToken, email: bodyEmail, fullName: bodyFullName, avatarUrl, provider } = req.body;
+    if (!idToken) throw new ValidationError('Firebase ID token is required');
+
+    const decoded = await verifyFirebaseIdToken(idToken);
+    const email = (decoded.email || bodyEmail || '').toLowerCase();
+    if (!email) throw new ValidationError('Email is required from Firebase account');
+
+    const displayName = bodyFullName || decoded.name || email.split('@')[0];
+    const photo = avatarUrl || decoded.picture || null;
+    const authProvider = provider || decoded.firebase?.sign_in_provider?.replace('.com', '') || 'google';
+
+    let user = await prisma.user.findUnique({ where: { email } });
+    let isNew = false;
+
+    if (!user) {
+      isNew = true;
+      const passwordHash = await bcrypt.hash(uuidv4(), 12);
+      user = await prisma.user.create({
+        data: {
+          email,
+          passwordHash,
+          fullName: displayName,
+          avatarUrl: photo,
+          authProvider,
+          isVerified: decoded.email_verified === true,
+          ...newUserTrialData(),
+          storageQuota: BigInt(parseInt(process.env.DEFAULT_STORAGE_QUOTA, 10) || 5368709120),
+        },
+      });
+    } else if (!user.isActive) {
+      throw new AuthenticationError('Account is deactivated');
+    }
+
+    user = await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        lastLoginAt: new Date(),
+        authProvider,
+        ...(photo ? { avatarUrl: photo } : {}),
+        ...(displayName ? { fullName: displayName } : {}),
+        ...(decoded.email_verified ? { isVerified: true } : {}),
+      },
+    });
+
+    await logActivity(user.id, isNew ? 'signup_oauth' : 'oauth_login', 'auth', user.id, authProvider, req);
+    const authPayload = await createAuthPayload(user, req);
+    res.json({ success: true, data: authPayload });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -381,4 +445,5 @@ module.exports = {
   verifyEmail,
   forgotPassword,
   resetPassword,
+  firebaseAuth,
 };

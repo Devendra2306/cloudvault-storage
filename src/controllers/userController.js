@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const prisma = require('../config/database');
+const { formatAccountUser, syncExpiredTrial } = require('../services/userAccount');
 const { NotFoundError, ValidationError } = require('../middleware/errorHandler');
 
 /**
@@ -28,9 +29,12 @@ const getProfile = async (req, res, next) => {
       throw new NotFoundError('User not found');
     }
 
+    const synced = await syncExpiredTrial(user.id);
+    const full = await prisma.user.findUnique({ where: { id: synced.id } });
+
     res.json({
       success: true,
-      data: user,
+      data: formatAccountUser(full),
     });
   } catch (error) {
     next(error);

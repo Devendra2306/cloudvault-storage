@@ -27,7 +27,9 @@ const ALLOWED_MIMES = [
   'video/mp4',
   'video/mpeg',
   'audio/mpeg',
+  'audio/mp3',
   'audio/wav',
+  'audio/x-wav',
 ];
 
 const ALLOWED_EXTS = /\.jpeg$|\.jpg$|\.png$|\.gif$|\.webp$|\.pdf$|\.doc$|\.docx$|\.txt$|\.xls$|\.xlsx$|\.ppt$|\.pptx$|\.mp4$|\.mpeg$|\.mp3$|\.wav$/i;
@@ -92,24 +94,17 @@ const upload = multer({
 const checkQuota = async (req, res, next) => {
   try {
     const prisma = require('../config/database');
-    const user = await prisma.user.findUnique({
-      where: { id: req.user.id },
-      select: { storageUsed: true, storageQuota: true },
-    });
+    const { getStorageQuotaBytes, syncExpiredTrial } = require('../services/userAccount');
+    let user = await prisma.user.findUnique({ where: { id: req.user.id } });
+    if (!user) throw new ValidationError('User not found');
+    user = await syncExpiredTrial(user.id);
 
-    if (!user) {
-      throw new ValidationError('User not found');
-    }
-
-    // Calculate total size of files being uploaded
     let totalSize = 0;
-    if (req.file) {
-      totalSize = req.file.size;
-    } else if (req.files && Array.isArray(req.files)) {
-      totalSize = req.files.reduce((sum, file) => sum + file.size, 0);
-    }
+    if (req.file) totalSize = req.file.size;
+    else if (req.files?.length) totalSize = req.files.reduce((sum, file) => sum + file.size, 0);
 
-    if (user.storageUsed + BigInt(totalSize) > user.storageQuota) {
+    const quota = getStorageQuotaBytes(user);
+    if (user.storageUsed + BigInt(totalSize) > quota) {
       throw new QuotaExceededError('Storage quota exceeded');
     }
 
