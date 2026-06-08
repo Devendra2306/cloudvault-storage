@@ -52,4 +52,11 @@ router.post('/forgot-password', validate(schemas.forgotPassword), authController
  */
 router.post('/reset-password', validate(schemas.resetPassword), authController.resetPassword);
 
+/**
+ * @route   POST /api/v1/auth/firebase
+ * @desc    Exchange Firebase ID token for app JWT
+ * @access  Public
+ */
+router.post('/firebase', authController.firebaseAuth);
+
 module.exports = router;

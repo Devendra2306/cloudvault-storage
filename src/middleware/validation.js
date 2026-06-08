@@ -137,6 +137,7 @@ const schemas = {
     name: Joi.string().min(1).max(255).optional(),
     isPublic: Joi.boolean().optional(),
     isStarred: Joi.boolean().optional(),
+    tags: Joi.array().items(Joi.string().min(1).max(32)).max(20).optional(),
   }),
 
   moveFile: Joi.object({
@@ -159,6 +160,8 @@ const schemas = {
       'any.only': 'Share type must be one of: link, user, email',
     }),
     permission: Joi.string().valid('view', 'download', 'edit').default('view'),
+    sharedWithEmail: Joi.string().email().optional(),
+    email: Joi.string().email().optional(),
     password: Joi.string().min(4).max(50).optional(),
     expiresAt: Joi.date().iso().optional(),
     maxViews: Joi.number().integer().min(1).optional(),

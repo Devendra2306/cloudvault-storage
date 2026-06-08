@@ -71,8 +71,22 @@ const createFolder = async (req, res, next) => {
  */
 const listFolders = async (req, res, next) => {
   try {
-    const { parentId, includeDeleted, page = 1, limit = 20 } = req.query;
+    const { parentId, includeDeleted, all, page = 1, limit = 20 } = req.query;
     const userId = req.user.id;
+
+    if (all === 'true') {
+      const folders = await prisma.folder.findMany({
+        where: {
+          userId,
+          ...(includeDeleted !== 'true' && { deletedAt: null }),
+        },
+        orderBy: { name: 'asc' },
+      });
+      return res.json({
+        success: true,
+        data: { folders },
+      });
+    }
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
 

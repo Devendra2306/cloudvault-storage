@@ -1,6 +1,28 @@
 const prisma = require('../config/database');
-const { getSignedFileUrl, deleteFile: deleteS3File } = require('../config/s3');
+const { getSignedFileUrl, getObjectStream, deleteFile: deleteS3File } = require('../config/s3');
+const { resolveMimeType } = require('../utils/mime');
+const { normalizeTags, parseTagsField } = require('../utils/tags');
 const { NotFoundError, ValidationError, ForbiddenError, QuotaExceededError } = require('../middleware/errorHandler');
+const {
+  getStorageQuotaBytes,
+  syncExpiredTrial,
+  createNotification,
+  logActivity,
+  formatAccountUser,
+} = require('../services/userAccount');
+
+const encodeFilename = (name) => {
+  const safe = (name || 'download').replace(/[^\w.\- ()[\]]/g, '_');
+  return `filename="${safe}"; filename*=UTF-8''${encodeURIComponent(name || 'download')}`;
+};
+
+const assertFileAccess = async (file, userId) => {
+  if (file.userId === userId || file.isPublic) return true;
+  const sharedFile = await prisma.fileShare.findFirst({
+    where: { fileId: file.id, sharedWith: userId, isActive: true },
+  });
+  return Boolean(sharedFile);
+};
 
 /**
  * Upload a file
@@ -32,19 +54,9 @@ const uploadFile = async (req, res, next) => {
 
     // Check storage quota
     console.log('Checking storage quota...');
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { storageUsed: true, storageQuota: true },
-    });
-
-    console.log('User storage:', {
-      storageUsed: user.storageUsed.toString(),
-      storageQuota: user.storageQuota.toString(),
-      fileSize: file.size,
-    });
-
-    if (user.storageUsed + BigInt(file.size) > user.storageQuota) {
-      console.error('ERROR: Storage quota exceeded');
+    let user = await syncExpiredTrial(userId);
+    const quota = getStorageQuotaBytes(user);
+    if (user.storageUsed + BigInt(file.size) > quota) {
       throw new QuotaExceededError('Storage quota exceeded');
     }
 
@@ -66,6 +78,8 @@ const uploadFile = async (req, res, next) => {
       }
     }
 
+    const resolvedMime = resolveMimeType(file.mimetype, file.originalname);
+
     // Create file record
     console.log('Creating file record in database...');
     const newFile = await prisma.file.create({
@@ -74,7 +88,7 @@ const uploadFile = async (req, res, next) => {
         folderId,
         name: file.originalname,
         originalName: file.originalname,
-        mimeType: file.mimetype,
+        mimeType: resolvedMime,
         size: BigInt(file.size),
         s3Key: file.key,
         s3Bucket: file.bucket,
@@ -96,7 +110,32 @@ const uploadFile = async (req, res, next) => {
       },
     });
 
-    console.log('User storage updated');
+    user = await prisma.user.findUnique({ where: { id: userId } });
+    const account = formatAccountUser(user);
+
+    await createNotification(
+      userId,
+      'upload_complete',
+      'Upload complete',
+      `"${file.originalname}" was uploaded successfully.`,
+      { fileId: newFile.id }
+    );
+    await logActivity(userId, 'file_uploaded', 'file', newFile.id, newFile.name, req);
+
+    if (account.storageWarning === 'warning') {
+      await createNotification(userId, 'storage_warning', 'Storage filling up', 'You have used over 80% of your storage.');
+    } else if (account.storageWarning === 'critical') {
+      await createNotification(userId, 'storage_warning', 'Storage almost full', 'You have used over 95% of your storage.');
+    }
+
+    if (account.trialDaysLeft > 0 && account.trialDaysLeft <= 3) {
+      await createNotification(
+        userId,
+        'trial_expiring',
+        'Trial ending soon',
+        `${account.trialDaysLeft} day(s) left on your Pro trial.`
+      );
+    }
 
     // Generate signed URL
     console.log('Generating signed URL...');
@@ -140,10 +179,11 @@ const listFiles = async (req, res, next) => {
       isPublic,
       trashed,
       search,
+      tag,
       sortBy = 'createdAt',
       sortOrder = 'desc',
       page = 1,
-      limit = 20,
+      limit = 50,
     } = req.query;
     const userId = req.user.id;
 
@@ -186,12 +226,20 @@ const listFiles = async (req, res, next) => {
       prisma.file.count({ where }),
     ]);
 
-    const filesWithFolderName = files.map((file) => ({
+    let filesWithFolderName = files.map((file) => ({
       ...file,
       size: Number(file.size),
+      tags: parseTagsField(file.tags),
       folderName: file.folder?.name || null,
       folder: undefined,
     }));
+
+    if (tag) {
+      const tagLower = String(tag).toLowerCase();
+      filesWithFolderName = filesWithFolderName.filter((f) =>
+        f.tags.includes(tagLower)
+      );
+    }
 
     res.json({
       success: true,
@@ -271,7 +319,82 @@ const getFile = async (req, res, next) => {
 };
 
 /**
- * Get signed download URL
+ * Stream file bytes (download) with correct Content-Type and filename
+ */
+const downloadFile = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    const file = await prisma.file.findUnique({ where: { id } });
+    if (!file) throw new NotFoundError('File not found');
+    if (!(await assertFileAccess(file, userId))) {
+      throw new ForbiddenError('You do not have permission to download this file');
+    }
+
+    const s3Object = await getObjectStream(file.s3Key);
+    const contentType = file.mimeType || s3Object.ContentType || 'application/octet-stream';
+
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Content-Disposition', `attachment; ${encodeFilename(file.name)}`);
+    if (s3Object.ContentLength != null) {
+      res.setHeader('Content-Length', String(s3Object.ContentLength));
+    }
+    res.setHeader('Cache-Control', 'private, max-age=3600');
+
+    await prisma.file.update({
+      where: { id },
+      data: { downloadCount: { increment: 1 }, lastAccessedAt: new Date() },
+    });
+    await logActivity(userId, 'file_downloaded', 'file', id, file.name, req);
+    if (file.userId !== userId) {
+      await createNotification(file.userId, 'shared_file_downloaded', 'Shared file downloaded', `"${file.name}" was downloaded.`, { fileId: id, downloadedBy: userId });
+    }
+
+    s3Object.Body.pipe(res);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Stream file for inline preview
+ */
+const previewFile = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    const file = await prisma.file.findUnique({ where: { id } });
+    if (!file) throw new NotFoundError('File not found');
+    if (!(await assertFileAccess(file, userId))) {
+      throw new ForbiddenError('You do not have permission to preview this file');
+    }
+
+    const s3Object = await getObjectStream(file.s3Key);
+    const contentType = file.mimeType || s3Object.ContentType || 'application/octet-stream';
+
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Content-Disposition', `inline; ${encodeFilename(file.name)}`);
+    if (s3Object.ContentLength != null) {
+      res.setHeader('Content-Length', String(s3Object.ContentLength));
+    }
+    res.setHeader('Cache-Control', 'private, max-age=1800');
+
+    await prisma.file.update({
+      where: { id },
+      data: { viewCount: { increment: 1 }, lastAccessedAt: new Date() },
+    });
+    await logActivity(userId, 'file_previewed', 'file', id, file.name, req);
+
+    s3Object.Body.pipe(res);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get signed download URL (for direct S3 access / sharing)
  */
 const getDownloadUrl = async (req, res, next) => {
   try {
@@ -311,14 +434,18 @@ const getDownloadUrl = async (req, res, next) => {
       throw new ValidationError('Expires cannot exceed 24 hours');
     }
 
-    // Generate signed URL
-    const downloadUrl = await getSignedFileUrl(file.s3Key, expiresIn);
+    const disposition = `attachment; ${encodeFilename(file.name)}`;
+    const downloadUrl = await getSignedFileUrl(file.s3Key, expiresIn, {
+      responseContentType: file.mimeType || undefined,
+      responseContentDisposition: disposition,
+    });
 
     // Increment download count
     await prisma.file.update({
       where: { id },
       data: { downloadCount: { increment: 1 } },
     });
+    await logActivity(userId, 'download_url_created', 'file', id, file.name, req);
 
     res.json({
       success: true,
@@ -338,7 +465,7 @@ const getDownloadUrl = async (req, res, next) => {
 const updateFile = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { name, isPublic, isStarred } = req.body;
+    const { name, isPublic, isStarred, tags } = req.body;
     const userId = req.user.id;
 
     const file = await prisma.file.findUnique({
@@ -359,12 +486,41 @@ const updateFile = async (req, res, next) => {
         ...(name && { name }),
         ...(isPublic !== undefined && { isPublic }),
         ...(isStarred !== undefined && { isStarred }),
+        ...(tags !== undefined && { tags: normalizeTags(tags) }),
       },
     });
+    await logActivity(userId, 'file_updated', 'file', id, updatedFile.name, req);
 
     res.json({
       success: true,
-      data: updatedFile,
+      data: {
+        ...updatedFile,
+        size: Number(updatedFile.size),
+        tags: parseTagsField(updatedFile.tags),
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * List all tags used by the user
+ */
+const listFileTags = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const files = await prisma.file.findMany({
+      where: { userId, deletedAt: null },
+      select: { tags: true },
+    });
+    const tagSet = new Set();
+    files.forEach((file) => {
+      parseTagsField(file.tags).forEach((t) => tagSet.add(t));
+    });
+    res.json({
+      success: true,
+      data: { tags: [...tagSet].sort() },
     });
   } catch (error) {
     next(error);
@@ -411,6 +567,7 @@ const moveFile = async (req, res, next) => {
       where: { id },
       data: { folderId: targetFolderId || null },
     });
+    await logActivity(userId, 'file_moved', 'file', id, file.name, req);
 
     res.json({
       success: true,
@@ -495,6 +652,7 @@ const copyFile = async (req, res, next) => {
         },
       },
     });
+    await logActivity(userId, 'file_copied', 'file', copiedFile.id, copiedFile.name, req);
 
     res.status(201).json({
       success: true,
@@ -544,6 +702,7 @@ const deleteFile = async (req, res, next) => {
         },
       },
     });
+    await logActivity(userId, 'file_trashed', 'file', id, file.name, req);
 
     res.json({
       success: true,
@@ -648,7 +807,10 @@ const permanentDeleteFile = async (req, res, next) => {
 module.exports = {
   uploadFile,
   listFiles,
+  listFileTags,
   getFile,
+  downloadFile,
+  previewFile,
   getDownloadUrl,
   updateFile,
   moveFile,
