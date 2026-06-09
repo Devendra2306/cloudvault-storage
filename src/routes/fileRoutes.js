@@ -3,7 +3,7 @@ const router = express.Router();
 const fileController = require('../controllers/fileController');
 const { authenticate } = require('../middleware/auth');
 const { validate, schemas } = require('../middleware/validation');
-const { upload, checkQuota } = require('../middleware/upload');
+const { upload } = require('../middleware/upload');
 const { requireVerified } = require('../middleware/requireVerified');
 
 /**
@@ -11,7 +11,7 @@ const { requireVerified } = require('../middleware/requireVerified');
  * @desc    Upload a file
  * @access  Private
  */
-router.post('/upload', authenticate, requireVerified, checkQuota, upload.single('file'), fileController.uploadFile);
+router.post('/upload', authenticate, requireVerified, ...upload.single('file'), fileController.uploadFile);
 
 /**
  * @route   GET /api/v1/files

@@ -3,6 +3,7 @@ const { NotFoundError } = require('../middleware/errorHandler');
 
 const listNotifications = async (req, res, next) => {
   try {
+    console.log('GET /notifications - User ID:', req.user.id);
     const { unreadOnly } = req.query;
     const notifications = await prisma.notification.findMany({
       where: {
@@ -15,8 +16,10 @@ const listNotifications = async (req, res, next) => {
     const unreadCount = await prisma.notification.count({
       where: { userId: req.user.id, read: false },
     });
+    console.log('GET /notifications - Success, count:', notifications.length);
     res.json({ success: true, data: { notifications, unreadCount } });
   } catch (e) {
+    console.error('GET /notifications - Error:', e.message);
     next(e);
   }
 };

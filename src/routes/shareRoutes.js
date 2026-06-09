@@ -37,7 +37,7 @@ router.delete('/files/:id/shares/:shareId', authenticate, shareController.revoke
  * @desc    Access shared file (public endpoint)
  * @access  Public
  */
-router.get('/:token', optionalAuthenticate, shareController.accessSharedFile);
+router.get('/share/:token', optionalAuthenticate, shareController.accessSharedFile);
 
 /**
  * @route   POST /api/v1/folders/:id/share

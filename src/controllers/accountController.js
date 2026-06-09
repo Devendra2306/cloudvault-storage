@@ -12,10 +12,13 @@ const { NotFoundError, ValidationError, ForbiddenError } = require('../middlewar
 
 const getAccount = async (req, res, next) => {
   try {
+    console.log('GET /account - User ID:', req.user.id);
     const user = await syncExpiredTrial(req.user.id);
     const full = await prisma.user.findUnique({ where: { id: user.id } });
+    console.log('GET /account - Success for user:', user.id);
     res.json({ success: true, data: formatAccountUser(full) });
   } catch (e) {
+    console.error('GET /account - Error:', e.message);
     next(e);
   }
 };

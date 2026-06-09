@@ -29,10 +29,10 @@ const assertFileAccess = async (file, userId) => {
  */
 const uploadFile = async (req, res, next) => {
   try {
-    console.log('=== UPLOAD FILE CONTROLLER START ===');
-    console.log('BODY:', req.body);
-    console.log('FILE:', req.file);
-    console.log('USER:', req.user);
+    console.log("UPLOAD REQUEST RECEIVED");
+    console.log("User:", req.user);
+    console.log("File:", req.file);
+    console.log("REQ.BODY:", req.body);
 
     const { folderId, isPublic } = req.body;
     const userId = req.user.id;
@@ -138,9 +138,22 @@ const uploadFile = async (req, res, next) => {
     }
 
     // Generate signed URL
-    console.log('Generating signed URL...');
+    console.log('Generating signed URL for S3 key:', newFile.s3Key);
     const signedUrl = await getSignedFileUrl(newFile.s3Key);
-    console.log('Signed URL generated');
+    console.log('Signed URL generated:', signedUrl ? 'SUCCESS' : 'FAILED');
+    console.log('S3 upload result:', {
+      s3Key: newFile.s3Key,
+      s3Bucket: newFile.s3Bucket,
+      s3Location: newFile.s3Location,
+      signedUrl: signedUrl ? 'generated' : 'failed',
+    });
+
+    if (!signedUrl) {
+      console.error('ERROR: Failed to generate signed URL');
+      throw new Error('Failed to generate signed URL for file access');
+    }
+
+    console.log('UPLOAD SUCCESS: File ID', newFile.id, 'uploaded successfully');
 
     res.status(201).json({
       success: true,
@@ -159,11 +172,38 @@ const uploadFile = async (req, res, next) => {
       },
     });
   } catch (error) {
-    console.error('=== UPLOAD FILE CONTROLLER ERROR ===');
-    console.error('Error name:', error.name);
-    console.error('Error message:', error.message);
-    console.error('Error stack:', error.stack);
-    next(error);
+    console.error('UPLOAD ERROR:', error.name, '-', error.message);
+    console.error('Error details:', {
+      name: error.name,
+      message: error.message,
+      code: error.code,
+      statusCode: error.statusCode,
+      isOperational: error.isOperational,
+    });
+
+    // Return detailed error response
+    const errorResponse = {
+      success: false,
+      error: error.message || 'Upload failed',
+      details: {
+        errorType: error.name,
+        code: error.code,
+        isOperational: error.isOperational,
+      },
+    };
+
+    if (error.name === 'QuotaExceededError') {
+      errorResponse.details.quotaExceeded = true;
+      errorResponse.details.message = 'Storage quota exceeded. Please upgrade your plan.';
+    } else if (error.name === 'ValidationError') {
+      errorResponse.details.validationError = true;
+    } else if (error.name === 'NotFoundError') {
+      errorResponse.details.notFound = true;
+    } else if (error.name === 'ForbiddenError') {
+      errorResponse.details.forbidden = true;
+    }
+
+    res.status(error.statusCode || 500).json(errorResponse);
   }
 };
 

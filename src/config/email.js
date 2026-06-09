@@ -68,7 +68,12 @@ const sendWelcomeEmail = async (to, fullName) => {
  */
 const sendVerificationEmail = async (to, token) => {
   const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify-email?token=${token}`;
-  
+
+  if (!process.env.RESEND_API_KEY) {
+    console.warn('Verification email skipped (no RESEND_API_KEY). Use this link to verify:');
+    console.warn(verificationUrl);
+  }
+
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <h1 style="color: #333;">Email Verification</h1>

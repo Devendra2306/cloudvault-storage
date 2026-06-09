@@ -38,6 +38,10 @@ app.use((req, res, next) => {
       headers: req.headers
     });
   }
+  // Log all API requests
+  if (req.path.startsWith('/api/v1')) {
+    console.log(`${req.method} ${req.path} - User: ${req.user?.id || 'anonymous'}`);
+  }
   next();
 });
 
@@ -97,12 +101,12 @@ app.get('/health', (req, res) => {
 });
 
 // API routes
+console.log('Registering API routes...');
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/folders', folderRoutes);
 app.use('/api/v1/files', fileRoutes);
 app.use('/api/v1/trash', trashRoutes);
-app.use('/api/v1', shareRoutes);
 app.use('/api/v1/search', searchRoutes);
 app.use('/api/v1/storage', storageRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);
@@ -112,6 +116,8 @@ app.use('/api/v1/public', publicRoutes);
 app.use('/api/v1/account', accountRoutes);
 app.use('/api/v1/billing', billingRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
+app.use('/api/v1', shareRoutes);
+console.log('All API routes registered successfully');
 
 // 404 handler
 app.use(notFoundHandler);
