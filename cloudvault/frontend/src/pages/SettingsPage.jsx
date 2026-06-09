@@ -74,7 +74,7 @@ export default function SettingsPage({ account, api, token, onBack, onUpdated, n
         <button type="button" onClick={saveProfile} disabled={saving} style={primaryBtn}>Save changes</button>
       </section>
 
-      {!account?.isVerified && (
+      {account?.emailVerificationRequired && !account?.isVerified && (
         <section style={{ ...card, marginTop: 16 }}>
           <h3 style={sectionTitle}>Email verification</h3>
           <p style={hint}>Verify your email to upload files.</p>

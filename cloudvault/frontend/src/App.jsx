@@ -21,6 +21,8 @@ import { buildFolderTree } from "./lib/folders.js";
 import { AccountProvider, useAccount } from "./context/AccountContext.jsx";
 import ProfileMenu from "./components/ProfileMenu.jsx";
 import TrialBanner from "./components/TrialBanner.jsx";
+import VerifyEmailBanner from "./components/VerifyEmailBanner.jsx";
+import VerifyEmailPage from "./pages/VerifyEmailPage.jsx";
 import NotificationBell from "./components/NotificationBell.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
 import SettingsPage from "./pages/SettingsPage.jsx";
@@ -337,6 +339,7 @@ function AccountChrome({ children, onNavigate, onSignOut, onUpgrade }) {
   const { account, notifications, unreadCount, markAllRead } = useAccount();
   return (
     <>
+      <VerifyEmailBanner account={account} onOpenSettings={() => onNavigate("settings")} />
       <TrialBanner account={account} onUpgrade={onUpgrade} />
       <StorageWarning account={account} onManage={() => onNavigate("billing")} />
       <header style={{
@@ -368,8 +371,15 @@ function ActionBtn({ icon, title, color, onClick }) {
   );
 }
 
+function getVerifyTokenFromUrl() {
+  const path = window.location.pathname.replace(/\/+$/, "") || "/";
+  if (!path.endsWith("/verify-email")) return null;
+  return new URLSearchParams(window.location.search).get("token");
+}
+
 // ── Main App ──────────────────────────────────────────────────────────────────
 export default function CloudVault() {
+  const [verifyEmailToken, setVerifyEmailToken] = useState(getVerifyTokenFromUrl);
   const [screen, setScreen] = useState(() => (localStorage.getItem("cv_token") ? "app" : "landing"));
   const [authMode, setAuthMode] = useState("login");
   const [token, setToken] = useState(() => localStorage.getItem("cv_token") || "");
@@ -427,7 +437,13 @@ export default function CloudVault() {
   const notify = useCallback((msg, type = "info") => setToast({ msg, type }), []);
 
   const api = useCallback(
-    (path, opts) => apiFetch(path, opts, token),
+    (path, opts) => {
+      console.log('=== API CALL START ===');
+      console.log('API PATH:', path);
+      console.log('API TOKEN PRESENT:', !!token);
+      console.log('API TOKEN LENGTH:', token?.length);
+      return apiFetch(path, opts, token);
+    },
     [token]
   );
 
@@ -605,9 +621,19 @@ export default function CloudVault() {
   };
 
   const uploadSingleFile = async (file, folderId) => {
+    console.log("UPLOAD START");
+    console.log("Selected File:", file);
+    console.log("Auth Token:", token ? token.substring(0, 30) + '...' : 'NONE');
+    
+    if (!token) {
+      console.error('ERROR: No token available for upload');
+      throw new Error('Authentication token missing. Please login again.');
+    }
+    
     const fd = new FormData();
     fd.append("file", file);
     if (folderId) fd.append("folderId", folderId);
+    
     await uploadFileWithProgress("/files/upload", fd, token);
   };
 
@@ -620,12 +646,15 @@ export default function CloudVault() {
 
   const uploadFiles = async (fileList, fromFolder = false) => {
     try {
-      const me = await api("/account");
-      if (!me?.isVerified) {
+      let me = await api("/account").catch(() => api("/users/me"));
+      if (me?.emailVerificationRequired && !me?.isVerified) {
         notify("Verify your email before uploading. Open Settings to resend the link.", "error");
         return;
       }
-    } catch { /* account endpoint optional during upload */ }
+    } catch (e) {
+      notify(`Could not verify account status: ${e.message}`, "error");
+      return;
+    }
 
     setUploading(true);
     setUploadProgress(0);
@@ -687,6 +716,10 @@ export default function CloudVault() {
   };
 
   const handleShare = async (file, payload) => {
+    console.log('=== HANDLE SHARE START ===');
+    console.log('FILE:', file.name);
+    console.log('PAYLOAD:', payload);
+    
     if (payload.shareType === "user") {
       return api(`/files/${file.id}/share/user`, {
         method: "POST",
@@ -835,6 +868,21 @@ export default function CloudVault() {
 
   const storageLimit = stats.storageQuota || 1024 * 1024 * 1024;
   const storagePercent = Math.min(100, (stats.storageUsed / storageLimit) * 100);
+
+  if (verifyEmailToken) {
+    return (
+      <>
+        <style>{GLOBAL_STYLES}</style>
+        <VerifyEmailPage
+          token={verifyEmailToken}
+          onDone={() => {
+            setVerifyEmailToken(null);
+            setScreen(token ? "app" : "landing");
+          }}
+        />
+      </>
+    );
+  }
 
   if (screen === "landing" && !token) {
     return (

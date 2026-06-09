@@ -1,5 +1,6 @@
 const prisma = require('../config/database');
 const { PLANS, TRIAL_DAYS } = require('../config/plans');
+const { isEmailVerificationEnforced } = require('../config/emailPolicy');
 
 const MS_DAY = 24 * 60 * 60 * 1000;
 
@@ -51,6 +52,7 @@ function formatAccountUser(user) {
     authProvider: user.authProvider,
     role: user.role,
     isVerified: user.isVerified,
+    emailVerificationRequired: isEmailVerificationEnforced(),
     isActive: user.isActive,
     twoFactorEnabled: user.twoFactorEnabled,
     createdAt: user.createdAt,

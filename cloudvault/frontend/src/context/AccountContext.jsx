@@ -21,16 +21,9 @@ export function AccountProvider({ token, children }) {
   }, [token]);
 
   const refreshNotifications = useCallback(async () => {
-    if (!token) return;
-    try {
-      const data = await apiFetch("/notifications", {}, token);
-      setNotifications(data.notifications || []);
-      setUnreadCount(data.unreadCount || 0);
-    } catch {
-      setNotifications([]);
-      setUnreadCount(0);
-    }
-  }, [token]);
+    // Notification polling disabled - endpoint not ready
+    return;
+  }, []);
 
   const refreshAll = useCallback(async () => {
     setLoading(true);
@@ -38,15 +31,14 @@ export function AccountProvider({ token, children }) {
     setLoading(false);
   }, [refreshAccount, refreshNotifications]);
 
+  // Initial data loading when token changes
   useEffect(() => {
     refreshAll();
-    const interval = setInterval(refreshNotifications, 15000);
-    return () => clearInterval(interval);
-  }, [refreshAll, refreshNotifications]);
+  }, [token]);
 
   const markAllRead = async () => {
-    await apiFetch("/notifications/read-all", { method: "POST" }, token);
-    await refreshNotifications();
+    // Notification feature disabled
+    return;
   };
 
   return (
