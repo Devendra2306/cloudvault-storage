@@ -2,7 +2,7 @@ import { useState } from "react";
 import { BRAND } from "../lib/constants.js";
 import { apiFetch } from "../lib/api.js";
 import { GLOBAL_STYLES } from "../styles/globalStyles.js";
-import { isFirebaseConfigured, signInWithProvider, resetPassword } from "../firebase.js";
+import { isFirebaseConfigured, signInWithProvider } from "../firebase.js";
 
 function Spinner({ size = 22, color = "#1a1a1a" }) {
   return (
@@ -57,9 +57,10 @@ export default function AuthScreen({ onAuth, onBack, initialMode = "login" }) {
           }),
         });
         setInfo("Registration successful! Please check your email for the OTP to verify your account.");
-        setTimeout(() => {
-          onAuth?.(null, null, data.email, { email: data.email, fullName: data.fullName });
-        }, 1500);
+        onAuth?.(null, null, data.email || form.email, {
+          email: data.email || form.email,
+          fullName: data.fullName || form.fullName,
+        });
       }
     } catch (e) {
       setError(e.message);
@@ -93,16 +94,11 @@ export default function AuthScreen({ onAuth, onBack, initialMode = "login" }) {
     setInfo("");
     setLoading(true);
     try {
-      if (firebaseReady) {
-        await resetPassword(form.email);
-        setInfo("Password reset email sent. Check your inbox.");
-      } else {
-        await apiFetch("/auth/forgot-password", {
-          method: "POST",
-          body: JSON.stringify({ email: form.email }),
-        });
-        setInfo("If an account exists, a reset link has been sent.");
-      }
+      await apiFetch("/auth/forgot-password", {
+        method: "POST",
+        body: JSON.stringify({ email: form.email }),
+      });
+      setInfo("If an account exists, a reset link has been sent.");
     } catch (e) {
       setError(e.message);
     }

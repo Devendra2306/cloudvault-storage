@@ -8,6 +8,13 @@ const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KE
 const EMAIL_FROM = process.env.EMAIL_FROM || 'noreply@cloudvault.co.in';
 const APP_URL = process.env.APP_URL || 'https://cloudvault.co.in';
 
+console.log('EMAIL SERVICE: Loaded', {
+  configured: Boolean(resend),
+  emailFrom: EMAIL_FROM,
+  appUrl: APP_URL,
+  apiKeyPrefix: process.env.RESEND_API_KEY ? `${process.env.RESEND_API_KEY.slice(0, 6)}...` : null,
+});
+
 /**
  * Email Templates
  */
@@ -255,32 +262,70 @@ const emailTemplates = {
 /**
  * Send Email Function
  */
-async function sendEmail(to, templateName, templateData) {
+function resolveTemplate(templateName, templateData) {
+  const template = emailTemplates[templateName];
+  if (!template) {
+    throw new Error(`Email template '${templateName}' not found`);
+  }
+
+  if (templateName === 'verification') {
+    return template(templateData.name, templateData.otp);
+  }
+  if (templateName === 'forgotPassword') {
+    return template(templateData.name, templateData.resetLink);
+  }
+  if (templateName === 'welcome') {
+    return template(templateData.name);
+  }
+  if (templateName === 'passwordChanged') {
+    return template(templateData.name, templateData.timestamp);
+  }
+  if (templateName === 'newLogin') {
+    return template(templateData.name, templateData.deviceInfo, templateData.timestamp, templateData.location);
+  }
+
+  return template(templateData);
+}
+
+async function sendEmail(to, templateName, templateData, text) {
   if (!resend) {
     console.warn('Email service not configured. Skipping email send.');
     return { success: false, message: 'Email service not configured' };
   }
 
   try {
-    const template = emailTemplates[templateName];
-    if (!template) {
-      throw new Error(`Email template '${templateName}' not found`);
-    }
+    const { subject, html } = typeof templateData === 'string'
+      ? { subject: templateName, html: templateData }
+      : resolveTemplate(templateName, templateData || {});
 
-    const { subject, html } = template(templateData);
-
-    const result = await resend.emails.send({
+    const payload = {
       from: EMAIL_FROM,
       to: [to],
       subject,
-      html
+      html,
+      ...(text ? { text } : {}),
+    };
+
+    console.log('RESEND REQUEST:', {
+      from: payload.from,
+      to: payload.to,
+      subject: payload.subject,
+      apiKeyPrefix: process.env.RESEND_API_KEY ? `${process.env.RESEND_API_KEY.slice(0, 6)}...` : null,
     });
 
+    const result = await resend.emails.send(payload);
+
+    console.log('RESEND RESPONSE BODY:', JSON.stringify(result, null, 2));
+    if (result?.error) {
+      console.error('RESEND ERROR BODY:', JSON.stringify(result.error, null, 2));
+      return { success: false, error: result.error.message || 'Resend email send failed', details: result.error };
+    }
     console.log(`Email sent successfully to ${to}:`, result);
     return { success: true, data: result };
   } catch (error) {
     console.error('Failed to send email:', error);
-    return { success: false, error: error.message };
+    console.error('RESEND ERROR BODY:', JSON.stringify(error?.response?.data || error?.response || error, null, 2));
+    return { success: false, error: error.message, details: error?.response?.data || error?.response };
   }
 }
 

@@ -43,10 +43,10 @@ export default function VerifyEmail({ onVerified, onBack }) {
     setError("");
 
     try {
-      const res = await fetch(`${API}/auth/register`, {
+      const res = await fetch(`${API}/auth/resend-verification`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password: "dummy", fullName: "User" }),
+        body: JSON.stringify({ email }),
       });
       const data = await res.json();
 
