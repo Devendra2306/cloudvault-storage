@@ -1,56 +1,80 @@
 import { API } from "./constants.js";
 
-export const apiFetch = async (path, opts = {}, token) => {
-  console.log('=== API FETCH START ===');
-  console.log('API PATH:', path);
-  console.log('API TOKEN PRESENT:', !!token);
-  console.log('API TOKEN LENGTH:', token?.length);
-  
+async function refreshAccessToken() {
+  const refreshToken = localStorage.getItem("cv_refreshToken");
+  if (!refreshToken) return null;
+  try {
+    const res = await fetch(`${API}/auth/refresh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refreshToken }),
+    });
+    if (!res.ok) return null;
+    const payload = await res.json();
+    const accessToken = payload.data?.accessToken || payload.accessToken;
+    if (!accessToken) return null;
+    localStorage.setItem("cv_token", accessToken);
+    window.dispatchEvent(new CustomEvent("cv-token-refreshed", { detail: { token: accessToken } }));
+    return accessToken;
+  } catch {
+    return null;
+  }
+}
+
+function networkError(path) {
+  return new Error(
+    `Cannot reach the server at ${API}${path}. Make sure the backend is running (npm start in project root).`
+  );
+}
+
+export const apiFetch = async (path, opts = {}, token, retried = false) => {
   const headers = { ...(opts.headers || {}) };
   if (token) headers.Authorization = `Bearer ${token}`;
   if (!(opts.body instanceof FormData)) {
     headers["Content-Type"] = headers["Content-Type"] || "application/json";
   }
-  
-  console.log('API HEADERS:', { ...headers, Authorization: headers.Authorization ? 'Bearer ***' : 'none' });
-  console.log('API URL:', `${API}${path}`);
-  
-  const res = await fetch(`${API}${path}`, { ...opts, headers });
-  console.log('API RESPONSE STATUS:', res.status);
-  console.log('API RESPONSE OK:', res.ok);
-  
+
+  let res;
+  try {
+    res = await fetch(`${API}${path}`, { ...opts, headers });
+  } catch {
+    throw networkError(path);
+  }
+
+  if (res.status === 401 && token && !retried) {
+    const newToken = await refreshAccessToken();
+    if (newToken) return apiFetch(path, opts, newToken, true);
+    throw new Error("Session expired. Please log in again.");
+  }
+
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: "Unknown error" }));
-    console.log('API ERROR RESPONSE:', err);
     throw new Error(err.message || err.error || `Request failed (${res.status})`);
   }
+
   const contentType = res.headers.get("content-type") || "";
-  if (!contentType.includes("application/json")) {
-    return res;
-  }
+  if (!contentType.includes("application/json")) return res;
   const data = await res.json();
-  console.log('API SUCCESS DATA:', data);
   return data.success ? data.data : data;
 };
 
 export const payloadList = (payload, key) =>
   Array.isArray(payload) ? payload : payload?.[key] || [];
 
-/**
- * Download file with progress via ReadableStream
- */
 export async function downloadFileWithProgress(fileId, token, { onProgress, disposition = "download" } = {}) {
   const path = disposition === "preview" ? `/files/${fileId}/preview` : `/files/${fileId}/download`;
-  const res = await fetch(`${API}${path}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  let res;
+  try {
+    res = await fetch(`${API}${path}`, { headers: { Authorization: `Bearer ${token}` } });
+  } catch {
+    throw networkError(path);
+  }
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: "Download failed" }));
     throw new Error(err.error || err.message || "Download failed");
   }
   const total = Number(res.headers.get("content-length")) || 0;
-  const blob = await readBlobWithProgress(res, total, onProgress);
-  return blob;
+  return readBlobWithProgress(res, total, onProgress);
 }
 
 async function readBlobWithProgress(res, total, onProgress) {
@@ -86,37 +110,24 @@ export function triggerBrowserDownload(blob, filename) {
   URL.revokeObjectURL(url);
 }
 
-/**
- * Upload with XMLHttpRequest for progress events
- */
 export function uploadFileWithProgress(path, formData, token, onProgress) {
   return new Promise((resolve, reject) => {
-    console.log('=== UPLOAD REQUEST START ===');
-    console.log('UPLOAD PATH:', path);
-    console.log('UPLOAD TOKEN PRESENT:', !!token);
-    console.log('UPLOAD TOKEN LENGTH:', token?.length);
-    console.log('UPLOAD TOKEN PREFIX:', token ? token.substring(0, 20) + '...' : 'none');
-    
     const xhr = new XMLHttpRequest();
     xhr.open("POST", `${API}${path}`);
     xhr.setRequestHeader("Authorization", `Bearer ${token}`);
-    console.log('UPLOAD AUTH HEADER SET:', `Bearer ${token ? token.substring(0, 20) + '...' : 'none'}`);
-    
+
     xhr.upload.onprogress = (e) => {
       if (e.lengthComputable && onProgress) {
         onProgress(Math.round((e.loaded / e.total) * 100));
       }
     };
+
     xhr.onload = () => {
-      console.log('UPLOAD RESPONSE STATUS:', xhr.status);
-      console.log('UPLOAD RESPONSE TEXT:', xhr.responseText);
       try {
         const data = JSON.parse(xhr.responseText);
         if (xhr.status >= 200 && xhr.status < 300) {
-          console.log('UPLOAD SUCCESS');
           resolve(data.success ? data.data : data);
         } else {
-          console.log('UPLOAD FAILED:', data);
           reject(new Error(data.message || data.error || "Upload failed"));
         }
       } catch {
@@ -124,10 +135,8 @@ export function uploadFileWithProgress(path, formData, token, onProgress) {
         else reject(new Error("Upload failed"));
       }
     };
-    xhr.onerror = () => {
-      console.log('UPLOAD NETWORK ERROR');
-      reject(new Error("Network error during upload"));
-    };
+
+    xhr.onerror = () => reject(networkError(path));
     xhr.send(formData);
   });
 }

@@ -1,108 +1,41 @@
-const { Resend } = require('resend');
-
-// Initialize Resend client
-const resend = new Resend(process.env.RESEND_API_KEY);
-
-/**
- * Send email using Resend
- */
-const sendEmail = async (to, subject, html, text = null) => {
-  try {
-    if (!process.env.RESEND_API_KEY) {
-      console.warn('Resend API key is not configured; skipping email send.');
-      return { success: false, skipped: true, error: 'Resend API key is not configured' };
-    }
-
-    const emailData = {
-      from: process.env.EMAIL_FROM || 'noreply@cloudvault.com',
-      to,
-      subject,
-      html,
-    };
-
-    if (text) {
-      emailData.text = text;
-    }
-
-    const { data, error } = await resend.emails.send(emailData);
-
-    if (error) {
-      console.error('Resend email error:', error);
-      return { success: false, error: error.message };
-    }
-
-    console.log('Email sent via Resend:', data.id);
-    return { success: true, messageId: data.id };
-  } catch (error) {
-    console.error('Email send error:', error);
-    return { success: false, error: error.message };
-  }
-};
+const { sendEmail, emailTemplates } = require('../services/emailService');
 
 /**
  * Send welcome email
  */
 const sendWelcomeEmail = async (to, fullName) => {
-  const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <h1 style="color: #333;">Welcome to CloudVault!</h1>
-      <p style="color: #666; font-size: 16px;">Hi ${fullName || 'there'},</p>
-      <p style="color: #666; font-size: 16px;">Thank you for signing up for CloudVault. We're excited to have you on board!</p>
-      <p style="color: #666; font-size: 16px;">With CloudVault, you can:</p>
-      <ul style="color: #666; font-size: 16px;">
-        <li>Store and organize your files securely</li>
-        <li>Access your files from anywhere</li>
-        <li>Share files with others easily</li>
-        <li>Upgrade your storage plan as needed</li>
-      </ul>
-      <p style="color: #666; font-size: 16px;">If you have any questions, feel free to reach out to our support team.</p>
-      <p style="color: #666; font-size: 16px;">Best regards,<br>The CloudVault Team</p>
-    </div>
-  `;
-
-  return sendEmail(to, 'Welcome to CloudVault!', html);
+  return sendEmail(to, 'welcome', { name: fullName });
 };
 
 /**
- * Send verification email
+ * Send verification email with OTP
  */
-const sendVerificationEmail = async (to, token) => {
-  const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify-email?token=${token}`;
-
-  if (!process.env.RESEND_API_KEY) {
-    console.warn('Verification email skipped (no RESEND_API_KEY). Use this link to verify:');
-    console.warn(verificationUrl);
-  }
-
-  const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <h1 style="color: #333;">Email Verification</h1>
-      <p style="color: #666; font-size: 16px;">Please click the link below to verify your email address:</p>
-      <a href="${verificationUrl}" style="display: inline-block; padding: 12px 24px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; margin: 10px 0;">Verify Email</a>
-      <p style="color: #666; font-size: 14px;">This link will expire in 24 hours.</p>
-    </div>
-  `;
-
-  return sendEmail(to, 'Verify your email address', html);
+const sendVerificationEmail = async (to, otp) => {
+  return sendEmail(to, 'verification', { name: to.split('@')[0], otp });
 };
 
 /**
  * Send password reset email
  */
 const sendPasswordResetEmail = async (to, token) => {
-  const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password?token=${token}`;
-  
-  const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <h1 style="color: #333;">Password Reset</h1>
-      <p style="color: #666; font-size: 16px;">Please click the link below to reset your password:</p>
-      <a href="${resetUrl}" style="display: inline-block; padding: 12px 24px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; margin: 10px 0;">Reset Password</a>
-      <p style="color: #666; font-size: 14px;">This link will expire in 15 minutes.</p>
-      <p style="color: #666; font-size: 14px;">If you did not request this password reset, please ignore this email.</p>
-    </div>
-  `;
+  const resetUrl = `${process.env.APP_URL || 'http://localhost:3000'}/reset-password?token=${token}`;
+  return sendEmail(to, 'forgotPassword', { name: to.split('@')[0], resetLink: resetUrl });
+};
 
-  return sendEmail(to, 'Reset your password', html);
+/**
+ * Send password changed alert
+ */
+const sendPasswordChangedEmail = async (to, fullName) => {
+  const timestamp = new Date().toLocaleString();
+  return sendEmail(to, 'passwordChanged', { name: fullName, timestamp });
+};
+
+/**
+ * Send new login alert
+ */
+const sendNewLoginEmail = async (to, fullName, deviceInfo, location) => {
+  const timestamp = new Date().toLocaleString();
+  return sendEmail(to, 'newLogin', { name: fullName, deviceInfo, timestamp, location });
 };
 
 /**
@@ -138,5 +71,7 @@ module.exports = {
   sendWelcomeEmail,
   sendVerificationEmail,
   sendPasswordResetEmail,
+  sendPasswordChangedEmail,
+  sendNewLoginEmail,
   sendShareInvitationEmail,
 };
