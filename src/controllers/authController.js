@@ -86,6 +86,9 @@ const register = async (req, res, next) => {
 
     // Create verification OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    console.log('AUTH CONTROLLER: Generated OTP for email verification:', otp);
+    console.log('AUTH CONTROLLER: OTP expires in 15 minutes');
+    
     await prisma.verificationToken.create({
       data: {
         userId: user.id,
@@ -97,9 +100,12 @@ const register = async (req, res, next) => {
 
     // Send verification email with OTP
     try {
-      await sendVerificationEmail(email, otp);
+      console.log('AUTH CONTROLLER: Sending verification email to:', email);
+      const emailResult = await sendVerificationEmail(email, otp);
+      console.log('AUTH CONTROLLER: Verification email result:', JSON.stringify(emailResult, null, 2));
     } catch (emailError) {
-      console.error('Failed to send verification email:', emailError);
+      console.error('AUTH CONTROLLER: Failed to send verification email:', emailError);
+      console.error('AUTH CONTROLLER: Email error stack:', emailError.stack);
       // Continue anyway, user can request new email
     }
 
@@ -238,6 +244,7 @@ const verifyEmail = async (req, res, next) => {
     }
 
     // Find verification token
+    console.log('AUTH CONTROLLER: Looking up OTP for user:', user.id);
     const verificationToken = await prisma.verificationToken.findFirst({
       where: {
         userId: user.id,
@@ -248,17 +255,21 @@ const verifyEmail = async (req, res, next) => {
     });
 
     if (!verificationToken) {
+      console.log('AUTH CONTROLLER: Invalid OTP provided');
       throw new ValidationError('Invalid OTP');
     }
 
     if (verificationToken.usedAt) {
+      console.log('AUTH CONTROLLER: OTP already used');
       throw new ValidationError('Email already verified');
     }
 
     if (verificationToken.expiresAt < new Date()) {
+      console.log('AUTH CONTROLLER: OTP expired at:', verificationToken.expiresAt);
       throw new ValidationError('OTP has expired');
     }
 
+    console.log('AUTH CONTROLLER: OTP valid, marking as used');
     // Mark token as used
     await prisma.verificationToken.update({
       where: { id: verificationToken.id },
@@ -266,6 +277,7 @@ const verifyEmail = async (req, res, next) => {
     });
 
     // Verify user
+    console.log('AUTH CONTROLLER: Setting user as verified');
     await prisma.user.update({
       where: { id: user.id },
       data: { isVerified: true },
@@ -273,9 +285,11 @@ const verifyEmail = async (req, res, next) => {
 
     // Send welcome email
     try {
-      await sendWelcomeEmail(email, user.fullName);
+      console.log('AUTH CONTROLLER: Sending welcome email to:', email);
+      const welcomeResult = await sendWelcomeEmail(email, user.fullName);
+      console.log('AUTH CONTROLLER: Welcome email result:', JSON.stringify(welcomeResult, null, 2));
     } catch (emailError) {
-      console.error('Failed to send welcome email:', emailError);
+      console.error('AUTH CONTROLLER: Failed to send welcome email:', emailError);
     }
 
     res.json({
@@ -309,6 +323,9 @@ const forgotPassword = async (req, res, next) => {
 
     // Create reset token
     const resetToken = uuidv4();
+    console.log('AUTH CONTROLLER: Generated password reset token for user:', user.id);
+    console.log('AUTH CONTROLLER: Reset token expires in 15 minutes');
+    
     await prisma.verificationToken.create({
       data: {
         userId: user.id,
@@ -320,9 +337,12 @@ const forgotPassword = async (req, res, next) => {
 
     // Send reset email
     try {
-      await sendPasswordResetEmail(email, resetToken);
+      console.log('AUTH CONTROLLER: Sending password reset email to:', email);
+      const resetResult = await sendPasswordResetEmail(email, resetToken);
+      console.log('AUTH CONTROLLER: Password reset email result:', JSON.stringify(resetResult, null, 2));
     } catch (emailError) {
-      console.error('Failed to send password reset email:', emailError);
+      console.error('AUTH CONTROLLER: Failed to send password reset email:', emailError);
+      console.error('AUTH CONTROLLER: Email error stack:', emailError.stack);
     }
 
     res.json({
@@ -342,26 +362,32 @@ const resetPassword = async (req, res, next) => {
     const { token, newPassword } = req.body;
 
     // Find verification token
+    console.log('AUTH CONTROLLER: Looking up password reset token');
     const verificationToken = await prisma.verificationToken.findUnique({
       where: { token },
     });
 
     if (!verificationToken) {
+      console.log('AUTH CONTROLLER: Invalid reset token');
       throw new ValidationError('Invalid reset token');
     }
 
     if (verificationToken.usedAt) {
+      console.log('AUTH CONTROLLER: Reset token already used');
       throw new ValidationError('Token has already been used');
     }
 
     if (verificationToken.expiresAt < new Date()) {
+      console.log('AUTH CONTROLLER: Reset token expired at:', verificationToken.expiresAt);
       throw new ValidationError('Reset token has expired');
     }
 
     if (verificationToken.tokenType !== 'password_reset') {
+      console.log('AUTH CONTROLLER: Invalid token type:', verificationToken.tokenType);
       throw new ValidationError('Invalid token type');
     }
 
+    console.log('AUTH CONTROLLER: Reset token valid, updating password for user:', verificationToken.userId);
     // Hash new password
     const passwordHash = await bcrypt.hash(newPassword, 12);
 
@@ -371,12 +397,14 @@ const resetPassword = async (req, res, next) => {
       data: { passwordHash },
     });
 
+    console.log('AUTH CONTROLLER: Marking reset token as used');
     // Mark token as used
     await prisma.verificationToken.update({
       where: { id: verificationToken.id },
       data: { usedAt: new Date() },
     });
 
+    console.log('AUTH CONTROLLER: Revoking all sessions for user:', verificationToken.userId);
     // Revoke all sessions for this user
     await prisma.session.updateMany({
       where: { userId: verificationToken.userId },
