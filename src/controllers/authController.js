@@ -84,39 +84,29 @@ const register = async (req, res, next) => {
       },
     });
 
-    // Create verification token
-    const verificationToken = uuidv4();
+    // Create verification OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
     await prisma.verificationToken.create({
       data: {
         userId: user.id,
-        token: verificationToken,
+        token: otp,
         tokenType: 'email_verification',
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+        expiresAt: new Date(Date.now() + 15 * 60 * 1000), // 15 minutes
       },
     });
 
-    // Send verification email
+    // Send verification email with OTP
     try {
-      await sendVerificationEmail(email, verificationToken);
+      await sendVerificationEmail(email, otp);
     } catch (emailError) {
       console.error('Failed to send verification email:', emailError);
       // Continue anyway, user can request new email
     }
 
-    // Send welcome email
-    try {
-      await sendWelcomeEmail(email, fullName);
-    } catch (emailError) {
-      console.error('Failed to send welcome email:', emailError);
-      // Continue anyway, welcome email is not critical
-    }
-
-    const authPayload = await createAuthPayload(user, req);
-
     res.status(201).json({
       success: true,
-      message: 'Registration successful. Please check your email to verify your account.',
-      data: authPayload,
+      message: 'Registration successful. Please check your email for the OTP to verify your account.',
+      data: { email, fullName },
     });
   } catch (error) {
     next(error);
@@ -141,6 +131,11 @@ const login = async (req, res, next) => {
 
     if (!user.isActive) {
       throw new AuthenticationError('Account is deactivated');
+    }
+
+    // Check email verification
+    if (!user.isVerified) {
+      throw new AuthenticationError('Please verify your email before logging in');
     }
 
     // Verify password
@@ -227,19 +222,33 @@ const refreshToken = async (req, res, next) => {
 };
 
 /**
- * Verify email
+ * Verify email with OTP
  */
 const verifyEmail = async (req, res, next) => {
   try {
-    const { token } = req.body;
+    const { email, otp } = req.body;
+
+    // Find user
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      throw new ValidationError('User not found');
+    }
 
     // Find verification token
-    const verificationToken = await prisma.verificationToken.findUnique({
-      where: { token },
+    const verificationToken = await prisma.verificationToken.findFirst({
+      where: {
+        userId: user.id,
+        token: otp,
+        tokenType: 'email_verification',
+      },
+      orderBy: { createdAt: 'desc' },
     });
 
     if (!verificationToken) {
-      throw new ValidationError('Invalid verification token');
+      throw new ValidationError('Invalid OTP');
     }
 
     if (verificationToken.usedAt) {
@@ -247,11 +256,7 @@ const verifyEmail = async (req, res, next) => {
     }
 
     if (verificationToken.expiresAt < new Date()) {
-      throw new ValidationError('Verification token has expired');
-    }
-
-    if (verificationToken.tokenType !== 'email_verification') {
-      throw new ValidationError('Invalid token type');
+      throw new ValidationError('OTP has expired');
     }
 
     // Mark token as used
@@ -262,9 +267,16 @@ const verifyEmail = async (req, res, next) => {
 
     // Verify user
     await prisma.user.update({
-      where: { id: verificationToken.userId },
+      where: { id: user.id },
       data: { isVerified: true },
     });
+
+    // Send welcome email
+    try {
+      await sendWelcomeEmail(email, user.fullName);
+    } catch (emailError) {
+      console.error('Failed to send welcome email:', emailError);
+    }
 
     res.json({
       success: true,

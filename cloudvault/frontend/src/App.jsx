@@ -335,6 +335,42 @@ function StorageWarning({ account, onManage }) {
   );
 }
 
+function DriveHero({ username, stats, storagePercent, onUpload, onNewFolder }) {
+  const greeting = (() => {
+    const h = new Date().getHours();
+    if (h < 12) return "Good morning";
+    if (h < 17) return "Good afternoon";
+    return "Good evening";
+  })();
+
+  return (
+    <div style={{
+      marginBottom: 28, padding: "28px 30px", borderRadius: "var(--radius-lg)",
+      background: "var(--gradient-soft)",
+      border: "1px solid var(--border)",
+      boxShadow: "var(--glow)",
+      display: "flex", alignItems: "center", justifyContent: "space-between",
+      gap: 20, flexWrap: "wrap", animation: "floatIn .35s ease",
+    }}>
+      <div>
+        <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--accent-blue)", marginBottom: 6 }}>
+          My Cloud
+        </div>
+        <h1 style={{ fontSize: 28, fontWeight: 800, color: "var(--text)", marginBottom: 6, lineHeight: 1.15 }}>
+          {greeting}, {username || "there"}
+        </h1>
+        <p style={{ color: "var(--text-secondary)", fontSize: 14, maxWidth: 520 }}>
+          {stats.totalFiles} files · {stats.totalFolders} folders · {Math.round(storagePercent)}% storage used
+        </p>
+      </div>
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+        <button type="button" className="btn-primary" onClick={onUpload}>↑ Upload files</button>
+        <button type="button" className="btn-secondary" onClick={onNewFolder}>⊞ New folder</button>
+      </div>
+    </div>
+  );
+}
+
 function AccountChrome({ children, onNavigate, onSignOut, onUpgrade }) {
   const { account, notifications, unreadCount, markAllRead } = useAccount();
   return (
@@ -343,9 +379,10 @@ function AccountChrome({ children, onNavigate, onSignOut, onUpgrade }) {
       <TrialBanner account={account} onUpgrade={onUpgrade} />
       <StorageWarning account={account} onManage={() => onNavigate("billing")} />
       <header style={{
-        position: "sticky", top: 0, zIndex: 90, height: 56,
-        borderBottom: "1px solid var(--border)", background: "rgba(11,15,20,.92)",
-        backdropFilter: "blur(12px)", display: "flex", alignItems: "center",
+        position: "sticky", top: 0, zIndex: 90, height: 60,
+        borderBottom: "1px solid var(--border)",
+        background: "rgba(6,10,16,.82)",
+        backdropFilter: "blur(16px)", display: "flex", alignItems: "center",
         justifyContent: "flex-end", gap: 12, padding: "0 28px 0 316px",
       }}>
         <NotificationBell notifications={notifications} unreadCount={unreadCount} onMarkAllRead={markAllRead} />
@@ -564,6 +601,14 @@ export default function CloudVault() {
   useEffect(() => { localStorage.setItem("cv_viewMode", viewMode); }, [viewMode]);
   useEffect(() => { localStorage.setItem("cv_theme", theme); }, [theme]);
 
+  useEffect(() => {
+    const onTokenRefresh = (e) => {
+      if (e.detail?.token) setToken(e.detail.token);
+    };
+    window.addEventListener("cv-token-refreshed", onTokenRefresh);
+    return () => window.removeEventListener("cv-token-refreshed", onTokenRefresh);
+  }, []);
+
   const handleAuth = (accessToken, refreshToken, user, userObj) => {
     if (!accessToken) return;
     localStorage.setItem("cv_token", accessToken);
@@ -620,21 +665,16 @@ export default function CloudVault() {
     setScreen("landing");
   };
 
-  const uploadSingleFile = async (file, folderId) => {
-    console.log("UPLOAD START");
-    console.log("Selected File:", file);
-    console.log("Auth Token:", token ? token.substring(0, 30) + '...' : 'NONE');
-    
+  const uploadSingleFile = async (file, folderId, onProgress) => {
     if (!token) {
-      console.error('ERROR: No token available for upload');
-      throw new Error('Authentication token missing. Please login again.');
+      throw new Error("Authentication token missing. Please log in again.");
     }
-    
+
     const fd = new FormData();
     fd.append("file", file);
     if (folderId) fd.append("folderId", folderId);
-    
-    await uploadFileWithProgress("/files/upload", fd, token);
+
+    return uploadFileWithProgress("/files/upload", fd, token, onProgress);
   };
 
   const createFolderApi = async (name, parentId) => {
@@ -645,20 +685,15 @@ export default function CloudVault() {
   };
 
   const uploadFiles = async (fileList, fromFolder = false) => {
-    try {
-      let me = await api("/account").catch(() => api("/users/me"));
-      if (me?.emailVerificationRequired && !me?.isVerified) {
-        notify("Verify your email before uploading. Open Settings to resend the link.", "error");
-        return;
-      }
-    } catch (e) {
-      notify(`Could not verify account status: ${e.message}`, "error");
+    if (!token) {
+      notify("Please log in again to upload files.", "error");
       return;
     }
+    const arr = Array.from(fileList || []);
+    if (!arr.length) return;
 
     setUploading(true);
     setUploadProgress(0);
-    const arr = Array.from(fileList);
     let successCount = 0;
     try {
       if (fromFolder && arr.some((f) => f.webkitRelativePath)) {
@@ -666,7 +701,7 @@ export default function CloudVault() {
           baseFolderId: currentFolder,
           createFolder: createFolderApi,
           uploadFile: async (file, folderId) => {
-            await uploadSingleFile(file, folderId);
+            await uploadSingleFile(file, folderId, setUploadProgress);
             successCount++;
           },
           onProgress: setUploadProgress,
@@ -674,16 +709,19 @@ export default function CloudVault() {
       } else {
         for (let i = 0; i < arr.length; i++) {
           try {
-            await uploadSingleFile(arr[i], currentFolder);
+            await uploadSingleFile(arr[i], currentFolder, (pct) => {
+              const overall = Math.round(((i + pct / 100) / arr.length) * 100);
+              setUploadProgress(overall);
+            });
             successCount++;
           } catch (e) {
             notify(`Failed to upload "${arr[i].name}": ${e.message}`, "error");
           }
-          setUploadProgress(Math.round(((i + 1) / arr.length) * 100));
         }
       }
     } finally {
       setUploading(false);
+      setUploadProgress(0);
       refresh(1, false);
       if (successCount > 0) notify(`${successCount} file(s) uploaded successfully!`, "success");
     }
@@ -974,10 +1012,13 @@ export default function CloudVault() {
             onClick={() => { setAppPage(null); setActiveView(item.id); setSidebarOpen(false); if (item.id === "drive") { setCurrentFolder(null); setFolderPath([]); } }}
             style={{
               display: "flex", alignItems: "center", gap: 12, padding: "13px 14px", borderRadius: "12px",
-              border: "none", background: activeView === item.id ? "var(--bg-card)" : "transparent",
-              color: activeView === item.id ? "#fff" : "var(--text-secondary)",
+              border: activeView === item.id ? "1px solid var(--border-hover)" : "1px solid transparent",
+              background: activeView === item.id ? "linear-gradient(90deg, rgba(45,212,191,.14), rgba(56,189,248,.08))" : "transparent",
+              color: activeView === item.id ? "var(--text)" : "var(--text-secondary)",
               cursor: "pointer", fontFamily: "var(--font)", fontWeight: 600, fontSize: 15,
               textAlign: "left", width: "100%",
+              boxShadow: activeView === item.id ? "inset 3px 0 0 var(--accent)" : "none",
+              transition: "var(--transition)",
             }}
           >{item.icon} {item.label}</button>
         ))}
@@ -1064,6 +1105,14 @@ export default function CloudVault() {
         )}
         {!appPage && activeView === "drive" && (
         <>
+        <DriveHero
+          username={username}
+          stats={stats}
+          storagePercent={storagePercent}
+          onUpload={() => fileInput.current?.click()}
+          onNewFolder={() => setShowNewFolder(true)}
+        />
+
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16, flexWrap: "wrap" }}>
           <div style={{ flex: 1, position: "relative", minWidth: 200 }}>
             <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", fontSize: 16, opacity: .5 }}>🔍</span>
@@ -1071,8 +1120,8 @@ export default function CloudVault() {
               placeholder={`Search ${BRAND.name}…`} value={search}
               onChange={e => setSearch(e.target.value)}
               style={{
-                width: "100%", maxWidth: 520, padding: "11px 14px 11px 42px",
-                background: "#0f141d", border: "1px solid var(--border)",
+                width: "100%", maxWidth: 520, padding: "12px 14px 12px 42px",
+                background: "var(--bg-card)", border: "1px solid var(--border)",
                 borderRadius: "var(--radius)", color: "var(--text)", fontFamily: "var(--font)", fontSize: 14,
                 transition: "var(--transition)"
               }}
@@ -1107,12 +1156,12 @@ export default function CloudVault() {
           </div>
 
           {activeView === "drive" && (
-          <button type="button" onClick={() => setShowNewFolder(v => !v)} style={uploadBtnStyle}>⊞ New folder</button>
+          <button type="button" onClick={() => setShowNewFolder(v => !v)} className="btn-secondary">⊞ New folder</button>
           )}
           {activeView === "drive" && (
             <>
-              <button type="button" onClick={() => fileInput.current?.click()} style={uploadBtnStyle}>↑ Upload</button>
-              <button type="button" onClick={() => folderInput.current?.click()} style={uploadBtnStyle}>📁 Folder</button>
+              <button type="button" onClick={() => fileInput.current?.click()} className="btn-primary">↑ Upload</button>
+              <button type="button" onClick={() => folderInput.current?.click()} className="btn-secondary">📁 Folder</button>
               <input ref={fileInput} type="file" multiple hidden onChange={e => { uploadFiles(e.target.files); e.target.value = ""; }} />
               <input ref={folderInput} type="file" multiple webkitdirectory="" hidden onChange={e => { uploadFiles(e.target.files, true); e.target.value = ""; }} />
             </>
@@ -1233,15 +1282,22 @@ export default function CloudVault() {
           className={dragging ? "drag-over" : ""}
           style={{
             border: `2px dashed ${dragging ? "var(--accent)" : "var(--border)"}`,
-            borderRadius: "var(--radius-lg)", padding: "22px", marginBottom: 28,
+            borderRadius: "var(--radius-lg)", padding: "28px 22px", marginBottom: 28,
             textAlign: "center", color: "var(--text-muted)", fontSize: 14,
-            transition: "var(--transition)", background: dragging ? "rgba(240,22,58,.08)" : "transparent",
+            transition: "var(--transition)",
+            background: dragging ? "rgba(45,212,191,.08)" : "var(--gradient-soft)",
             fontWeight: 500
           }}
         >
-          {dragging
-            ? <span style={{ color: "var(--accent)", fontWeight: 700 }}>⬇ Drop files or folders here!</span>
-            : "Drag & drop files, or use Upload / Folder buttons"}
+          {dragging ? (
+            <span style={{ color: "var(--accent)", fontWeight: 700, fontSize: 16 }}>⬇ Drop files here to upload</span>
+          ) : (
+            <>
+              <div style={{ fontSize: 32, marginBottom: 8 }}>📤</div>
+              <div style={{ color: "var(--text-secondary)", fontWeight: 700, marginBottom: 4 }}>Drag & drop files or folders</div>
+              <div style={{ fontSize: 13 }}>or use the Upload button above</div>
+            </>
+          )}
         </div>
 
         {/* Folders */}
@@ -1266,17 +1322,27 @@ export default function CloudVault() {
           {loading ? (
             <FileListSkeleton count={6} grid={viewMode === "grid"} />
           ) : filteredFiles.length === 0 ? (
-            <div style={{
-              textAlign: "center", padding: "80px 0", color: "var(--text-muted)",
-              border: "1.5px dashed var(--border)", borderRadius: "var(--radius-lg)"
+            <div className="glass-card" style={{
+              textAlign: "center", padding: "72px 32px", borderRadius: "var(--radius-lg)",
+              border: "1.5px dashed var(--border)", animation: "fadeIn .3s ease",
             }}>
-              <div style={{ fontSize: 48, marginBottom: 16, opacity: .5 }}>☁️</div>
-              <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 6, color: "var(--text-secondary)" }}>
-                {fileFilter !== "all" ? "No matching files" : "No files yet"}
+              <div style={{
+                width: 88, height: 88, margin: "0 auto 20px", borderRadius: 24,
+                background: "var(--gradient-soft)", display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 40, boxShadow: "var(--glow)",
+              }}>☁️</div>
+              <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 8, color: "var(--text)" }}>
+                {fileFilter !== "all" ? "No matching files" : "Your cloud is empty"}
               </div>
-              <div style={{ fontSize: 14 }}>
-                {fileFilter !== "all" ? "Try a different filter or upload new files" : "Upload something to get started"}
+              <div style={{ fontSize: 14, color: "var(--text-muted)", marginBottom: 24, maxWidth: 360, margin: "0 auto 24px" }}>
+                {fileFilter !== "all" ? "Try a different filter or upload new files." : "Upload photos, documents, and more. Everything stays secure in your drive."}
               </div>
+              {fileFilter === "all" && (
+                <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+                  <button type="button" className="btn-primary" onClick={() => fileInput.current?.click()}>↑ Upload your first file</button>
+                  <button type="button" className="btn-secondary" onClick={() => setShowNewFolder(true)}>⊞ Create folder</button>
+                </div>
+              )}
             </div>
           ) : (
             <>
@@ -1392,18 +1458,6 @@ function AppPages({ appPage, setAppPage, api, notify, stats, usageDetail, adminU
   }
   return null;
 }
-
-const uploadBtnStyle = {
-  padding: "10px 18px",
-  borderRadius: "10px",
-  border: "1px solid var(--border)",
-  background: "var(--bg-card)",
-  color: "var(--text)",
-  cursor: "pointer",
-  fontFamily: "var(--font)",
-  fontWeight: 600,
-  fontSize: 13,
-};
 
 const selectStyle = {
   padding: "8px 12px",
