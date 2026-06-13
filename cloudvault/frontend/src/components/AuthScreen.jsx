@@ -35,14 +35,20 @@ export default function AuthScreen({ onAuth, onBack, initialMode = "login" }) {
     setInfo("");
     setLoading(true);
     try {
-      let data;
       if (mode === "login") {
-        data = await apiFetch("/auth/login", {
+        const data = await apiFetch("/auth/login", {
           method: "POST",
           body: JSON.stringify({ email: form.email, password: form.password }),
         });
+        if (!data?.accessToken) throw new Error("Login response did not include an access token");
+        if (keepLoggedIn) {
+          localStorage.setItem("cv_token", data.accessToken);
+          if (data.refreshToken) localStorage.setItem("cv_refreshToken", data.refreshToken);
+          localStorage.setItem("cv_user", data.user?.fullName || form.email);
+        }
+        onAuth(data.accessToken, data.refreshToken, data.user?.fullName || form.email, data.user);
       } else {
-        data = await apiFetch("/auth/register", {
+        const data = await apiFetch("/auth/register", {
           method: "POST",
           body: JSON.stringify({
             email: form.email,
@@ -50,14 +56,11 @@ export default function AuthScreen({ onAuth, onBack, initialMode = "login" }) {
             fullName: form.fullName,
           }),
         });
+        setInfo("Registration successful! Please check your email for the OTP to verify your account.");
+        setTimeout(() => {
+          onAuth?.(null, null, data.email, { email: data.email, fullName: data.fullName });
+        }, 1500);
       }
-      if (!data?.accessToken) throw new Error("Login response did not include an access token");
-      if (keepLoggedIn) {
-        localStorage.setItem("cv_token", data.accessToken);
-        if (data.refreshToken) localStorage.setItem("cv_refreshToken", data.refreshToken);
-        localStorage.setItem("cv_user", data.user?.fullName || form.email);
-      }
-      onAuth(data.accessToken, data.refreshToken, data.user?.fullName || form.email, data.user);
     } catch (e) {
       setError(e.message);
     }

@@ -421,6 +421,7 @@ export default function CloudVault() {
   const [authMode, setAuthMode] = useState("login");
   const [token, setToken] = useState(() => localStorage.getItem("cv_token") || "");
   const [username, setUsername] = useState(() => localStorage.getItem("cv_user") || "");
+  const [pendingVerification, setPendingVerification] = useState(null);
   const [files, setFiles] = useState([]);
   const [folders, setFolders] = useState([]);
   const [stats, setStats] = useState({ totalFiles: 0, storageUsed: 0, storageQuota: 1024 * 1024 * 1024, totalFolders: 0 });
@@ -610,6 +611,12 @@ export default function CloudVault() {
   }, []);
 
   const handleAuth = (accessToken, refreshToken, user, userObj) => {
+    if (!accessToken && userObj?.email) {
+      // Registration successful - redirect to verify email
+      setPendingVerification(userObj);
+      setScreen("verify-email");
+      return;
+    }
     if (!accessToken) return;
     localStorage.setItem("cv_token", accessToken);
     if (refreshToken) localStorage.setItem("cv_refreshToken", refreshToken);
@@ -938,6 +945,24 @@ export default function CloudVault() {
         initialMode={authMode}
         onAuth={handleAuth}
         onBack={() => setScreen("landing")}
+      />
+    );
+  }
+
+  if (screen === "verify-email" && !token) {
+    return (
+      <VerifyEmailPage
+        email={pendingVerification?.email}
+        onVerified={() => {
+          setPendingVerification(null);
+          setScreen("auth");
+          setAuthMode("login");
+        }}
+        onBack={() => {
+          setPendingVerification(null);
+          setScreen("auth");
+          setAuthMode("login");
+        }}
       />
     );
   }
