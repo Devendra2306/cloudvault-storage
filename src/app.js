@@ -47,8 +47,17 @@ app.use((req, res, next) => {
 
 // CORS configuration
 const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(',')
-  : ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:5173', 'https://cloudvault-storage-2jsb.vercel.app'];
+  ? process.env.ALLOWED_ORIGINS.split(',').map((origin) => origin.trim()).filter(Boolean)
+  : [
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'http://localhost:5173',
+      'https://www.cloudvault.co.in',
+      'https://cloudvault.co.in',
+      'https://cloudvault-storage-2jsb.vercel.app',
+    ];
+
+console.log('CORS allowed origins:', allowedOrigins);
 
 app.use(cors({
   origin: (origin, callback) => {

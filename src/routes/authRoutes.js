@@ -11,6 +11,13 @@ const { validate, schemas } = require('../middleware/validation');
 router.post('/register', validate(schemas.register), authController.register);
 
 /**
+ * @route   POST /api/v1/auth/resend-verification
+ * @desc    Resend email verification OTP
+ * @access  Public
+ */
+router.post('/resend-verification', authController.resendVerification);
+
+/**
  * @route   POST /api/v1/auth/login
  * @desc    Login user
  * @access  Public

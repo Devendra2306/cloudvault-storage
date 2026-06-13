@@ -2,6 +2,7 @@ import { useState } from "react";
 import { API } from "../lib/constants.js";
 
 export default function VerifyEmailPage({ email, onVerified, onBack }) {
+  const [emailValue, setEmailValue] = useState(email || "");
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -16,7 +17,7 @@ export default function VerifyEmailPage({ email, onVerified, onBack }) {
       const res = await fetch(`${API}/auth/verify-email`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, otp }),
+        body: JSON.stringify({ email: emailValue, otp }),
       });
       const data = await res.json();
 
@@ -34,7 +35,7 @@ export default function VerifyEmailPage({ email, onVerified, onBack }) {
   };
 
   const handleResend = async () => {
-    if (!email) {
+    if (!emailValue) {
       setError("Please enter your email first");
       return;
     }
@@ -42,10 +43,10 @@ export default function VerifyEmailPage({ email, onVerified, onBack }) {
     setError("");
 
     try {
-      const res = await fetch(`${API}/auth/register`, {
+      const res = await fetch(`${API}/auth/resend-verification`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password: "dummy", fullName: "User" }),
+        body: JSON.stringify({ email: emailValue }),
       });
       const data = await res.json();
 
@@ -81,8 +82,8 @@ export default function VerifyEmailPage({ email, onVerified, onBack }) {
           <label style={{ display: "block", marginBottom: 5, color: "#9ca3af" }}>Email</label>
           <input
             type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={emailValue}
+            onChange={(e) => setEmailValue(e.target.value)}
             required
             style={{ width: "100%", padding: 10, borderRadius: 6, border: "1px solid #374151", background: "#111827", color: "white" }}
           />

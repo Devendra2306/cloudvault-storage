@@ -31,6 +31,7 @@ import BillingPage from "./pages/BillingPage.jsx";
 import HelpPage from "./pages/HelpPage.jsx";
 import ActivityPage from "./pages/ActivityPage.jsx";
 import FileListPage from "./pages/FileListPage.jsx";
+import ResetPassword from "./pages/ResetPassword.jsx";
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 function Toast({ msg, type, onClose }) {
@@ -414,9 +415,16 @@ function getVerifyTokenFromUrl() {
   return new URLSearchParams(window.location.search).get("token");
 }
 
+function getResetTokenFromUrl() {
+  const path = window.location.pathname.replace(/\/+$/, "") || "/";
+  if (!path.endsWith("/reset-password")) return null;
+  return new URLSearchParams(window.location.search).get("token");
+}
+
 // ── Main App ──────────────────────────────────────────────────────────────────
 export default function CloudVault() {
   const [verifyEmailToken, setVerifyEmailToken] = useState(getVerifyTokenFromUrl);
+  const [resetPasswordToken, setResetPasswordToken] = useState(getResetTokenFromUrl);
   const [screen, setScreen] = useState(() => (localStorage.getItem("cv_token") ? "app" : "landing"));
   const [authMode, setAuthMode] = useState("login");
   const [token, setToken] = useState(() => localStorage.getItem("cv_token") || "");
@@ -923,6 +931,23 @@ export default function CloudVault() {
           onDone={() => {
             setVerifyEmailToken(null);
             setScreen(token ? "app" : "landing");
+          }}
+        />
+      </>
+    );
+  }
+
+  if (resetPasswordToken) {
+    return (
+      <>
+        <style>{GLOBAL_STYLES}</style>
+        <ResetPassword
+          token={resetPasswordToken}
+          onBack={() => {
+            setResetPasswordToken(null);
+            window.history.replaceState({}, "", "/");
+            setScreen("auth");
+            setAuthMode("login");
           }}
         />
       </>
