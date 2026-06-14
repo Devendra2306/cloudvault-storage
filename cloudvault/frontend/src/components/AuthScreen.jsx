@@ -1,9 +1,15 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { BRAND } from "../lib/constants.js";
 import { apiFetch } from "../lib/api.js";
 import { GLOBAL_STYLES } from "../styles/globalStyles.js";
-import { isFirebaseConfigured, signInWithProvider } from "../firebase.js";
+import { getFirebaseProviderStatus, isFirebaseConfigured, logFirebaseDiagnostics, signInWithProvider } from "../firebase.js";
 import Turnstile from "./Turnstile.jsx";
+
+const SOCIAL_PROVIDERS = [
+  { id: "google", label: "Google", mark: "G" },
+  { id: "github", label: "GitHub", mark: "GH" },
+  { id: "microsoft", label: "Microsoft", mark: "MS" },
+];
 
 function Spinner({ size = 22, color = "#1a1a1a" }) {
   return (
@@ -32,7 +38,12 @@ export default function AuthScreen({ onAuth, onBack, initialMode = "login" }) {
   const [turnstileToken, setTurnstileToken] = useState(null);
   const [turnstileVerified, setTurnstileVerified] = useState(false);
   const firebaseReady = isFirebaseConfigured();
+  const firebaseProviderStatus = useMemo(() => getFirebaseProviderStatus(), []);
   const turnstileEnabled = Boolean(import.meta.env.VITE_TURNSTILE_SITE_KEY);
+
+  useEffect(() => {
+    logFirebaseDiagnostics("AuthScreen");
+  }, []);
 
   const submit = async () => {
     setError("");
@@ -89,6 +100,11 @@ export default function AuthScreen({ onAuth, onBack, initialMode = "login" }) {
   const handleOAuth = async (providerId) => {
     setError("");
     setInfo("");
+    if (!firebaseReady) {
+      setError("Social login is visible, but Firebase is not configured in this build. Check the Vercel VITE_FIREBASE_* variables and redeploy.");
+      logFirebaseDiagnostics(`AuthScreen:${providerId}`);
+      return;
+    }
     setLoading(true);
     try {
       const data = await signInWithProvider(providerId);
@@ -102,6 +118,10 @@ export default function AuthScreen({ onAuth, onBack, initialMode = "login" }) {
     }
     setLoading(false);
   };
+
+  const authError = error?.includes("Please verify your email before logging in")
+    ? "Please verify your email before logging in. Check your inbox for the verification OTP, then return to sign in."
+    : error;
 
   const handleForgotPassword = async () => {
     if (!form.email) {
@@ -257,32 +277,50 @@ export default function AuthScreen({ onAuth, onBack, initialMode = "login" }) {
           </div>
         )}
 
-        {error && <div style={{ color: "var(--danger)", fontSize: 13, marginTop: 14 }}>{error}</div>}
+        {authError && (
+          <div
+            role="alert"
+            style={{
+              color: "var(--danger)",
+              fontSize: 13,
+              lineHeight: 1.45,
+              marginTop: 14,
+              padding: "10px 12px",
+              border: "1px solid rgba(248,113,113,.24)",
+              borderRadius: 12,
+              background: "rgba(248,113,113,.08)",
+            }}
+          >
+            {authError}
+          </div>
+        )}
         {info && <div style={{ color: "var(--accent-blue)", fontSize: 13, marginTop: 14 }}>{info}</div>}
 
-        {turnstileEnabled && !showForgot && (
-          <Turnstile
-            onVerified={(token) => {
-              setTurnstileToken(token);
-              setTurnstileVerified(true);
-            }}
-            onError={(err) => {
-              setError("Security verification failed. Please try again.");
-              setTurnstileVerified(false);
-            }}
-            onExpire={() => {
-              setTurnstileToken(null);
-              setTurnstileVerified(false);
-            }}
-          />
+        {turnstileEnabled && (
+          <div style={{ marginTop: 16 }}>
+            <Turnstile
+              onVerified={(token) => {
+                setTurnstileToken(token);
+                setTurnstileVerified(true);
+              }}
+              onError={() => {
+                setError("Security verification failed. Please try again.");
+                setTurnstileVerified(false);
+              }}
+              onExpire={() => {
+                setTurnstileToken(null);
+                setTurnstileVerified(false);
+              }}
+            />
+          </div>
         )}
 
         <button
           type="button"
           onClick={showForgot ? handleForgotPassword : submit}
-          disabled={loading || (turnstileEnabled && !turnstileVerified && !showForgot)}
+          disabled={loading || (turnstileEnabled && !turnstileVerified)}
           className="btn-primary"
-          style={{ width: "100%", marginTop: 20, opacity: loading || (turnstileEnabled && !turnstileVerified && !showForgot) ? 0.7 : 1, cursor: loading || (turnstileEnabled && !turnstileVerified && !showForgot) ? "not-allowed" : "pointer" }}
+          style={{ width: "100%", marginTop: 20, opacity: loading || (turnstileEnabled && !turnstileVerified) ? 0.7 : 1, cursor: loading || (turnstileEnabled && !turnstileVerified) ? "not-allowed" : "pointer" }}
         >
           {loading ? (
             <Spinner />
@@ -296,21 +334,6 @@ export default function AuthScreen({ onAuth, onBack, initialMode = "login" }) {
             "Create account"
           )}
         </button>
-
-        {firebaseReady && !showForgot && mode === "login" && (
-          <div style={{ marginBottom: 20 }}>
-            <button
-              type="button"
-              disabled={loading}
-              onClick={() => handleOAuth("google")}
-              className="btn-secondary"
-              style={{ width: "100%", marginBottom: 20, justifyContent: "center", display: "flex", alignItems: "center", gap: 10 }}
-            >
-              <span style={{ fontSize: 18 }}>G</span> Continue with Google
-            </button>
-            <p style={{ textAlign: "center", color: "var(--text-muted)", fontSize: 12, margin: "14px 0" }}>or use email</p>
-          </div>
-        )}
 
         {showForgot ? (
           <button
@@ -328,31 +351,61 @@ export default function AuthScreen({ onAuth, onBack, initialMode = "login" }) {
             Back to login
           </button>
         ) : (
-          firebaseReady && (
-            <div style={{ marginTop: 20 }}>
-              <p style={{ textAlign: "center", color: "var(--text-muted)", fontSize: 12, marginBottom: 12 }}>
-                Or continue with
-              </p>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {[
-                  { id: "google", label: "Google" },
-                  { id: "github", label: "GitHub" },
-                  { id: "microsoft", label: "Microsoft" },
-                ].map((p) => (
+          <div style={{ marginTop: 20 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+              <div style={{ height: 1, flex: 1, background: "var(--border)" }} />
+              <span style={{ color: "var(--text-muted)", fontSize: 12 }}>Or continue with</span>
+              <div style={{ height: 1, flex: 1, background: "var(--border)" }} />
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 8 }}>
+              {SOCIAL_PROVIDERS.map((p) => {
+                const status = firebaseProviderStatus.providers.find((provider) => provider.id === p.id);
+                return (
                   <button
                     key={p.id}
                     type="button"
                     disabled={loading}
+                    aria-disabled={!status?.configured}
                     onClick={() => handleOAuth(p.id)}
                     className="btn-secondary"
-                    style={{ width: "100%" }}
+                    style={{
+                      width: "100%",
+                      minHeight: 44,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 10,
+                    }}
                   >
+                    <span
+                      aria-hidden="true"
+                      style={{
+                        width: 26,
+                        height: 26,
+                        borderRadius: 8,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        background: "rgba(255,255,255,.08)",
+                        color: "var(--text)",
+                        fontSize: 11,
+                        fontWeight: 800,
+                        flexShrink: 0,
+                      }}
+                    >
+                      {p.mark}
+                    </span>
                     Continue with {p.label}
                   </button>
-                ))}
-              </div>
+                );
+              })}
             </div>
-          )
+            {!firebaseReady && (
+              <p style={{ color: "var(--danger)", fontSize: 12, lineHeight: 1.45, marginTop: 10 }}>
+                Firebase env is missing in this build: {firebaseProviderStatus.missingEnv.join(", ") || "unknown"}.
+              </p>
+            )}
+          </div>
         )}
       </div>
     </div>
