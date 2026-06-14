@@ -18,6 +18,7 @@ const {
   ValidationError,
   NotFoundError,
 } = require('../middleware/errorHandler');
+const { verifyTurnstileToken } = require('../services/turnstileService');
 
 const formatAuthUser = (user) => formatAccountUser(user);
 
@@ -56,7 +57,20 @@ const createAuthPayload = async (user, req) => {
  */
 const register = async (req, res, next) => {
   try {
-    const { email, password, fullName } = req.body;
+    const { email, password, fullName, turnstileToken } = req.body;
+
+    // Verify Turnstile token if provided
+    if (turnstileToken) {
+      console.log('AUTH CONTROLLER: Verifying Turnstile token for registration');
+      const turnstileResult = await verifyTurnstileToken(turnstileToken, req.ip);
+      if (!turnstileResult.success) {
+        throw new ValidationError(turnstileResult.error || 'Security verification failed');
+      }
+      console.log('AUTH CONTROLLER: Turnstile verification successful');
+    } else if (process.env.TURNSTILE_SECRET_KEY) {
+      // Turnstile is configured but no token provided
+      throw new ValidationError('Security verification is required');
+    }
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
@@ -204,7 +218,20 @@ const resendVerification = async (req, res, next) => {
  */
 const login = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, turnstileToken } = req.body;
+
+    // Verify Turnstile token if provided
+    if (turnstileToken) {
+      console.log('AUTH CONTROLLER: Verifying Turnstile token for login');
+      const turnstileResult = await verifyTurnstileToken(turnstileToken, req.ip);
+      if (!turnstileResult.success) {
+        throw new ValidationError(turnstileResult.error || 'Security verification failed');
+      }
+      console.log('AUTH CONTROLLER: Turnstile verification successful');
+    } else if (process.env.TURNSTILE_SECRET_KEY) {
+      // Turnstile is configured but no token provided
+      throw new ValidationError('Security verification is required');
+    }
 
     // Find user
     const user = await prisma.user.findUnique({
@@ -386,7 +413,20 @@ const verifyEmail = async (req, res, next) => {
  */
 const forgotPassword = async (req, res, next) => {
   try {
-    const { email } = req.body;
+    const { email, turnstileToken } = req.body;
+
+    // Verify Turnstile token if provided
+    if (turnstileToken) {
+      console.log('AUTH CONTROLLER: Verifying Turnstile token for forgot password');
+      const turnstileResult = await verifyTurnstileToken(turnstileToken, req.ip);
+      if (!turnstileResult.success) {
+        throw new ValidationError(turnstileResult.error || 'Security verification failed');
+      }
+      console.log('AUTH CONTROLLER: Turnstile verification successful');
+    } else if (process.env.TURNSTILE_SECRET_KEY) {
+      // Turnstile is configured but no token provided
+      throw new ValidationError('Security verification is required');
+    }
 
     // Find user
     const user = await prisma.user.findUnique({
