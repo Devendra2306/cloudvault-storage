@@ -54,7 +54,7 @@ const emailTemplates = {
             <p>If you didn't create an account with CloudVault, please ignore this email.</p>
           </div>
           <div class="footer">
-            <p>&copy; 2024 CloudVault. All rights reserved.</p>
+            <p>&copy; 2026 CloudVault. All rights reserved.</p>
             <p>This is an automated email. Please do not reply.</p>
           </div>
         </div>
@@ -102,7 +102,7 @@ const emailTemplates = {
             <p>If you didn't request a password reset, please ignore this email and your password will remain unchanged.</p>
           </div>
           <div class="footer">
-            <p>&copy; 2024 CloudVault. All rights reserved.</p>
+            <p>&copy; 2026 CloudVault. All rights reserved.</p>
             <p>This is an automated email. Please do not reply.</p>
           </div>
         </div>
@@ -153,10 +153,10 @@ const emailTemplates = {
               </ul>
             </div>
             <p>Get started by logging in to your account:</p>
-            <a href="${APP_URL}/login" class="button">Login to CloudVault</a>
+            <a href="${APP_URL}" class="button">Login to CloudVault</a>
           </div>
           <div class="footer">
-            <p>&copy; 2024 CloudVault. All rights reserved.</p>
+            <p>&copy; 2026 CloudVault. All rights reserved.</p>
             <p>This is an automated email. Please do not reply.</p>
           </div>
         </div>
@@ -199,7 +199,7 @@ const emailTemplates = {
             <p>If you did not make this change, please contact support immediately and change your password.</p>
           </div>
           <div class="footer">
-            <p>&copy; 2024 CloudVault. All rights reserved.</p>
+            <p>&copy; 2026 CloudVault. All rights reserved.</p>
             <p>This is an automated email. Please do not reply.</p>
           </div>
         </div>
@@ -249,7 +249,7 @@ const emailTemplates = {
             <p>If you did not recognize this login, please secure your account immediately by changing your password.</p>
           </div>
           <div class="footer">
-            <p>&copy; 2024 CloudVault. All rights reserved.</p>
+            <p>&copy; 2026 CloudVault. All rights reserved.</p>
             <p>This is an automated email. Please do not reply.</p>
           </div>
         </div>
