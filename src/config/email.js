@@ -19,7 +19,13 @@ const sendVerificationEmail = async (to, otp) => {
  */
 const sendPasswordResetEmail = async (to, token) => {
   const resetUrl = `${process.env.APP_URL || 'http://localhost:3000'}/reset-password?token=${token}`;
-  return sendEmail(to, 'forgotPassword', { name: to.split('@')[0], resetLink: resetUrl });
+  console.log('EMAIL CONFIG: Sending password reset email');
+  console.log('EMAIL CONFIG: To:', to);
+  console.log('EMAIL CONFIG: Reset URL:', resetUrl);
+  console.log('EMAIL CONFIG: APP_URL:', process.env.APP_URL);
+  const result = await sendEmail(to, 'forgotPassword', { name: to.split('@')[0], resetLink: resetUrl });
+  console.log('EMAIL CONFIG: Password reset email result:', JSON.stringify(result, null, 2));
+  return result;
 };
 
 /**

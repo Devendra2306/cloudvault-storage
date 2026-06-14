@@ -421,8 +421,12 @@ const forgotPassword = async (req, res, next) => {
     // Send reset email
     try {
       console.log('AUTH CONTROLLER: Sending password reset email to:', email);
+      console.log('AUTH CONTROLLER: Reset token:', resetToken);
       const resetResult = await sendPasswordResetEmail(email, resetToken);
-      logEmailResult('Password reset email send', resetResult);
+      console.log('AUTH CONTROLLER: Password reset email result:', JSON.stringify(resetResult, null, 2));
+      if (!resetResult?.success) {
+        console.error('AUTH CONTROLLER: Password reset email send failed:', resetResult);
+      }
     } catch (emailError) {
       console.error('AUTH CONTROLLER: Password reset email send failure:', emailError);
       console.error('AUTH CONTROLLER: Email error stack:', emailError.stack);
