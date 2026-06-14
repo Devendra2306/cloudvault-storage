@@ -376,7 +376,12 @@ function useViewport() {
 export default function CloudVault() {
   const [verifyEmailToken, setVerifyEmailToken] = useState(getVerifyTokenFromUrl);
   const [resetPasswordToken, setResetPasswordToken] = useState(getResetTokenFromUrl);
-  const [screen, setScreen] = useState(() => (localStorage.getItem("cv_token") ? "app" : "landing"));
+  const [screen, setScreen] = useState(() => {
+    const token = localStorage.getItem("cv_token");
+    const resetToken = getResetTokenFromUrl();
+    if (resetToken) return "reset-password";
+    return token ? "app" : "landing";
+  });
   const [authMode, setAuthMode] = useState("login");
   const [token, setToken] = useState(() => localStorage.getItem("cv_token") || "");
   const [username, setUsername] = useState(() => localStorage.getItem("cv_user") || "");
@@ -937,6 +942,24 @@ export default function CloudVault() {
         }}
         onBack={() => {
           setPendingVerification(null);
+          setScreen("auth");
+          setAuthMode("login");
+        }}
+      />
+    );
+  }
+
+  if (screen === "reset-password" && !token) {
+    return (
+      <ResetPassword
+        token={resetPasswordToken}
+        onSuccess={() => {
+          setResetPasswordToken(null);
+          setScreen("auth");
+          setAuthMode("login");
+        }}
+        onBack={() => {
+          setResetPasswordToken(null);
           setScreen("auth");
           setAuthMode("login");
         }}
