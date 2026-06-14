@@ -167,5 +167,17 @@ export default function Turnstile({ onVerified, onError, onExpire, theme = "auto
     );
   }
 
-  return <div ref={containerRef} style={{ marginBottom: "16px" }} />;
+  return (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        width: "100%",
+        minHeight: size === "compact" ? 140 : 70,
+        overflow: "hidden",
+      }}
+    >
+      <div ref={containerRef} />
+    </div>
+  );
 }

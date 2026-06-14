@@ -4,7 +4,7 @@ const { NotFoundError, ForbiddenError, ValidationError } = require('../middlewar
 const { sendShareInvitationEmail } = require('../config/email');
 const { createNotification, logActivity } = require('../services/userAccount');
 
-const frontendUrl = () => process.env.FRONTEND_URL || 'http://localhost:3000';
+const frontendUrl = () => process.env.APP_URL || 'http://localhost:3000';
 const shareUrlFor = (token) => `${frontendUrl()}/share/${token}`;
 const sanitizeShare = (share) => ({ ...share, password: share.password ? undefined : null });
 

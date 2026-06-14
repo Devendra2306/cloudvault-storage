@@ -123,7 +123,7 @@ export default function ShareModal({ file, onShare, onCancel }) {
           </div>
         )}
 
-        <div style={{ display: "flex", gap: 10, marginTop: 24, justifyContent: "flex-end", flexWrap: "wrap" }}>
+        <div style={footer}>
           <button type="button" onClick={onCancel} style={btnGhost}>Close</button>
           <button type="button" disabled={loading || (shareType === "email" && !email)} onClick={submit} style={{ ...btnPrimary, opacity: loading ? .7 : 1 }}>
             {loading ? "Creating..." : resultUrl ? "Create another" : shareType === "email" ? "Send invitation" : "Create secure link"}
@@ -160,7 +160,7 @@ function Field({ label, children }) {
 }
 
 const overlay = { position: "fixed", inset: 0, zIndex: 2000, background: "rgba(1,6,12,.78)", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(14px)", padding: 18 };
-const panel = { background: "linear-gradient(180deg, rgba(24,33,45,.98), rgba(8,13,18,.98))", border: "1px solid var(--border-hover)", borderRadius: 22, width: "min(720px, 96vw)", maxHeight: "92vh", overflow: "auto", boxShadow: "0 28px 90px rgba(0,0,0,.55), 0 0 70px rgba(20,184,166,.13)", animation: "scaleIn .2s ease" };
+const panel = { background: "linear-gradient(180deg, rgba(24,33,45,.98), rgba(8,13,18,.98))", border: "1px solid var(--border-hover)", borderRadius: 18, width: "min(720px, 96vw)", maxHeight: "92vh", overflow: "auto", boxShadow: "0 28px 90px rgba(0,0,0,.55), 0 0 70px rgba(20,184,166,.13)", animation: "scaleIn .2s ease" };
 const hero = { padding: 30, borderBottom: "1px solid var(--border)", display: "flex", justifyContent: "space-between", gap: 16, background: "linear-gradient(135deg, rgba(20,184,166,.22), rgba(56,189,248,.16) 48%, rgba(244,63,94,.14))" };
 const eyebrow = { fontSize: 11, color: "var(--accent-blue)", fontWeight: 900, textTransform: "uppercase", letterSpacing: 1 };
 const title = { fontWeight: 900, fontSize: 30, margin: "8px 0 5px" };
@@ -172,5 +172,6 @@ const segmented = { display: "grid", gridTemplateColumns: "repeat(2, 1fr)", bord
 const segmentBtn = { border: "none", padding: "13px 14px", cursor: "pointer", fontWeight: 900, fontFamily: "var(--font)", transition: "var(--transition)", fontSize: 14 };
 const summaryBox = { margin: "8px 30px 0", padding: 17, border: "1px solid rgba(56,189,248,.35)", borderRadius: 14, background: "rgba(56,189,248,.1)", display: "flex", flexDirection: "column", gap: 5, color: "var(--text-secondary)", fontSize: 14 };
 const resultBox = { margin: "18px 30px 0", padding: 17, background: "var(--surface-raised)", borderRadius: 14, border: "1px solid var(--border)" };
-const btnGhost = { padding: "12px 22px", minHeight: 44, borderRadius: 12, border: "1px solid var(--border)", background: "rgba(255,255,255,.04)", color: "var(--text-secondary)", cursor: "pointer", fontWeight: 800, fontFamily: "var(--font)", transition: "var(--transition)" };
+const footer = { display: "grid", gridTemplateColumns: "minmax(130px, auto) minmax(180px, auto)", gap: 10, marginTop: 24, padding: "0 30px 30px", justifyContent: "flex-end" };
+const btnGhost = { padding: "12px 22px", minHeight: 44, borderRadius: 10, border: "1px solid var(--border)", background: "rgba(255,255,255,.04)", color: "var(--text-secondary)", cursor: "pointer", fontWeight: 800, fontFamily: "var(--font)", transition: "var(--transition)", whiteSpace: "nowrap" };
 const btnPrimary = { ...btnGhost, border: "none", background: "var(--gradient)", color: "#fff", boxShadow: "0 12px 26px rgba(20,184,166,.2)" };

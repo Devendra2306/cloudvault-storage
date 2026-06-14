@@ -19,11 +19,13 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
+const providerIds = ["google", "github", "microsoft"];
+
 let app = null;
 let auth = null;
 
 export function getFirebaseAuth() {
-  if (!import.meta.env.VITE_FIREBASE_API_KEY) return null;
+  if (!isFirebaseConfigured()) return null;
   if (!app) {
     app = initializeApp(firebaseConfig);
     auth = getAuth(app);
@@ -32,7 +34,34 @@ export function getFirebaseAuth() {
 }
 
 export function isFirebaseConfigured() {
-  return Boolean(import.meta.env.VITE_FIREBASE_API_KEY && import.meta.env.VITE_FIREBASE_AUTH_DOMAIN);
+  return Boolean(
+    import.meta.env.VITE_FIREBASE_API_KEY &&
+      import.meta.env.VITE_FIREBASE_AUTH_DOMAIN &&
+      import.meta.env.VITE_FIREBASE_PROJECT_ID &&
+      import.meta.env.VITE_FIREBASE_APP_ID
+  );
+}
+
+export function getFirebaseProviderStatus() {
+  const missingEnv = Object.entries(firebaseConfig)
+    .filter(([, value]) => !value)
+    .map(([key]) => key);
+
+  return {
+    configured: isFirebaseConfigured(),
+    providers: providerIds.map((id) => ({
+      id,
+      configured: isFirebaseConfigured(),
+    })),
+    missingEnv,
+  };
+}
+
+export function logFirebaseDiagnostics(source = "firebase") {
+  const status = getFirebaseProviderStatus();
+  console.info(`[${source}] import.meta.env.VITE_FIREBASE_API_KEY`, import.meta.env.VITE_FIREBASE_API_KEY);
+  console.info(`[${source}] isFirebaseConfigured()`, isFirebaseConfigured());
+  console.info(`[${source}] social provider configuration status`, status);
 }
 
 export async function signInWithProvider(providerId) {
