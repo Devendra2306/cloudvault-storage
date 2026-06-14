@@ -41,7 +41,7 @@ function Toast({ msg, type, onClose }) {
   }, [onClose]);
   const bg = type === "error" ? "var(--danger)" : type === "success" ? "var(--accent)" : "var(--accent-blue)";
   return (
-    <div style={{
+    <div className="toast" style={{
       position: "fixed", bottom: 32, right: 32, zIndex: 9999,
       background: bg, color: "#fff", padding: "14px 24px", borderRadius: "var(--radius)",
       fontFamily: "var(--font)", fontWeight: 600, fontSize: 14,
@@ -71,7 +71,7 @@ function ProgressBar({ value }) {
 function DownloadManager({ jobs, history }) {
   if (!jobs.length && !history.length) return null;
   return (
-    <div style={{
+    <div className="download-panel" style={{
       position: "fixed", right: 18, bottom: 18, zIndex: 1200,
       width: "min(360px, calc(100vw - 32px))", background: "var(--bg-primary)",
       border: "1px solid var(--border)", borderRadius: 16, boxShadow: "var(--shadow)",
@@ -110,29 +110,16 @@ function DownloadManager({ jobs, history }) {
 // ── Confirm Dialog ────────────────────────────────────────────────────────────
 function ConfirmDialog({ title, message, onConfirm, onCancel, danger = false }) {
   return (
-    <div onClick={onCancel} style={{
-      position: "fixed", inset: 0, zIndex: 2000, background: "rgba(0,0,0,.7)",
-      display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(6px)"
-    }}>
-      <div onClick={e => e.stopPropagation()} style={{
-        background: "var(--bg-primary)", border: "1.5px solid var(--border)",
-        borderRadius: "var(--radius-lg)", padding: "32px", maxWidth: 400, width: "90%",
-        animation: "scaleIn .2s cubic-bezier(.4,0,.2,1)", boxShadow: "var(--shadow)"
-      }}>
+    <div className="modal-backdrop" onClick={onCancel}>
+      <div className="modal-card" onClick={e => e.stopPropagation()}>
         <div style={{ fontSize: 36, textAlign: "center", marginBottom: 16 }}>{danger ? "⚠️" : "❓"}</div>
         <h3 style={{ color: "var(--text)", fontFamily: "var(--font)", fontWeight: 700, fontSize: 18, textAlign: "center", marginBottom: 8 }}>{title}</h3>
         <p style={{ color: "var(--text-secondary)", fontFamily: "var(--font)", fontSize: 14, textAlign: "center", marginBottom: 28, lineHeight: 1.5 }}>{message}</p>
-        <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
-          <button onClick={onCancel} style={{
-            padding: "10px 24px", borderRadius: "var(--radius)", border: "1.5px solid var(--border)",
-            background: "transparent", color: "var(--text-secondary)", cursor: "pointer",
-            fontFamily: "var(--font)", fontWeight: 600, fontSize: 14, transition: "var(--transition)"
-          }}>Cancel</button>
-          <button onClick={onConfirm} style={{
-            padding: "10px 24px", borderRadius: "var(--radius)", border: "none",
-            background: danger ? "var(--danger)" : "var(--accent)", color: "#fff", cursor: "pointer",
-            fontFamily: "var(--font)", fontWeight: 700, fontSize: 14, transition: "var(--transition)"
-          }}>{danger ? "Delete" : "Confirm"}</button>
+        <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+          <button type="button" onClick={onCancel} className="btn-secondary">Cancel</button>
+          <button type="button" onClick={onConfirm} className="btn-primary" style={danger ? { background: "var(--danger)", boxShadow: "0 10px 28px rgba(248,113,113,.25)" } : undefined}>
+            {danger ? "Delete" : "Confirm"}
+          </button>
         </div>
       </div>
     </div>
@@ -145,36 +132,18 @@ function RenameDialog({ file, onRename, onCancel }) {
   const inputRef = useRef(null);
   useEffect(() => { inputRef.current?.select(); }, []);
   return (
-    <div onClick={onCancel} style={{
-      position: "fixed", inset: 0, zIndex: 2000, background: "rgba(0,0,0,.7)",
-      display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(6px)"
-    }}>
-      <div onClick={e => e.stopPropagation()} style={{
-        background: "var(--bg-primary)", border: "1.5px solid var(--border)",
-        borderRadius: "var(--radius-lg)", padding: "32px", maxWidth: 420, width: "90%",
-        animation: "scaleIn .2s cubic-bezier(.4,0,.2,1)", boxShadow: "var(--shadow)"
-      }}>
+    <div className="modal-backdrop" onClick={onCancel}>
+      <div className="modal-card" onClick={e => e.stopPropagation()}>
         <div style={{ fontSize: 32, textAlign: "center", marginBottom: 12 }}>✏️</div>
         <h3 style={{ color: "var(--text)", fontFamily: "var(--font)", fontWeight: 700, fontSize: 18, textAlign: "center", marginBottom: 20 }}>Rename File</h3>
         <input ref={inputRef} value={name} onChange={e => setName(e.target.value)}
           onKeyDown={e => e.key === "Enter" && onRename(name)}
-          style={{
-            width: "100%", padding: "12px 16px", background: "var(--bg-card)",
-            border: "1.5px solid var(--border)", borderRadius: "var(--radius)", color: "var(--text)",
-            fontFamily: "var(--font)", fontSize: 14, marginBottom: 20
-          }}
+          className="input-field"
+          style={{ marginBottom: 20 }}
         />
-        <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-          <button onClick={onCancel} style={{
-            padding: "10px 20px", borderRadius: "var(--radius)", border: "1.5px solid var(--border)",
-            background: "transparent", color: "var(--text-secondary)", cursor: "pointer",
-            fontFamily: "var(--font)", fontWeight: 600, fontSize: 14
-          }}>Cancel</button>
-          <button onClick={() => onRename(name)} style={{
-            padding: "10px 20px", borderRadius: "var(--radius)", border: "none",
-            background: "var(--accent)", color: "#fff", cursor: "pointer",
-            fontFamily: "var(--font)", fontWeight: 700, fontSize: 14
-          }}>Rename</button>
+        <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", flexWrap: "wrap" }}>
+          <button type="button" onClick={onCancel} className="btn-secondary">Cancel</button>
+          <button type="button" onClick={() => onRename(name)} className="btn-primary">Rename</button>
         </div>
       </div>
     </div>
@@ -194,32 +163,16 @@ function TagChips({ tags }) {
 
 // ── File Card (List View) ─────────────────────────────────────────────────────
 function QuickAction({ label, onClick, tone = "neutral", disabled = false }) {
-  const [hovered, setHovered] = useState(false);
-  const activeColor = tone === "accent" ? "var(--accent)" : tone === "blue" ? "var(--accent-blue)" : "var(--text-secondary)";
+  const toneClass = tone === "accent" ? "accent" : tone === "blue" ? "blue" : "";
   return (
     <button
       type="button"
+      className={`quick-action-btn ${toneClass}`.trim()}
       title={label}
       disabled={disabled}
       onClick={(e) => {
         e.stopPropagation();
         if (!disabled) onClick();
-      }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        padding: "9px 12px",
-        minHeight: 38,
-        borderRadius: 10,
-        border: `1px solid ${hovered ? "var(--border-hover)" : "var(--border)"}`,
-        background: hovered ? "rgba(56,189,248,.12)" : "rgba(255,255,255,.06)",
-        color: disabled ? "var(--text-muted)" : activeColor,
-        cursor: disabled ? "not-allowed" : "pointer",
-        fontFamily: "var(--font)",
-        fontSize: 12,
-        fontWeight: 800,
-        transition: "var(--transition)",
-        opacity: disabled ? 0.45 : 1,
       }}
     >
       {label}
@@ -228,29 +181,15 @@ function QuickAction({ label, onClick, tone = "neutral", disabled = false }) {
 }
 
 function FileCardList({ file, onDelete, onShare, onPreview, onRename, onDownload, onMove, onCopy, onTags }) {
-  const [hovered, setHovered] = useState(false);
-
   return (
-    <div
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        background: hovered ? "var(--bg-card-hover)" : "var(--bg-card)",
-        border: `1px solid ${hovered ? "var(--border-hover)" : "var(--border)"}`,
-        borderRadius: "var(--radius-lg)", padding: "16px 18px",
-        transition: "var(--transition)", cursor: "default",
-        display: "flex", alignItems: "center", gap: 16,
-        boxShadow: hovered ? "var(--glow)" : "none",
-        transform: hovered ? "translateY(-2px)" : "translateY(0)",
-      }}
-    >
+    <div className="file-list-card">
       <div style={{ fontSize: 34, flexShrink: 0, width: 48, height: 48, borderRadius: 14, background: "rgba(56,189,248,.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>{fileIcon(file.mimeType)}</div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ color: "var(--text)", fontWeight: 800, fontSize: 16, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{file.name}</div>
         <div style={{ color: "var(--text-muted)", fontSize: 12, marginTop: 3 }}>{fmt(file.size)} · {timeAgo(file.createdAt)}</div>
         <TagChips tags={file.tags} />
       </div>
-      <div style={{ flexShrink: 0, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", justifyContent: "flex-end" }}>
+      <div className="file-list-actions">
         <QuickAction label="Preview" disabled={!isPreviewable(file.mimeType)} onClick={() => onPreview(file)} tone="blue" />
         <QuickAction label="Download" onClick={() => onDownload(file)} />
         <QuickAction label="Share" onClick={() => onShare(file)} tone="accent" />
@@ -263,22 +202,18 @@ function FileCardList({ file, onDelete, onShare, onPreview, onRename, onDownload
 
 // ── File Card (Grid View) ─────────────────────────────────────────────────────
 function FileCardGrid({ file, token, onDelete, onShare, onPreview, onRename, onDownload, onMove, onCopy, onTags }) {
-  const [hovered, setHovered] = useState(false);
   const isImage = file.mimeType?.startsWith("image/");
 
   return (
     <div
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      className="glass-card"
       style={{
-        background: hovered ? "var(--bg-card-hover)" : "var(--bg-card)",
-        border: `1px solid ${hovered ? "var(--border-hover)" : "var(--border)"}`,
         borderRadius: "var(--radius-lg)", overflow: "hidden",
-        transition: "var(--transition)", cursor: "default",
         display: "flex", flexDirection: "column",
-        boxShadow: hovered ? "var(--glow)" : "none",
-        transform: hovered ? "translateY(-3px)" : "translateY(0)",
+        transition: "var(--transition)",
       }}
+      onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "var(--glow)"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}
     >
       {/* Thumbnail area */}
       <div style={{
@@ -306,7 +241,7 @@ function FileCardGrid({ file, token, onDelete, onShare, onPreview, onRename, onD
         <div style={{ color: "var(--text)", fontWeight: 800, fontSize: 15, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginBottom: 5 }}>{file.name}</div>
         <div style={{ color: "var(--text-muted)", fontSize: 11 }}>{fmt(file.size)} · {timeAgo(file.createdAt)}</div>
         <TagChips tags={file.tags} />
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 12 }}>
+        <div className="grid-actions" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 12 }}>
           <QuickAction label="Preview" disabled={!isPreviewable(file.mimeType)} onClick={() => onPreview(file)} tone="blue" />
           <QuickAction label="Share" onClick={() => onShare(file)} tone="accent" />
           <QuickAction label="Download" onClick={() => onDownload(file)} />
@@ -329,7 +264,7 @@ function StorageWarning({ account, onManage }) {
       fontSize: 13, fontFamily: "var(--font)",
     }}>
       <span>{critical ? "Storage almost full (95%+)." : "Storage over 80% full."}</span>
-      <button type="button" onClick={onManage} style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: "var(--accent)", color: "#fff", fontWeight: 600, cursor: "pointer" }}>
+      <button type="button" onClick={onManage} className="btn-primary" style={{ padding: "6px 14px", fontSize: 13 }}>
         Manage storage
       </button>
     </div>
@@ -345,7 +280,7 @@ function DriveHero({ username, stats, storagePercent, onUpload, onNewFolder }) {
   })();
 
   return (
-    <div style={{
+    <div className="drive-hero" style={{
       marginBottom: 28, padding: "28px 30px", borderRadius: "var(--radius-lg)",
       background: "var(--gradient-soft)",
       border: "1px solid var(--border)",
@@ -364,7 +299,7 @@ function DriveHero({ username, stats, storagePercent, onUpload, onNewFolder }) {
           {stats.totalFiles} files · {stats.totalFolders} folders · {Math.round(storagePercent)}% storage used
         </p>
       </div>
-      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+      <div className="drive-hero-actions" style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
         <button type="button" className="btn-primary" onClick={onUpload}>↑ Upload files</button>
         <button type="button" className="btn-secondary" onClick={onNewFolder}>⊞ New folder</button>
       </div>
@@ -379,7 +314,7 @@ function AccountChrome({ children, onNavigate, onSignOut, onUpgrade }) {
       <VerifyEmailBanner account={account} onOpenSettings={() => onNavigate("settings")} />
       <TrialBanner account={account} onUpgrade={onUpgrade} />
       <StorageWarning account={account} onManage={() => onNavigate("billing")} />
-      <header style={{
+      <header className="account-header" style={{
         position: "sticky", top: 0, zIndex: 90, height: 60,
         borderBottom: "1px solid var(--border)",
         background: "rgba(6,10,16,.82)",
@@ -419,6 +354,22 @@ function getResetTokenFromUrl() {
   const path = window.location.pathname.replace(/\/+$/, "") || "/";
   if (!path.endsWith("/reset-password")) return null;
   return new URLSearchParams(window.location.search).get("token");
+}
+
+function useViewport() {
+  const [width, setWidth] = useState(() => window.innerWidth);
+
+  useEffect(() => {
+    const onResize = () => setWidth(window.innerWidth);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  return {
+    width,
+    isMobile: width <= 768,
+    isSmall: width <= 520,
+  };
 }
 
 // ── Main App ──────────────────────────────────────────────────────────────────
@@ -477,6 +428,7 @@ export default function CloudVault() {
   const [starredFiles, setStarredFiles] = useState([]);
   const [sharedFiles, setSharedFiles] = useState([]);
   const debouncedSearch = useDebounce(search, 400);
+  const { isMobile, isSmall } = useViewport();
   const fileInput = useRef();
   const folderInput = useRef();
 
@@ -1001,24 +953,20 @@ export default function CloudVault() {
       onSignOut={logout}
       onUpgrade={() => { setAppPage("billing"); setActiveView("drive"); }}
     >
-    <div data-theme={theme} style={{
-      minHeight: "100vh", background: "var(--bg-primary)", color: "var(--text)",
-      fontFamily: "var(--font)",
-      backgroundImage: "none"
-    }}>
+    <div data-theme={theme} className="app-shell">
       <style>{GLOBAL_STYLES}</style>
 
       {/* Mobile hamburger */}
-      <button onClick={() => setSidebarOpen(v => !v)} style={{
+      <button type="button" className="mobile-menu-button" onClick={() => setSidebarOpen(v => !v)} style={{
         display: "none", position: "fixed", top: 16, left: 16, zIndex: 200,
         background: "var(--bg-card)", border: "1.5px solid var(--border)", borderRadius: 10,
         width: 40, height: 40, alignItems: "center", justifyContent: "center",
         cursor: "pointer", color: "var(--text)", fontSize: 20,
-        ...(window.innerWidth <= 768 ? { display: "flex" } : {})
+        ...(isMobile ? { display: "flex" } : {})
       }}>☰</button>
 
       {/* Sidebar Overlay for mobile */}
-      {sidebarOpen && window.innerWidth <= 768 && (
+      {sidebarOpen && isMobile && (
         <div onClick={() => setSidebarOpen(false)} style={{
           position: "fixed", inset: 0, background: "rgba(0,0,0,.5)", zIndex: 99
         }} />
@@ -1030,7 +978,7 @@ export default function CloudVault() {
         background: "var(--bg-sidebar)", borderRight: "1px solid var(--border)",
         padding: "20px 18px", display: "flex", flexDirection: "column", gap: 7, zIndex: 100,
         transition: "transform .3s cubic-bezier(.4,0,.2,1)",
-        ...(window.innerWidth <= 768 ? { transform: sidebarOpen ? "translateX(0)" : "translateX(-100%)" } : {})
+        ...(isMobile ? { transform: sidebarOpen ? "translateX(0)" : "translateX(-100%)" } : {})
       }}>
         {/* Logo */}
         <div style={{ marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
@@ -1059,17 +1007,8 @@ export default function CloudVault() {
           <button
             key={item.id}
             type="button"
+            className={`nav-item${activeView === item.id ? " active" : ""}`}
             onClick={() => { setAppPage(null); setActiveView(item.id); setSidebarOpen(false); if (item.id === "drive") { setCurrentFolder(null); setFolderPath([]); } }}
-            style={{
-              display: "flex", alignItems: "center", gap: 12, padding: "13px 14px", borderRadius: "12px",
-              border: activeView === item.id ? "1px solid var(--border-hover)" : "1px solid transparent",
-              background: activeView === item.id ? "linear-gradient(90deg, rgba(45,212,191,.14), rgba(56,189,248,.08))" : "transparent",
-              color: activeView === item.id ? "var(--text)" : "var(--text-secondary)",
-              cursor: "pointer", fontFamily: "var(--font)", fontWeight: 600, fontSize: 15,
-              textAlign: "left", width: "100%",
-              boxShadow: activeView === item.id ? "inset 3px 0 0 var(--accent)" : "none",
-              transition: "var(--transition)",
-            }}
           >{item.icon} {item.label}</button>
         ))}
 
@@ -1078,11 +1017,11 @@ export default function CloudVault() {
         {/* Quick stats */}
         <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", letterSpacing: "1px", marginBottom: 8, paddingLeft: 4 }}>OVERVIEW</div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 16 }}>
-          <div style={{ background: "var(--bg-card)", borderRadius: "var(--radius)", padding: "12px", border: "1px solid var(--border)" }}>
+          <div className="stat-mini">
             <div style={{ fontSize: 22, fontWeight: 800, color: "var(--text)" }}>{stats.totalFiles}</div>
             <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>Files</div>
           </div>
-          <div style={{ background: "var(--bg-card)", borderRadius: "var(--radius)", padding: "12px", border: "1px solid var(--border)" }}>
+          <div className="stat-mini">
             <div style={{ fontSize: 22, fontWeight: 800, color: "var(--text)" }}>{stats.totalFolders}</div>
             <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>Folders</div>
           </div>
@@ -1099,17 +1038,12 @@ export default function CloudVault() {
           </div>
 
           {/* Sign out */}
-          <button onClick={logout} style={{
-            width: "100%", padding: "10px", borderRadius: "var(--radius)", border: "1px solid rgba(255,100,100,.15)",
-            background: "rgba(255,100,100,.05)", color: "rgba(255,100,100,.75)",
-            cursor: "pointer", fontFamily: "var(--font)", fontWeight: 600, fontSize: 13,
-            transition: "var(--transition)"
-          }}>Sign Out</button>
+          <button type="button" onClick={logout} className="btn-danger">Sign Out</button>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="main-content" style={{ marginLeft: window.innerWidth > 768 ? 296 : 0, padding: "24px 32px", minHeight: "100vh", paddingTop: 18 }}>
+      <div className="main-content" style={{ marginLeft: isMobile ? 0 : 296, padding: "24px 32px", minHeight: "100vh", paddingTop: 18 }}>
         <AppPages
           appPage={appPage}
           setAppPage={setAppPage}
@@ -1163,75 +1097,55 @@ export default function CloudVault() {
           onNewFolder={() => setShowNewFolder(true)}
         />
 
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16, flexWrap: "wrap" }}>
-          <div style={{ flex: 1, position: "relative", minWidth: 200 }}>
+        <div className="drive-toolbar">
+          <div className="drive-search" style={{ flex: 1, position: "relative", minWidth: 200 }}>
             <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", fontSize: 16, opacity: .5 }}>🔍</span>
             <input
+              className="input-field"
               placeholder={`Search ${BRAND.name}…`} value={search}
               onChange={e => setSearch(e.target.value)}
-              style={{
-                width: "100%", maxWidth: 520, padding: "12px 14px 12px 42px",
-                background: "var(--bg-card)", border: "1px solid var(--border)",
-                borderRadius: "var(--radius)", color: "var(--text)", fontFamily: "var(--font)", fontSize: 14,
-                transition: "var(--transition)"
-              }}
+              style={{ width: "100%", maxWidth: 520, padding: "12px 14px 12px 42px" }}
             />
           </div>
           <button
             type="button"
+            className="icon-btn"
             title={theme === "dark" ? "Light mode" : "Dark mode"}
             onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
-            style={{
-              width: 36, height: 36, borderRadius: 999, border: "1px solid var(--border)",
-              background: "var(--bg-card)", color: "var(--text-secondary)", cursor: "pointer", fontSize: 16,
-            }}
           >
             {theme === "dark" ? "☀" : "🌙"}
           </button>
 
-          {/* View toggle */}
-          <div style={{ display: "flex", background: "var(--bg-card)", borderRadius: "var(--radius)", border: "1.5px solid var(--border)", overflow: "hidden" }}>
-            <button onClick={() => setViewMode("list")} style={{
-              padding: "10px 14px", border: "none", cursor: "pointer",
-              background: viewMode === "list" ? "rgba(240,22,58,.16)" : "transparent",
-              color: viewMode === "list" ? "var(--accent)" : "var(--text-muted)",
-              fontSize: 16, transition: "var(--transition)"
-            }}>☰</button>
-            <button onClick={() => setViewMode("grid")} style={{
-              padding: "10px 14px", border: "none", cursor: "pointer",
-              background: viewMode === "grid" ? "rgba(240,22,58,.16)" : "transparent",
-              color: viewMode === "grid" ? "var(--accent)" : "var(--text-muted)",
-              fontSize: 16, transition: "var(--transition)"
-            }}>▦</button>
+          <div className="view-toggle">
+            <button type="button" onClick={() => setViewMode("list")} className={`view-toggle-btn${viewMode === "list" ? " active" : ""}`}>☰</button>
+            <button type="button" onClick={() => setViewMode("grid")} className={`view-toggle-btn${viewMode === "grid" ? " active" : ""}`}>▦</button>
           </div>
 
           {activeView === "drive" && (
-          <button type="button" onClick={() => setShowNewFolder(v => !v)} className="btn-secondary">⊞ New folder</button>
-          )}
-          {activeView === "drive" && (
-            <>
-              <button type="button" onClick={() => fileInput.current?.click()} className="btn-primary">↑ Upload</button>
-              <button type="button" onClick={() => folderInput.current?.click()} className="btn-secondary">📁 Folder</button>
-              <input ref={fileInput} type="file" multiple hidden onChange={e => { uploadFiles(e.target.files); e.target.value = ""; }} />
-              <input ref={folderInput} type="file" multiple webkitdirectory="" hidden onChange={e => { uploadFiles(e.target.files, true); e.target.value = ""; }} />
-            </>
+          <div className="drive-actions">
+            <button type="button" onClick={() => setShowNewFolder(v => !v)} className="btn-secondary">⊞ New folder</button>
+            <button type="button" onClick={() => fileInput.current?.click()} className="btn-primary">↑ Upload</button>
+            <button type="button" onClick={() => folderInput.current?.click()} className="btn-secondary">📁 Folder</button>
+            <input ref={fileInput} type="file" multiple hidden onChange={e => { uploadFiles(e.target.files); e.target.value = ""; }} />
+            <input ref={folderInput} type="file" multiple webkitdirectory="" hidden onChange={e => { uploadFiles(e.target.files, true); e.target.value = ""; }} />
+          </div>
           )}
         </div>
 
         {activeView === "drive" && (
-        <div style={{ display: "flex", gap: 10, marginBottom: 16, flexWrap: "wrap", alignItems: "center" }}>
-          <select value={sortBy} onChange={e => setSortBy(e.target.value)} style={selectStyle}>
+        <div className="drive-sortbar">
+          <select value={sortBy} onChange={e => setSortBy(e.target.value)} className="select-field">
             <option value="createdAt">Date</option>
             <option value="name">Name</option>
             <option value="size">Size</option>
             <option value="updatedAt">Modified</option>
           </select>
-          <select value={sortOrder} onChange={e => setSortOrder(e.target.value)} style={selectStyle}>
+          <select value={sortOrder} onChange={e => setSortOrder(e.target.value)} className="select-field">
             <option value="desc">Descending</option>
             <option value="asc">Ascending</option>
           </select>
           {allTags.length > 0 && (
-            <select value={tagFilter} onChange={e => setTagFilter(e.target.value)} style={selectStyle}>
+            <select value={tagFilter} onChange={e => setTagFilter(e.target.value)} className="select-field" style={{ gridColumn: isSmall ? "1 / -1" : undefined }}>
               <option value="">All tags</option>
               {allTags.map(t => <option key={t} value={t}>{t}</option>)}
             </select>
@@ -1240,16 +1154,9 @@ export default function CloudVault() {
         )}
 
         {activeView === "drive" && (
-        <div style={{ display: "flex", gap: 6, marginBottom: 20, flexWrap: "wrap" }}>
+        <div className="filter-chips">
           {FILE_FILTERS.map(f => (
-            <button key={f.key} onClick={() => setFileFilter(f.key)} style={{
-              padding: "7px 16px", borderRadius: 20, border: "1.5px solid",
-              borderColor: fileFilter === f.key ? "var(--text-secondary)" : "var(--border)",
-              background: fileFilter === f.key ? "var(--bg-card)" : "transparent",
-              color: fileFilter === f.key ? "#fff" : "var(--text-muted)",
-              cursor: "pointer", fontFamily: "var(--font)", fontWeight: 600, fontSize: 12,
-              transition: "var(--transition)", display: "flex", alignItems: "center", gap: 5
-            }}>
+            <button key={f.key} type="button" onClick={() => setFileFilter(f.key)} className={`filter-chip${fileFilter === f.key ? " active" : ""}`}>
               <span>{f.icon}</span> {f.label}
             </button>
           ))}
@@ -1257,41 +1164,28 @@ export default function CloudVault() {
         )}
 
         {activeView === "drive" && showNewFolder && (
-          <div style={{ display: "flex", gap: 10, marginBottom: 20, animation: "fadeIn .2s ease" }}>
+          <div className="new-folder-row" style={{ display: "flex", gap: 10, marginBottom: 20, animation: "fadeIn .2s ease" }}>
             <input
+              className="input-field"
               placeholder="Folder name…" value={newFolderName}
               onChange={e => setNewFolderName(e.target.value)}
               onKeyDown={e => e.key === "Enter" && createFolder()}
-              style={{
-                padding: "11px 16px", background: "var(--bg-card)",
-                border: "1px solid var(--border-hover)", borderRadius: "var(--radius)",
-                color: "var(--text)", fontFamily: "var(--font)", fontSize: 14, width: 260
-              }}
+              style={{ width: 260 }}
               autoFocus
             />
-            <button onClick={createFolder} style={{
-              padding: "11px 20px", borderRadius: "var(--radius)", border: "none",
-              background: "var(--gradient)", color: "#fff",
-              cursor: "pointer", fontFamily: "var(--font)", fontWeight: 700, fontSize: 13
-            }}>Create</button>
-            <button onClick={() => setShowNewFolder(false)} style={{
-              padding: "11px 16px", borderRadius: "var(--radius)", border: "1.5px solid var(--border)",
-              background: "transparent", color: "var(--text-muted)",
-              cursor: "pointer", fontFamily: "var(--font)", fontSize: 13
-            }}>Cancel</button>
+            <button type="button" onClick={createFolder} className="btn-primary">Create</button>
+            <button type="button" onClick={() => setShowNewFolder(false)} className="btn-secondary">Cancel</button>
           </div>
         )}
 
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20, fontSize: 14, color: "var(--text-muted)" }}>
-          <span onClick={() => navToIndex(-1)} style={{
-            cursor: "pointer", color: currentFolder ? "var(--text-secondary)" : "var(--accent)",
-            fontWeight: 600, transition: "var(--transition)"
+        <div className="breadcrumb-row" style={{ alignItems: "center", gap: 8, marginBottom: 20, fontSize: 14, color: "var(--text-muted)" }}>
+          <span onClick={() => navToIndex(-1)} className="breadcrumb-link" style={{
+            color: currentFolder ? "var(--text-secondary)" : "var(--accent)",
           }}>{BRAND.logo} Home</span>
           {folderPath.map((f, i) => (
             <span key={f.id} style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <span style={{ color: "var(--text-muted)" }}>›</span>
-              <span onClick={() => navToIndex(i)} style={{
-                cursor: "pointer", fontWeight: 600, transition: "var(--transition)",
+              <span onClick={() => navToIndex(i)} className="breadcrumb-link" style={{
                 color: i === folderPath.length - 1 ? "var(--accent)" : "var(--text-secondary)"
               }}>{f.name}</span>
             </span>
@@ -1329,15 +1223,7 @@ export default function CloudVault() {
           onDragOver={e => { e.preventDefault(); setDragging(true); }}
           onDragLeave={() => setDragging(false)}
           onDrop={onDrop}
-          className={dragging ? "drag-over" : ""}
-          style={{
-            border: `2px dashed ${dragging ? "var(--accent)" : "var(--border)"}`,
-            borderRadius: "var(--radius-lg)", padding: "28px 22px", marginBottom: 28,
-            textAlign: "center", color: "var(--text-muted)", fontSize: 14,
-            transition: "var(--transition)",
-            background: dragging ? "rgba(45,212,191,.08)" : "var(--gradient-soft)",
-            fontWeight: 500
-          }}
+          className={`drop-zone${dragging ? " drag-over" : ""}`}
         >
           {dragging ? (
             <span style={{ color: "var(--accent)", fontWeight: 700, fontSize: 16 }}>⬇ Drop files here to upload</span>
@@ -1354,7 +1240,7 @@ export default function CloudVault() {
         {folders.length > 0 && (
           <div style={{ marginBottom: 28 }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", letterSpacing: "1.5px", marginBottom: 12 }}>FOLDERS</div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 10 }}>
+            <div className="folder-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 10 }}>
               {folders.map(f => (
                 <FolderCard key={f.id} folder={f} onOpen={openFolder} onDelete={requestDeleteFolder} />
               ))}
@@ -1372,7 +1258,7 @@ export default function CloudVault() {
           {loading ? (
             <FileListSkeleton count={6} grid={viewMode === "grid"} />
           ) : filteredFiles.length === 0 ? (
-            <div className="glass-card" style={{
+            <div className="glass-card empty-state" style={{
               textAlign: "center", padding: "72px 32px", borderRadius: "var(--radius-lg)",
               border: "1.5px dashed var(--border)", animation: "fadeIn .3s ease",
             }}>
@@ -1396,12 +1282,11 @@ export default function CloudVault() {
             </div>
           ) : (
             <>
-            <div style={{
+            <div className={`file-grid${viewMode === "grid" ? " grid-view" : ""}`} style={{
               display: viewMode === "grid" ? "grid" : "flex",
               gridTemplateColumns: viewMode === "grid" ? "repeat(auto-fill, minmax(250px, 1fr))" : undefined,
               flexDirection: viewMode === "list" ? "column" : undefined,
               gap: viewMode === "grid" ? 12 : 8,
-              animation: "fadeIn .3s ease"
             }}>
               {filteredFiles.map(f => (
                 <FileCard key={f.id} file={f} token={token}
@@ -1417,11 +1302,7 @@ export default function CloudVault() {
               ))}
             </div>
             {hasMoreFiles && (
-              <button type="button" onClick={() => refresh(filePage + 1, true)} style={{
-                marginTop: 20, width: "100%", padding: 12, borderRadius: 12,
-                border: "1px solid var(--border)", background: "var(--bg-card)",
-                color: "var(--text-secondary)", fontWeight: 600, cursor: "pointer", fontFamily: "var(--font)",
-              }}>
+              <button type="button" onClick={() => refresh(filePage + 1, true)} className="load-more-btn">
                 Load more files
               </button>
             )}
@@ -1509,29 +1390,14 @@ function AppPages({ appPage, setAppPage, api, notify, stats, usageDetail, adminU
   return null;
 }
 
-const selectStyle = {
-  padding: "8px 12px",
-  borderRadius: 10,
-  border: "1px solid var(--border)",
-  background: "var(--bg-card)",
-  color: "var(--text)",
-  fontFamily: "var(--font)",
-  fontSize: 13,
-};
-
 // ── Folder Card ───────────────────────────────────────────────────────────────
 function FolderCard({ folder, onOpen, onDelete }) {
   const [hovered, setHovered] = useState(false);
   return (
     <div
+      className="folder-card"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      style={{
-        background: hovered ? "var(--bg-card-hover)" : "var(--bg-card)",
-        border: `1.5px solid ${hovered ? "rgba(255,200,0,.3)" : "var(--border)"}`,
-        borderRadius: "var(--radius)", padding: "14px 16px", cursor: "pointer",
-        transition: "var(--transition)", display: "flex", alignItems: "center", gap: 12
-      }}
       onClick={() => onOpen(folder)}
     >
       <span style={{ fontSize: 24 }}>📁</span>

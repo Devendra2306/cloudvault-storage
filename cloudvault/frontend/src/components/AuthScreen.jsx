@@ -111,65 +111,27 @@ export default function AuthScreen({ onAuth, onBack, initialMode = "login" }) {
       <label style={{ color: "var(--text-secondary)", fontWeight: 600, fontSize: 13 }}>{label}</label>
       <input
         type={type}
+        className="input-field"
         placeholder={placeholder}
         value={form[name]}
         onChange={(e) => setForm((p) => ({ ...p, [name]: e.target.value }))}
         onKeyDown={(e) => e.key === "Enter" && !showForgot && submit()}
-        style={{
-          width: "100%",
-          padding: "11px 14px",
-          background: "#0f141c",
-          border: "1.5px solid var(--border)",
-          borderRadius: "var(--radius)",
-          color: "var(--text)",
-          fontFamily: "var(--font)",
-          fontSize: 14,
-        }}
       />
     </div>
   );
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "linear-gradient(130deg, #191115 0%, #171d27 40%, #0f141d 100%)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        fontFamily: "var(--font)",
-      }}
-    >
+    <div className="auth-screen">
       <style>{GLOBAL_STYLES}</style>
       <button
         type="button"
+        className="page-back-btn"
         onClick={onBack}
-        style={{
-          position: "fixed",
-          left: 26,
-          top: 16,
-          background: "transparent",
-          border: "none",
-          color: "var(--text-secondary)",
-          cursor: "pointer",
-          fontFamily: "var(--font)",
-          fontWeight: 600,
-        }}
+        style={{ position: "fixed", left: 26, top: 16 }}
       >
         ← Back
       </button>
-      <div
-        style={{
-          width: 400,
-          maxWidth: "92vw",
-          padding: "32px 28px",
-          background: "#0d131b",
-          border: "1px solid var(--border)",
-          borderRadius: 18,
-          boxShadow: "var(--shadow)",
-          animation: "fadeIn .35s ease",
-        }}
-      >
+      <div className="auth-card">
         <div style={{ marginBottom: 22 }}>
           <div
             style={{
@@ -197,10 +159,11 @@ export default function AuthScreen({ onAuth, onBack, initialMode = "login" }) {
               style={{
                 display: "flex",
                 gap: 4,
-                background: "#151b24",
+                background: "var(--bg-secondary)",
                 borderRadius: "var(--radius)",
                 padding: 4,
                 marginBottom: 20,
+                border: "1px solid var(--border)",
               }}
             >
               {["login", "register"].map((m) => (
@@ -208,17 +171,7 @@ export default function AuthScreen({ onAuth, onBack, initialMode = "login" }) {
                   key={m}
                   type="button"
                   onClick={() => setMode(m)}
-                  style={{
-                    flex: 1,
-                    padding: 10,
-                    borderRadius: 10,
-                    border: "none",
-                    cursor: "pointer",
-                    background: mode === m ? "rgba(240,22,58,.15)" : "transparent",
-                    color: mode === m ? "#fff" : "var(--text-muted)",
-                    fontWeight: 700,
-                    fontSize: 13,
-                  }}
+                  className={`auth-tab${mode === m ? " active" : ""}`}
                 >
                   {m === "login" ? "Sign In" : "Sign Up"}
                 </button>
@@ -277,19 +230,8 @@ export default function AuthScreen({ onAuth, onBack, initialMode = "login" }) {
           type="button"
           onClick={showForgot ? handleForgotPassword : submit}
           disabled={loading}
-          style={{
-            width: "100%",
-            padding: 12,
-            marginTop: 20,
-            borderRadius: "var(--radius)",
-            border: "none",
-            background: "#e8e8e8",
-            color: "#1a1a1a",
-            fontWeight: 700,
-            fontSize: 15,
-            cursor: loading ? "not-allowed" : "pointer",
-            opacity: loading ? 0.7 : 1,
-          }}
+          className="btn-primary"
+          style={{ width: "100%", marginTop: 20, opacity: loading ? 0.7 : 1, cursor: loading ? "not-allowed" : "pointer" }}
         >
           {loading ? (
             <Spinner />
@@ -308,22 +250,8 @@ export default function AuthScreen({ onAuth, onBack, initialMode = "login" }) {
               type="button"
               disabled={loading}
               onClick={() => handleOAuth("google")}
-              style={{
-                width: "100%",
-                padding: "12px",
-                borderRadius: "var(--radius)",
-                border: "1px solid var(--border)",
-                background: "#fff",
-                color: "#1a1a1a",
-                fontWeight: 700,
-                fontSize: 14,
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 10,
-                fontFamily: "var(--font)",
-              }}
+              className="btn-secondary"
+              style={{ width: "100%", marginBottom: 20, justifyContent: "center", display: "flex", alignItems: "center", gap: 10 }}
             >
               <span style={{ fontSize: 18 }}>G</span> Continue with Google
             </button>
@@ -363,15 +291,8 @@ export default function AuthScreen({ onAuth, onBack, initialMode = "login" }) {
                     type="button"
                     disabled={loading}
                     onClick={() => handleOAuth(p.id)}
-                    style={{
-                      padding: 10,
-                      borderRadius: "var(--radius)",
-                      border: "1px solid var(--border)",
-                      background: "var(--bg-card)",
-                      color: "var(--text)",
-                      cursor: "pointer",
-                      fontWeight: 600,
-                    }}
+                    className="btn-secondary"
+                    style={{ width: "100%" }}
                   >
                     Continue with {p.label}
                   </button>
