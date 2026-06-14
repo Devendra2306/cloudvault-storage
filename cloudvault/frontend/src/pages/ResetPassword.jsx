@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { API } from "../lib/constants.js";
 
-export default function ResetPassword({ token, onBack }) {
+export default function ResetPassword({ token, onBack, onSuccess }) {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -11,6 +11,11 @@ export default function ResetPassword({ token, onBack }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
+    if (!token) {
+      setError("This reset link is missing its token. Please request a new password reset email.");
+      return;
+    }
 
     if (newPassword !== confirmPassword) {
       setError("Passwords do not match");
@@ -37,7 +42,7 @@ export default function ResetPassword({ token, onBack }) {
       }
 
       setSuccess(true);
-      setTimeout(() => onBack?.(), 2000);
+      setTimeout(() => (onSuccess || onBack)?.(), 2000);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -63,7 +68,9 @@ export default function ResetPassword({ token, onBack }) {
   return (
     <div style={{ maxWidth: 400, margin: "40px auto", padding: 30, background: "#1f2937", borderRadius: 12, color: "white" }}>
       <h2 style={{ textAlign: "center", marginBottom: 20 }}>Reset Password</h2>
-      <p style={{ textAlign: "center", color: "#9ca3af", marginBottom: 20 }}>Enter your new password</p>
+      <p style={{ textAlign: "center", color: "#9ca3af", marginBottom: 20 }}>
+        {token ? "Enter your new password" : "This reset link is missing its token. Request a new reset email."}
+      </p>
       
       <form onSubmit={handleSubmit}>
         <div style={{ marginBottom: 15 }}>

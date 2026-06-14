@@ -27,7 +27,7 @@ function Spinner({ size = 22, color = "#1a1a1a" }) {
   );
 }
 
-export default function AuthScreen({ onAuth, onBack, initialMode = "login" }) {
+export default function AuthScreen({ onAuth, onBack, onNeedsVerification, initialMode = "login" }) {
   const [mode, setMode] = useState(initialMode);
   const [form, setForm] = useState({ email: "", password: "", fullName: "" });
   const [loading, setLoading] = useState(false);
@@ -37,6 +37,7 @@ export default function AuthScreen({ onAuth, onBack, initialMode = "login" }) {
   const [showForgot, setShowForgot] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState(null);
   const [turnstileVerified, setTurnstileVerified] = useState(false);
+  const [turnstileKey, setTurnstileKey] = useState(0);
   const firebaseReady = isFirebaseConfigured();
   const firebaseProviderStatus = useMemo(() => getFirebaseProviderStatus(), []);
   const turnstileEnabled = Boolean(import.meta.env.VITE_TURNSTILE_SITE_KEY);
@@ -88,10 +89,10 @@ export default function AuthScreen({ onAuth, onBack, initialMode = "login" }) {
       }
     } catch (e) {
       setError(e.message);
-      // Reset turnstile on error
       if (turnstileEnabled) {
         setTurnstileToken(null);
         setTurnstileVerified(false);
+        setTurnstileKey((key) => key + 1);
       }
     }
     setLoading(false);
@@ -122,6 +123,28 @@ export default function AuthScreen({ onAuth, onBack, initialMode = "login" }) {
   const authError = error?.includes("Please verify your email before logging in")
     ? "Please verify your email before logging in. Check your inbox for the verification OTP, then return to sign in."
     : error;
+  const needsEmailVerification = error?.includes("Please verify your email before logging in");
+
+  const resendVerification = async () => {
+    if (!form.email) {
+      setError("Enter your email address first");
+      return;
+    }
+    setError("");
+    setInfo("");
+    setLoading(true);
+    try {
+      await apiFetch("/auth/resend-verification", {
+        method: "POST",
+        body: JSON.stringify({ email: form.email }),
+      });
+      setInfo("A new verification OTP has been sent. Enter it on the verification screen.");
+      onNeedsVerification?.({ email: form.email, fullName: form.fullName });
+    } catch (e) {
+      setError(e.message);
+    }
+    setLoading(false);
+  };
 
   const handleForgotPassword = async () => {
     if (!form.email) {
@@ -151,10 +174,10 @@ export default function AuthScreen({ onAuth, onBack, initialMode = "login" }) {
       setShowForgot(false);
     } catch (e) {
       setError(e.message);
-      // Reset turnstile on error
       if (turnstileEnabled) {
         setTurnstileToken(null);
         setTurnstileVerified(false);
+        setTurnstileKey((key) => key + 1);
       }
     }
     setLoading(false);
@@ -292,6 +315,27 @@ export default function AuthScreen({ onAuth, onBack, initialMode = "login" }) {
             }}
           >
             {authError}
+            {needsEmailVerification && (
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 10 }}>
+                <button
+                  type="button"
+                  onClick={() => onNeedsVerification?.({ email: form.email, fullName: form.fullName })}
+                  className="btn-secondary"
+                  style={{ minHeight: 40, fontSize: 12 }}
+                >
+                  Enter OTP
+                </button>
+                <button
+                  type="button"
+                  onClick={resendVerification}
+                  disabled={loading}
+                  className="btn-secondary"
+                  style={{ minHeight: 40, fontSize: 12 }}
+                >
+                  Resend OTP
+                </button>
+              </div>
+            )}
           </div>
         )}
         {info && <div style={{ color: "var(--accent-blue)", fontSize: 13, marginTop: 14 }}>{info}</div>}
@@ -299,6 +343,7 @@ export default function AuthScreen({ onAuth, onBack, initialMode = "login" }) {
         {turnstileEnabled && (
           <div style={{ marginTop: 16 }}>
             <Turnstile
+              key={turnstileKey}
               onVerified={(token) => {
                 setTurnstileToken(token);
                 setTurnstileVerified(true);

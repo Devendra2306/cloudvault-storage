@@ -6,12 +6,14 @@ export default function VerifyEmailPage({ email, onVerified, onBack }) {
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [info, setInfo] = useState("");
   const [success, setSuccess] = useState(false);
 
   const handleVerify = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setInfo("");
 
     try {
       const res = await fetch(`${API}/auth/verify-email`, {
@@ -41,6 +43,7 @@ export default function VerifyEmailPage({ email, onVerified, onBack }) {
     }
     setLoading(true);
     setError("");
+    setInfo("");
 
     try {
       const res = await fetch(`${API}/auth/resend-verification`, {
@@ -54,8 +57,7 @@ export default function VerifyEmailPage({ email, onVerified, onBack }) {
         throw new Error(data.message || "Failed to resend OTP");
       }
 
-      setSuccess(true);
-      setTimeout(() => setSuccess(false), 2000);
+      setInfo("A new verification OTP has been sent. Check your inbox and spam folder.");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -103,6 +105,7 @@ export default function VerifyEmailPage({ email, onVerified, onBack }) {
         </div>
 
         {error && <p style={{ color: "#ef4444", marginBottom: 15, fontSize: 14 }}>{error}</p>}
+        {info && <p style={{ color: "#38bdf8", marginBottom: 15, fontSize: 14 }}>{info}</p>}
 
         <button
           type="submit"
