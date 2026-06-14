@@ -3,6 +3,7 @@ import { BRAND } from "../lib/constants.js";
 import { apiFetch } from "../lib/api.js";
 import { GLOBAL_STYLES } from "../styles/globalStyles.js";
 import { isFirebaseConfigured, signInWithProvider } from "../firebase.js";
+import Turnstile from "./Turnstile.jsx";
 
 function Spinner({ size = 22, color = "#1a1a1a" }) {
   return (
@@ -28,17 +29,32 @@ export default function AuthScreen({ onAuth, onBack, initialMode = "login" }) {
   const [info, setInfo] = useState("");
   const [keepLoggedIn, setKeepLoggedIn] = useState(true);
   const [showForgot, setShowForgot] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState(null);
+  const [turnstileVerified, setTurnstileVerified] = useState(false);
   const firebaseReady = isFirebaseConfigured();
+  const turnstileEnabled = Boolean(import.meta.env.VITE_TURNSTILE_SITE_KEY);
 
   const submit = async () => {
     setError("");
     setInfo("");
     setLoading(true);
     try {
+      if (turnstileEnabled && !turnstileVerified) {
+        setError("Please complete the security verification");
+        setLoading(false);
+        return;
+      }
+
+      const body = {
+        email: form.email,
+        password: form.password,
+        ...(turnstileEnabled && { turnstileToken }),
+      };
+
       if (mode === "login") {
         const data = await apiFetch("/auth/login", {
           method: "POST",
-          body: JSON.stringify({ email: form.email, password: form.password }),
+          body: JSON.stringify(body),
         });
         if (!data?.accessToken) throw new Error("Login response did not include an access token");
         if (keepLoggedIn) {
@@ -48,13 +64,10 @@ export default function AuthScreen({ onAuth, onBack, initialMode = "login" }) {
         }
         onAuth(data.accessToken, data.refreshToken, data.user?.fullName || form.email, data.user);
       } else {
+        body.fullName = form.fullName;
         const data = await apiFetch("/auth/register", {
           method: "POST",
-          body: JSON.stringify({
-            email: form.email,
-            password: form.password,
-            fullName: form.fullName,
-          }),
+          body: JSON.stringify(body),
         });
         setInfo("Registration successful! Please check your email for the OTP to verify your account.");
         onAuth?.(null, null, data.email || form.email, {
@@ -64,6 +77,11 @@ export default function AuthScreen({ onAuth, onBack, initialMode = "login" }) {
       }
     } catch (e) {
       setError(e.message);
+      // Reset turnstile on error
+      if (turnstileEnabled) {
+        setTurnstileToken(null);
+        setTurnstileVerified(false);
+      }
     }
     setLoading(false);
   };
@@ -94,16 +112,32 @@ export default function AuthScreen({ onAuth, onBack, initialMode = "login" }) {
     setInfo("");
     setLoading(true);
     try {
+      if (turnstileEnabled && !turnstileVerified) {
+        setError("Please complete the security verification");
+        setLoading(false);
+        return;
+      }
+
+      const body = { email: form.email };
+      if (turnstileEnabled) {
+        body.turnstileToken = turnstileToken;
+      }
+
       await apiFetch("/auth/forgot-password", {
         method: "POST",
-        body: JSON.stringify({ email: form.email }),
+        body: JSON.stringify(body),
       });
       setInfo("If an account exists, a reset link has been sent.");
+      setShowForgot(false);
     } catch (e) {
       setError(e.message);
+      // Reset turnstile on error
+      if (turnstileEnabled) {
+        setTurnstileToken(null);
+        setTurnstileVerified(false);
+      }
     }
     setLoading(false);
-    setShowForgot(false);
   };
 
   const inp = (name, label, placeholder, type = "text") => (
@@ -226,17 +260,36 @@ export default function AuthScreen({ onAuth, onBack, initialMode = "login" }) {
         {error && <div style={{ color: "var(--danger)", fontSize: 13, marginTop: 14 }}>{error}</div>}
         {info && <div style={{ color: "var(--accent-blue)", fontSize: 13, marginTop: 14 }}>{info}</div>}
 
+        {turnstileEnabled && !showForgot && (
+          <Turnstile
+            onVerified={(token) => {
+              setTurnstileToken(token);
+              setTurnstileVerified(true);
+            }}
+            onError={(err) => {
+              setError("Security verification failed. Please try again.");
+              setTurnstileVerified(false);
+            }}
+            onExpire={() => {
+              setTurnstileToken(null);
+              setTurnstileVerified(false);
+            }}
+          />
+        )}
+
         <button
           type="button"
           onClick={showForgot ? handleForgotPassword : submit}
-          disabled={loading}
+          disabled={loading || (turnstileEnabled && !turnstileVerified && !showForgot)}
           className="btn-primary"
-          style={{ width: "100%", marginTop: 20, opacity: loading ? 0.7 : 1, cursor: loading ? "not-allowed" : "pointer" }}
+          style={{ width: "100%", marginTop: 20, opacity: loading || (turnstileEnabled && !turnstileVerified && !showForgot) ? 0.7 : 1, cursor: loading || (turnstileEnabled && !turnstileVerified && !showForgot) ? "not-allowed" : "pointer" }}
         >
           {loading ? (
             <Spinner />
           ) : showForgot ? (
             "Send reset link"
+          ) : turnstileEnabled && !turnstileVerified ? (
+            "Complete security verification first"
           ) : mode === "login" ? (
             "Log in"
           ) : (
