@@ -379,6 +379,8 @@ export default function CloudVault() {
   const [screen, setScreen] = useState(() => {
     const token = localStorage.getItem("cv_token");
     const resetToken = getResetTokenFromUrl();
+    const verifyPath = window.location.pathname.replace(/\/+$/, "") || "/";
+    if (verifyPath.endsWith("/verify-email")) return "verify-email";
     if (resetToken) return "reset-password";
     return token ? "app" : "landing";
   });
@@ -884,10 +886,17 @@ export default function CloudVault() {
       <>
         <style>{GLOBAL_STYLES}</style>
         <VerifyEmailPage
-          token={verifyEmailToken}
-          onDone={() => {
+          onVerified={() => {
             setVerifyEmailToken(null);
-            setScreen(token ? "app" : "landing");
+            window.history.replaceState({}, "", "/");
+            setScreen("auth");
+            setAuthMode("login");
+          }}
+          onBack={() => {
+            setVerifyEmailToken(null);
+            window.history.replaceState({}, "", "/");
+            setScreen("auth");
+            setAuthMode("login");
           }}
         />
       </>
@@ -926,6 +935,10 @@ export default function CloudVault() {
       <AuthScreen
         initialMode={authMode}
         onAuth={handleAuth}
+        onNeedsVerification={(user) => {
+          setPendingVerification(user);
+          setScreen("verify-email");
+        }}
         onBack={() => setScreen("landing")}
       />
     );
@@ -955,6 +968,7 @@ export default function CloudVault() {
         token={resetPasswordToken}
         onSuccess={() => {
           setResetPasswordToken(null);
+          window.history.replaceState({}, "", "/");
           setScreen("auth");
           setAuthMode("login");
         }}
