@@ -5,18 +5,12 @@ import { PLANS } from "../lib/plans.js";
 import { GLOBAL_STYLES } from "../styles/globalStyles.js";
 
 const FEATURES = [
-  { icon: "☁", title: "AWS S3 powered", desc: "Enterprise-grade object storage with global durability." },
-  { icon: "🔒", title: "Secure uploads", desc: "Encrypted transfers and private buckets by default." },
-  { icon: "⚡", title: "Fast downloads", desc: "Optimized streaming with correct file headers." },
-  { icon: "🔗", title: "File sharing", desc: "Share links with view or download permissions." },
-  { icon: "📁", title: "Folder organization", desc: "Nested folders, search, and smart filters." },
+  { title: "Effortless syncing", desc: "Drag, drop, and organize files from one calm workspace." },
+  { title: "Private sharing", desc: "Send secure links with clear permissions and expiration controls." },
+  { title: "Fast previews", desc: "Open images, documents, and downloads without breaking your flow." },
 ];
 
-const TESTIMONIALS = [
-  { quote: "CloudVault replaced our scattered drives with one clean workspace.", author: "Alex M.", role: "Startup founder" },
-  { quote: "Uploads are fast and previews just work — exactly what we needed.", author: "Priya S.", role: "Designer" },
-  { quote: "The S3 backend gives us confidence our files are safe.", author: "Jordan K.", role: "Engineer" },
-];
+const NAV_ITEMS = ["Features", "How it works", "Pricing"];
 
 export default function LandingPage({ onGetStarted, onLogin, onSignUp }) {
   const [stats, setStats] = useState({
@@ -36,178 +30,153 @@ export default function LandingPage({ onGetStarted, onLogin, onSignUp }) {
   }, []);
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg-primary)", fontFamily: "var(--font)", color: "var(--text)" }}>
+    <div className="marketing-shell">
       <style>{GLOBAL_STYLES}</style>
 
       <header className="landing-header">
-        <div style={{ display: "flex", alignItems: "center", gap: 10, fontWeight: 800, fontSize: 20 }}>
-          <span
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: 999,
-              background: "var(--gradient)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              boxShadow: "0 8px 24px rgba(45,212,191,.22)",
-            }}
-          >
-            {BRAND.logo}
-          </span>
-          {BRAND.name}
-        </div>
-        <nav className="landing-nav">
-          <button type="button" className="btn-ghost" onClick={onLogin}>
-            Login
-          </button>
-          <button type="button" className="btn-primary" onClick={onSignUp}>
-            Sign Up
-          </button>
+        <button type="button" className="brand-lockup" onClick={onGetStarted}>
+          <span className="brand-mark">{BRAND.logo}</span>
+          <span>{BRAND.name}</span>
+        </button>
+        <nav className="landing-links" aria-label="Primary">
+          {NAV_ITEMS.map((item) => (
+            <a key={item} href={`#${item.toLowerCase().replaceAll(" ", "-")}`}>
+              {item}
+            </a>
+          ))}
         </nav>
+        <div className="landing-nav">
+          <button type="button" className="btn-ghost" onClick={onLogin}>Log in</button>
+          <button type="button" className="btn-primary" onClick={onSignUp}>Get Started Free</button>
+        </div>
       </header>
 
-      <section
-        className="hero-section"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-          gap: 40,
-          padding: "80px 32px",
-          maxWidth: 1200,
-          margin: "0 auto",
-          alignItems: "center",
-        }}
-      >
-        <div style={{ animation: "fadeIn .5s ease" }}>
-          <p style={{ color: "var(--accent)", fontWeight: 700, fontSize: 13, letterSpacing: 1.2, marginBottom: 12 }}>
-            CLOUD STORAGE REIMAGINED
-          </p>
-          <h1 style={{ fontSize: "clamp(2rem, 5vw, 3.2rem)", fontWeight: 900, lineHeight: 1.1, marginBottom: 16 }}>
-            {BRAND.tagline}
-          </h1>
-          <p style={{ color: "var(--text-secondary)", fontSize: 17, lineHeight: 1.6, marginBottom: 28, maxWidth: 480 }}>
-            Store, preview, and share files with a modern experience powered by AWS S3, Node.js, and Firebase Authentication.
-          </p>
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-            <button type="button" className="btn-primary" onClick={onGetStarted}>
-              Get Started
-            </button>
-            <button type="button" className="btn-ghost" onClick={onLogin}>
-              Log in
-            </button>
-          </div>
-        </div>
-        <div className="hero-visual">{BRAND.logo}</div>
-      </section>
-
-      <section className="section-pad" style={{ padding: "48px 32px", maxWidth: 1200, margin: "0 auto" }}>
-        <h2 style={{ textAlign: "center", fontSize: 28, fontWeight: 800, marginBottom: 32 }}>Everything you need</h2>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16 }}>
-          {FEATURES.map((f, i) => (
-            <div
-              key={f.title}
-              className="feature-card"
-              style={{ animation: `fadeIn .4s ease ${i * 0.06}s both` }}
-            >
-              <div style={{ fontSize: 32, marginBottom: 12 }}>{f.icon}</div>
-              <h3 style={{ fontWeight: 700, marginBottom: 8 }}>{f.title}</h3>
-              <p style={{ color: "var(--text-muted)", fontSize: 14, lineHeight: 1.5 }}>{f.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section
-        className="section-pad"
-        style={{
-          padding: "48px 32px",
-          background: "var(--bg-secondary)",
-          borderTop: "1px solid var(--border)",
-          borderBottom: "1px solid var(--border)",
-        }}
-      >
-        <div
-          className="stats-row"
-          style={{
-            maxWidth: 900,
-            margin: "0 auto",
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: 24,
-            textAlign: "center",
-          }}
-        >
-          <div className="stat-mini">
-            <div style={{ fontSize: 36, fontWeight: 900 }}>{stats.filesStored.toLocaleString()}+</div>
-            <div style={{ color: "var(--text-muted)", marginTop: 6 }}>Files stored</div>
-          </div>
-          <div className="stat-mini">
-            <div style={{ fontSize: 36, fontWeight: 900 }}>{fmt(stats.storageCapacity)}</div>
-            <div style={{ color: "var(--text-muted)", marginTop: 6 }}>Storage capacity</div>
-          </div>
-          <div className="stat-mini">
-            <div style={{ fontSize: 36, fontWeight: 900 }}>{stats.activeUsers.toLocaleString()}+</div>
-            <div style={{ color: "var(--text-muted)", marginTop: 6 }}>Active users</div>
-          </div>
-        </div>
-      </section>
-
-      <section className="section-pad" style={{ padding: "64px 32px", maxWidth: 1200, margin: "0 auto" }}>
-        <h2 style={{ textAlign: "center", fontSize: 28, fontWeight: 800, marginBottom: 32 }}>Simple pricing</h2>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 20 }}>
-          {PLANS.map((plan) => (
-            <div
-              key={plan.id}
-              className={`plan-card${plan.highlight ? " highlight" : ""}`}
-            >
-              <h3 style={{ fontSize: 20, fontWeight: 800 }}>{plan.name}</h3>
-              <div style={{ fontSize: 32, fontWeight: 900, margin: "12px 0" }}>
-                {plan.price}
-                <span style={{ fontSize: 14, color: "var(--text-muted)", fontWeight: 500 }}>{plan.period}</span>
-              </div>
-              <p style={{ color: "var(--text-secondary)", marginBottom: 16 }}>{plan.storage} storage</p>
-              <ul style={{ listStyle: "none", padding: 0, margin: "0 0 20px" }}>
-                {plan.features.map((f) => (
-                  <li key={f} style={{ color: "var(--text-muted)", fontSize: 14, marginBottom: 8 }}>
-                    ✓ {f}
-                  </li>
-                ))}
-              </ul>
-              <button type="button" className={plan.highlight ? "btn-primary" : "btn-ghost"} onClick={onGetStarted} style={{ width: "100%" }}>
-                Choose {plan.name}
+      <main>
+        <section className="hero-section">
+          <div className="hero-glow hero-glow-green" />
+          <div className="hero-glow hero-glow-blue" />
+          <div className="hero-copy">
+            <div className="eyebrow"><span /> Introducing {BRAND.name}</div>
+            <h1>
+              The intelligent home for your <span>digital life.</span>
+            </h1>
+            <p>
+              Never lose a file again. Store, organize, and securely share your documents,
+              photos, and projects from anywhere.
+            </p>
+            <div className="hero-actions">
+              <button type="button" className="btn-primary btn-hero-dark" onClick={onGetStarted}>
+                Start for free
+              </button>
+              <button type="button" className="btn-secondary btn-hero-light" onClick={onLogin}>
+                See how it works
               </button>
             </div>
-          ))}
-        </div>
-      </section>
+            <div className="hero-note">No credit card required. 10GB free forever.</div>
+          </div>
 
-      <section className="section-pad" style={{ padding: "48px 32px", maxWidth: 1000, margin: "0 auto" }}>
-        <h2 style={{ textAlign: "center", fontSize: 28, fontWeight: 800, marginBottom: 32 }}>Loved by teams</h2>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 16 }}>
-          {TESTIMONIALS.map((t) => (
-            <blockquote key={t.author} className="testimonial-card">
-              <p style={{ color: "var(--text-secondary)", lineHeight: 1.6, marginBottom: 16 }}>"{t.quote}"</p>
-              <footer style={{ fontWeight: 700 }}>{t.author}</footer>
-              <div style={{ color: "var(--text-muted)", fontSize: 13 }}>{t.role}</div>
-            </blockquote>
-          ))}
-        </div>
-      </section>
+          <div className="dashboard-preview" aria-label="CloudVault preview">
+            <div className="preview-panel">
+              <aside className="preview-sidebar">
+                <div className="preview-logo">
+                  <span className="brand-mark small">{BRAND.logo}</span>
+                  <strong>My Storage</strong>
+                </div>
+                {["Recent", "Starred", "Shared", "Trash"].map((item, index) => (
+                  <div key={item} className={`preview-nav-item${index === 0 ? " active" : ""}`}>{item}</div>
+                ))}
+                <div className="preview-usage">
+                  <div><span>Storage Usage</span><strong>4.5 GB / 10 GB</strong></div>
+                  <div className="preview-bar"><span /></div>
+                </div>
+              </aside>
+              <section className="preview-files">
+                <div className="preview-topline">
+                  <h3>Recent Files</h3>
+                  <button type="button">Upload</button>
+                </div>
+                {[
+                  ["Project Alpha", "1.2 GB - Last edited 2h ago"],
+                  ["Q3 Financials.xlsx", "2.4 MB - Last edited 2h ago"],
+                  ["Campaign Banner.png", "4.1 MB - Last edited 2h ago"],
+                ].map(([name, meta]) => (
+                  <div key={name} className="preview-file">
+                    <div className="preview-file-icon" />
+                    <div>
+                      <h4>{name}</h4>
+                      <p>{meta}</p>
+                    </div>
+                  </div>
+                ))}
+              </section>
+            </div>
+          </div>
+        </section>
 
-      <footer
-        style={{
-          borderTop: "1px solid var(--border)",
-          padding: "32px",
-          textAlign: "center",
-          color: "var(--text-muted)",
-          fontSize: 14,
-        }}
-      >
-        <p>
-          © {new Date().getFullYear()} {BRAND.name}. Built with React, Node.js, AWS S3, Prisma & Firebase.
-        </p>
-      </footer>
+        <section className="logo-strip">
+          <p>Trusted by innovative teams worldwide</p>
+          <div>
+            {["Acme Corp", "GlobalTech", "NEXUS", "horizon", "Vertex"].map((name) => (
+              <span key={name}>{name}</span>
+            ))}
+          </div>
+        </section>
+
+        <section id="features" className="content-section split-section">
+          <div>
+            <p className="section-kicker">Why CloudVault?</p>
+            <h2>More than just storage. It is your central hub.</h2>
+          </div>
+          <p>
+            In a world scattered with devices and apps, CloudVault brings everything together
+            in a single, secure place for photos, documents, and creative projects.
+          </p>
+        </section>
+
+        <section id="how-it-works" className="content-section feature-grid">
+          {FEATURES.map((feature) => (
+            <article key={feature.title} className="feature-card">
+              <div className="feature-dot" />
+              <h3>{feature.title}</h3>
+              <p>{feature.desc}</p>
+            </article>
+          ))}
+        </section>
+
+        <section className="stats-band">
+          <div className="stat-mini">
+            <strong>{stats.filesStored.toLocaleString()}+</strong>
+            <span>Files stored</span>
+          </div>
+          <div className="stat-mini">
+            <strong>{fmt(stats.storageCapacity)}</strong>
+            <span>Storage capacity</span>
+          </div>
+          <div className="stat-mini">
+            <strong>{stats.activeUsers.toLocaleString()}+</strong>
+            <span>Active users</span>
+          </div>
+        </section>
+
+        <section id="pricing" className="content-section pricing-section">
+          <div className="section-center">
+            <p className="section-kicker">Pricing</p>
+            <h2>Simple plans for clean storage.</h2>
+          </div>
+          <div className="pricing-grid">
+            {PLANS.map((plan) => (
+              <article key={plan.id} className={`plan-card${plan.highlight ? " highlight" : ""}`}>
+                <h3>{plan.name}</h3>
+                <div className="plan-price">{plan.price}<span>{plan.period}</span></div>
+                <p>{plan.storage} storage</p>
+                <button type="button" className={plan.highlight ? "btn-primary" : "btn-secondary"} onClick={onGetStarted}>
+                  Choose {plan.name}
+                </button>
+              </article>
+            ))}
+          </div>
+        </section>
+      </main>
     </div>
   );
 }

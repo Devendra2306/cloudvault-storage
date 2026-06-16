@@ -11,6 +11,18 @@ const SOCIAL_PROVIDERS = [
   { id: "microsoft", label: "Microsoft", mark: "MS" },
 ];
 
+const friendlyError = (message) => {
+  if (!message) return "Something went wrong. Please try again.";
+  const lower = message.toLowerCase();
+  if (lower.includes("access token") || lower.includes("firebase") || lower.includes("oauth")) {
+    return "Something went wrong. Please try again.";
+  }
+  if (lower.includes("failed to fetch") || lower.includes("cannot reach")) {
+    return "We could not reach CloudVault. Please try again in a moment.";
+  }
+  return message;
+};
+
 function Spinner({ size = 22, color = "#1a1a1a" }) {
   return (
     <div
@@ -60,6 +72,7 @@ export default function AuthScreen({ onAuth, onBack, onNeedsVerification, initia
       const body = {
         email: form.email,
         password: form.password,
+        rememberMe: keepLoggedIn,
         ...(turnstileEnabled && { turnstileToken }),
       };
 
@@ -68,27 +81,31 @@ export default function AuthScreen({ onAuth, onBack, onNeedsVerification, initia
           method: "POST",
           body: JSON.stringify(body),
         });
-        if (!data?.accessToken) throw new Error("Login response did not include an access token");
+        if (!data?.accessToken) throw new Error("Something went wrong. Please try again.");
         if (keepLoggedIn) {
           localStorage.setItem("cv_token", data.accessToken);
           if (data.refreshToken) localStorage.setItem("cv_refreshToken", data.refreshToken);
           localStorage.setItem("cv_user", data.user?.fullName || form.email);
+        } else {
+          sessionStorage.setItem("cv_token", data.accessToken);
+          if (data.refreshToken) sessionStorage.setItem("cv_refreshToken", data.refreshToken);
+          sessionStorage.setItem("cv_user", data.user?.fullName || form.email);
         }
-        onAuth(data.accessToken, data.refreshToken, data.user?.fullName || form.email, data.user);
+        onAuth(data.accessToken, data.refreshToken, data.user?.fullName || form.email, data.user, keepLoggedIn);
       } else {
         body.fullName = form.fullName;
         const data = await apiFetch("/auth/register", {
           method: "POST",
           body: JSON.stringify(body),
         });
-        setInfo("Registration successful! Please check your email for the OTP to verify your account.");
+        setInfo("Account created. Check your email and open the verification link to activate your account.");
         onAuth?.(null, null, data.email || form.email, {
           email: data.email || form.email,
           fullName: data.fullName || form.fullName,
         });
       }
     } catch (e) {
-      setError(e.message);
+      setError(friendlyError(e.message));
       if (turnstileEnabled) {
         setTurnstileToken(null);
         setTurnstileVerified(false);
@@ -102,26 +119,26 @@ export default function AuthScreen({ onAuth, onBack, onNeedsVerification, initia
     setError("");
     setInfo("");
     if (!firebaseReady) {
-      setError("Social login is visible, but Firebase is not configured in this build. Check the Vercel VITE_FIREBASE_* variables and redeploy.");
+      setError("Social login is not available right now. Please use email and password.");
       logFirebaseDiagnostics(`AuthScreen:${providerId}`);
       return;
     }
     setLoading(true);
     try {
       const data = await signInWithProvider(providerId);
-      if (!data?.accessToken) throw new Error("OAuth login failed");
+      if (!data?.accessToken) throw new Error("Something went wrong. Please try again.");
       localStorage.setItem("cv_token", data.accessToken);
       if (data.refreshToken) localStorage.setItem("cv_refreshToken", data.refreshToken);
       localStorage.setItem("cv_user", data.user?.fullName || form.email);
-      onAuth(data.accessToken, data.refreshToken, data.user?.fullName || form.email, data.user);
+      onAuth(data.accessToken, data.refreshToken, data.user?.fullName || form.email, data.user, true);
     } catch (e) {
-      setError(e.message);
+      setError(friendlyError(e.message));
     }
     setLoading(false);
   };
 
   const authError = error?.includes("Please verify your email before logging in")
-    ? "Please verify your email before logging in. Check your inbox for the verification OTP, then return to sign in."
+    ? "Please verify your email before logging in. Check your inbox for the verification link, then return to sign in."
     : error;
   const needsEmailVerification = error?.includes("Please verify your email before logging in");
 
@@ -138,10 +155,10 @@ export default function AuthScreen({ onAuth, onBack, onNeedsVerification, initia
         method: "POST",
         body: JSON.stringify({ email: form.email }),
       });
-      setInfo("A new verification OTP has been sent. Enter it on the verification screen.");
+      setInfo("A new verification email has been sent. Open the link in your inbox to continue.");
       onNeedsVerification?.({ email: form.email, fullName: form.fullName });
     } catch (e) {
-      setError(e.message);
+      setError(friendlyError(e.message));
     }
     setLoading(false);
   };
@@ -173,7 +190,7 @@ export default function AuthScreen({ onAuth, onBack, onNeedsVerification, initia
       setInfo("If an account exists, a reset link has been sent.");
       setShowForgot(false);
     } catch (e) {
-      setError(e.message);
+      setError(friendlyError(e.message));
       if (turnstileEnabled) {
         setTurnstileToken(null);
         setTurnstileVerified(false);
@@ -214,9 +231,10 @@ export default function AuthScreen({ onAuth, onBack, onNeedsVerification, initia
             style={{
               width: 34,
               height: 34,
-              borderRadius: 999,
+              borderRadius: 12,
               marginBottom: 14,
-              background: "var(--gradient)",
+              background: "#000",
+              color: "#fff",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -236,8 +254,8 @@ export default function AuthScreen({ onAuth, onBack, onNeedsVerification, initia
               style={{
                 display: "flex",
                 gap: 4,
-                background: "var(--bg-secondary)",
-                borderRadius: "var(--radius)",
+                background: "#f3f4f6",
+                borderRadius: 14,
                 padding: 4,
                 marginBottom: 20,
                 border: "1px solid var(--border)",
@@ -323,7 +341,7 @@ export default function AuthScreen({ onAuth, onBack, onNeedsVerification, initia
                   className="btn-secondary"
                   style={{ minHeight: 40, fontSize: 12 }}
                 >
-                  Enter OTP
+                  Verify email
                 </button>
                 <button
                   type="button"
@@ -332,7 +350,7 @@ export default function AuthScreen({ onAuth, onBack, onNeedsVerification, initia
                   className="btn-secondary"
                   style={{ minHeight: 40, fontSize: 12 }}
                 >
-                  Resend OTP
+                  Resend email
                 </button>
               </div>
             )}
@@ -431,8 +449,8 @@ export default function AuthScreen({ onAuth, onBack, onNeedsVerification, initia
                         display: "inline-flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        background: "rgba(255,255,255,.08)",
-                        color: "var(--text)",
+                        background: "#f3f4f6",
+                        color: "#111827",
                         fontSize: 11,
                         fontWeight: 800,
                         flexShrink: 0,
@@ -445,11 +463,6 @@ export default function AuthScreen({ onAuth, onBack, onNeedsVerification, initia
                 );
               })}
             </div>
-            {!firebaseReady && (
-              <p style={{ color: "var(--danger)", fontSize: 12, lineHeight: 1.45, marginTop: 10 }}>
-                Firebase env is missing in this build: {firebaseProviderStatus.missingEnv.join(", ") || "unknown"}.
-              </p>
-            )}
           </div>
         )}
       </div>

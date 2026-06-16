@@ -218,7 +218,7 @@ function FileCardGrid({ file, token, onDelete, onShare, onPreview, onRename, onD
       {/* Thumbnail area */}
       <div style={{
         height: 170, display: "flex", alignItems: "center", justifyContent: "center",
-        background: "linear-gradient(135deg, rgba(20,184,166,.14), rgba(56,189,248,.08)), #101821", borderBottom: "1px solid var(--border)",
+        background: "linear-gradient(135deg, rgba(240,253,244,.95), rgba(239,246,255,.95))", borderBottom: "1px solid var(--border)",
         position: "relative", overflow: "hidden"
       }}>
         {isImage ? (
@@ -228,7 +228,7 @@ function FileCardGrid({ file, token, onDelete, onShare, onPreview, onRename, onD
         )}
         <div style={{
           position: "absolute", right: 8, bottom: 8, fontSize: 10, fontWeight: 700,
-          background: "rgba(0,0,0,.72)", color: "#fff", padding: "2px 6px", borderRadius: 6
+          background: "#111827", color: "#fff", padding: "2px 6px", borderRadius: 6
         }}>
           {fmt(file.size)}
         </div>
@@ -282,9 +282,9 @@ function DriveHero({ username, stats, storagePercent, onUpload, onNewFolder }) {
   return (
     <div className="drive-hero" style={{
       marginBottom: 28, padding: "28px 30px", borderRadius: "var(--radius-lg)",
-      background: "var(--gradient-soft)",
+      background: "#fff",
       border: "1px solid var(--border)",
-      boxShadow: "var(--glow)",
+      boxShadow: "0 20px 45px rgba(15,23,42,.08)",
       display: "flex", alignItems: "center", justifyContent: "space-between",
       gap: 20, flexWrap: "wrap", animation: "floatIn .35s ease",
     }}>
@@ -317,7 +317,7 @@ function AccountChrome({ children, onNavigate, onSignOut, onUpgrade }) {
       <header className="account-header" style={{
         position: "sticky", top: 0, zIndex: 90, height: 60,
         borderBottom: "1px solid var(--border)",
-        background: "rgba(6,10,16,.82)",
+        background: "rgba(255,255,255,.86)",
         backdropFilter: "blur(16px)", display: "flex", alignItems: "center",
         justifyContent: "flex-end", gap: 12, padding: "0 28px 0 316px",
       }}>
@@ -377,7 +377,7 @@ export default function CloudVault() {
   const [verifyEmailToken, setVerifyEmailToken] = useState(getVerifyTokenFromUrl);
   const [resetPasswordToken, setResetPasswordToken] = useState(getResetTokenFromUrl);
   const [screen, setScreen] = useState(() => {
-    const token = localStorage.getItem("cv_token");
+    const token = localStorage.getItem("cv_token") || sessionStorage.getItem("cv_token");
     const resetToken = getResetTokenFromUrl();
     const verifyPath = window.location.pathname.replace(/\/+$/, "") || "/";
     if (verifyPath.endsWith("/verify-email")) return "verify-email";
@@ -385,8 +385,8 @@ export default function CloudVault() {
     return token ? "app" : "landing";
   });
   const [authMode, setAuthMode] = useState("login");
-  const [token, setToken] = useState(() => localStorage.getItem("cv_token") || "");
-  const [username, setUsername] = useState(() => localStorage.getItem("cv_user") || "");
+  const [token, setToken] = useState(() => localStorage.getItem("cv_token") || sessionStorage.getItem("cv_token") || "");
+  const [username, setUsername] = useState(() => localStorage.getItem("cv_user") || sessionStorage.getItem("cv_user") || "");
   const [pendingVerification, setPendingVerification] = useState(null);
   const [files, setFiles] = useState([]);
   const [folders, setFolders] = useState([]);
@@ -408,7 +408,7 @@ export default function CloudVault() {
   const [dragging, setDragging] = useState(false);
   const [viewMode, setViewMode] = useState(() => localStorage.getItem("cv_viewMode") || "list");
   const [fileFilter, setFileFilter] = useState("all");
-  const [theme, setTheme] = useState(() => localStorage.getItem("cv_theme") || "dark");
+  const [theme, setTheme] = useState(() => localStorage.getItem("cv_theme") || "light");
   const [confirm, setConfirm] = useState(null);
   const [renaming, setRenaming] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -523,6 +523,9 @@ export default function CloudVault() {
         localStorage.removeItem("cv_token");
         localStorage.removeItem("cv_refreshToken");
         localStorage.removeItem("cv_user");
+        sessionStorage.removeItem("cv_token");
+        sessionStorage.removeItem("cv_refreshToken");
+        sessionStorage.removeItem("cv_user");
         setToken("");
         setUsername("");
         setScreen("landing");
@@ -577,7 +580,7 @@ export default function CloudVault() {
     return () => window.removeEventListener("cv-token-refreshed", onTokenRefresh);
   }, []);
 
-  const handleAuth = (accessToken, refreshToken, user, userObj) => {
+  const handleAuth = (accessToken, refreshToken, user, userObj, persist = true) => {
     if (!accessToken && userObj?.email) {
       // Registration successful - redirect to verify email
       setPendingVerification(userObj);
@@ -585,11 +588,16 @@ export default function CloudVault() {
       return;
     }
     if (!accessToken) return;
-    localStorage.setItem("cv_token", accessToken);
-    if (refreshToken) localStorage.setItem("cv_refreshToken", refreshToken);
+    const durableStorage = persist ? localStorage : sessionStorage;
+    const transientStorage = persist ? sessionStorage : localStorage;
+    durableStorage.setItem("cv_token", accessToken);
+    transientStorage.removeItem("cv_token");
+    if (refreshToken) durableStorage.setItem("cv_refreshToken", refreshToken);
+    transientStorage.removeItem("cv_refreshToken");
     const label = typeof user === "string" ? user : userObj?.fullName || userObj?.email;
-    localStorage.setItem("cv_user", label || "");
-    if (userObj?.avatarUrl) localStorage.setItem("cv_avatar", userObj.avatarUrl);
+    durableStorage.setItem("cv_user", label || "");
+    transientStorage.removeItem("cv_user");
+    if (userObj?.avatarUrl) durableStorage.setItem("cv_avatar", userObj.avatarUrl);
     setToken(accessToken);
     setUsername(label || "");
     setScreen("app");
@@ -624,7 +632,7 @@ export default function CloudVault() {
 
   const logout = async () => {
     try {
-      const refreshToken = localStorage.getItem("cv_refreshToken");
+      const refreshToken = localStorage.getItem("cv_refreshToken") || sessionStorage.getItem("cv_refreshToken");
       await api("/auth/logout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -634,6 +642,9 @@ export default function CloudVault() {
     localStorage.removeItem("cv_token");
     localStorage.removeItem("cv_refreshToken");
     localStorage.removeItem("cv_user");
+    sessionStorage.removeItem("cv_token");
+    sessionStorage.removeItem("cv_refreshToken");
+    sessionStorage.removeItem("cv_user");
     setToken("");
     setUsername("");
     setScreen("landing");
@@ -886,6 +897,7 @@ export default function CloudVault() {
       <>
         <style>{GLOBAL_STYLES}</style>
         <VerifyEmailPage
+          token={verifyEmailToken}
           onVerified={() => {
             setVerifyEmailToken(null);
             window.history.replaceState({}, "", "/");
@@ -946,7 +958,7 @@ export default function CloudVault() {
 
   if (screen === "verify-email" && !token) {
     return (
-      <VerifyEmailPage
+        <VerifyEmailPage
         email={pendingVerification?.email}
         onVerified={() => {
           setPendingVerification(null);
@@ -1404,6 +1416,8 @@ function AppPages({ appPage, setAppPage, api, notify, stats, usageDetail, adminU
         onBack={back}
         onUpdated={() => refreshAll()}
         notify={notify}
+        theme={theme}
+        onThemeChange={setTheme}
       />
     );
   }

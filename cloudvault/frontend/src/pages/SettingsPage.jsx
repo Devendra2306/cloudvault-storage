@@ -1,6 +1,13 @@
 import { useState } from "react";
 
-export default function SettingsPage({ account, api, token, onBack, onUpdated, notify }) {
+const THEMES = [
+  { id: "dark", label: "Dark Professional" },
+  { id: "light", label: "Light Professional" },
+  { id: "midnight", label: "Midnight Blue" },
+  { id: "purple", label: "Purple Professional" },
+];
+
+export default function SettingsPage({ account, api, token, onBack, onUpdated, notify, theme = "dark", onThemeChange }) {
   const [name, setName] = useState(account?.fullName || "");
   const [avatar, setAvatar] = useState(account?.avatarUrl || "");
   const [currentPassword, setCurrentPassword] = useState("");
@@ -90,6 +97,30 @@ export default function SettingsPage({ account, api, token, onBack, onUpdated, n
           <button type="button" onClick={changePassword} disabled={saving} style={primaryBtn}>Update password</button>
         </section>
       )}
+
+      <section style={{ ...card, marginTop: 16 }}>
+        <h3 style={sectionTitle}>Theme</h3>
+        <p style={hint}>Choose how CloudVault looks across this browser.</p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 10 }}>
+          {THEMES.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => onThemeChange?.(item.id)}
+              className={theme === item.id ? "btn-primary" : "btn-secondary"}
+              style={{ minHeight: 44, textAlign: "left" }}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section style={{ ...card, marginTop: 16 }}>
+        <h3 style={sectionTitle}>Notifications</h3>
+        <p style={hint}>Product updates, file activity, and security emails are enabled for important account events.</p>
+        <button type="button" style={secondaryBtn}>Email notifications on</button>
+      </section>
 
       <section style={{ ...card, marginTop: 16, borderColor: "rgba(255,77,77,.3)" }}>
         <h3 style={{ ...sectionTitle, color: "var(--danger)" }}>Delete account</h3>
