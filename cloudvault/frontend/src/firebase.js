@@ -59,9 +59,9 @@ export function getFirebaseProviderStatus() {
 
 export function logFirebaseDiagnostics(source = "firebase") {
   const status = getFirebaseProviderStatus();
-  console.info(`[${source}] import.meta.env.VITE_FIREBASE_API_KEY`, import.meta.env.VITE_FIREBASE_API_KEY);
-  console.info(`[${source}] isFirebaseConfigured()`, isFirebaseConfigured());
-  console.info(`[${source}] social provider configuration status`, status);
+  if (!status.configured) {
+    console.info(`[${source}] social login is not configured for this build`);
+  }
 }
 
 export async function signInWithProvider(providerId) {

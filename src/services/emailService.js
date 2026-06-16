@@ -12,7 +12,6 @@ console.log('EMAIL SERVICE: Loaded', {
   configured: Boolean(resend),
   emailFrom: EMAIL_FROM,
   appUrl: APP_URL,
-  apiKeyPrefix: process.env.RESEND_API_KEY ? `${process.env.RESEND_API_KEY.slice(0, 6)}...` : null,
 });
 
 /**
@@ -20,7 +19,7 @@ console.log('EMAIL SERVICE: Loaded', {
  */
 
 const emailTemplates = {
-  verification: (name, otp) => ({
+  verification: (name, verifyLink) => ({
     subject: 'Verify Your CloudVault Account',
     html: `
       <!DOCTYPE html>
@@ -35,7 +34,7 @@ const emailTemplates = {
           .header { text-align: center; margin-bottom: 30px; }
           .logo { font-size: 24px; font-weight: bold; color: #2563eb; }
           .content { background: white; padding: 25px; border-radius: 8px; margin-bottom: 20px; }
-          .otp { font-size: 32px; font-weight: bold; color: #2563eb; text-align: center; padding: 20px; background: #f0f9ff; border-radius: 8px; margin: 20px 0; letter-spacing: 5px; }
+          .link { word-break: break-all; color: #2563eb; font-size: 13px; line-height: 1.6; }
           .button { display: inline-block; padding: 12px 30px; background: #2563eb; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
           .footer { text-align: center; font-size: 12px; color: #666; margin-top: 30px; }
         </style>
@@ -48,9 +47,10 @@ const emailTemplates = {
           <div class="content">
             <h2>Welcome to CloudVault!</h2>
             <p>Hi ${name},</p>
-            <p>Thank you for signing up. To complete your registration, please verify your email address using the OTP below:</p>
-            <div class="otp">${otp}</div>
-            <p>This OTP will expire in 15 minutes.</p>
+            <p>Thank you for signing up. To complete your registration, verify your email address with the secure link below:</p>
+            <a href="${verifyLink}" class="button">Verify email</a>
+            <p class="link">${verifyLink}</p>
+            <p>This link will expire in 24 hours.</p>
             <p>If you didn't create an account with CloudVault, please ignore this email.</p>
           </div>
           <div class="footer">
@@ -269,7 +269,7 @@ function resolveTemplate(templateName, templateData) {
   }
 
   if (templateName === 'verification') {
-    return template(templateData.name, templateData.otp);
+    return template(templateData.name, templateData.verifyLink);
   }
   if (templateName === 'forgotPassword') {
     return template(templateData.name, templateData.resetLink);
@@ -310,7 +310,6 @@ async function sendEmail(to, templateName, templateData, text) {
       from: payload.from,
       to: payload.to,
       subject: payload.subject,
-      apiKeyPrefix: process.env.RESEND_API_KEY ? `${process.env.RESEND_API_KEY.slice(0, 6)}...` : null,
     });
 
     const result = await resend.emails.send(payload);

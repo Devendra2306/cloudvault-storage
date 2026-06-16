@@ -1,8 +1,9 @@
 import { API } from "./constants.js";
 
 async function refreshAccessToken() {
-  const refreshToken = localStorage.getItem("cv_refreshToken");
+  const refreshToken = localStorage.getItem("cv_refreshToken") || sessionStorage.getItem("cv_refreshToken");
   if (!refreshToken) return null;
+  const storage = localStorage.getItem("cv_refreshToken") ? localStorage : sessionStorage;
   try {
     const res = await fetch(`${API}/auth/refresh`, {
       method: "POST",
@@ -13,7 +14,7 @@ async function refreshAccessToken() {
     const payload = await res.json();
     const accessToken = payload.data?.accessToken || payload.accessToken;
     if (!accessToken) return null;
-    localStorage.setItem("cv_token", accessToken);
+    storage.setItem("cv_token", accessToken);
     window.dispatchEvent(new CustomEvent("cv-token-refreshed", { detail: { token: accessToken } }));
     return accessToken;
   } catch {
@@ -49,7 +50,11 @@ export const apiFetch = async (path, opts = {}, token, retried = false) => {
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: "Unknown error" }));
-    throw new Error(err.message || err.error || `Request failed (${res.status})`);
+    const rawMessage = err.message || err.error || "";
+    const safeMessage = rawMessage.toLowerCase().includes("token")
+      ? "Something went wrong. Please try again."
+      : rawMessage || `Request failed (${res.status})`;
+    throw new Error(safeMessage);
   }
 
   const contentType = res.headers.get("content-type") || "";

@@ -49,6 +49,7 @@ const schemas = {
         'any.required': 'Password is required',
       }),
     fullName: Joi.string().min(2).max(100).optional(),
+    turnstileToken: Joi.string().optional(),
   }),
 
   login: Joi.object({
@@ -59,6 +60,8 @@ const schemas = {
     password: Joi.string().required().messages({
       'any.required': 'Password is required',
     }),
+    rememberMe: Joi.boolean().optional(),
+    turnstileToken: Joi.string().optional(),
   }),
 
   refreshToken: Joi.object({
@@ -72,6 +75,7 @@ const schemas = {
       'string.email': 'Please provide a valid email address',
       'any.required': 'Email is required',
     }),
+    turnstileToken: Joi.string().optional(),
   }),
 
   resetPassword: Joi.object({

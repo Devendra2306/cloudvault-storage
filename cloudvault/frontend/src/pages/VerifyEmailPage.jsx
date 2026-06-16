@@ -1,36 +1,34 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { API } from "../lib/constants.js";
+import { GLOBAL_STYLES } from "../styles/globalStyles.js";
 
-export default function VerifyEmailPage({ email, onVerified, onBack }) {
+export default function VerifyEmailPage({ email, token, onVerified, onBack }) {
   const [emailValue, setEmailValue] = useState(email || "");
-  const [otp, setOtp] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(Boolean(token));
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
   const [success, setSuccess] = useState(false);
 
-  const handleVerify = async (e) => {
-    e.preventDefault();
+  useEffect(() => {
+    if (!token) return;
+    verifyToken(token);
+  }, [token]);
+
+  const verifyToken = async (verificationToken) => {
     setLoading(true);
     setError("");
-    setInfo("");
-
     try {
       const res = await fetch(`${API}/auth/verify-email`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: emailValue, otp }),
+        body: JSON.stringify({ token: verificationToken }),
       });
       const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        throw new Error(data.message || "Verification failed");
-      }
-
+      if (!res.ok || !data.success) throw new Error(data.message || "Verification failed");
       setSuccess(true);
-      setTimeout(() => onVerified?.(), 1500);
-    } catch (err) {
-      setError(err.message);
+      setTimeout(() => onVerified?.(), 1200);
+    } catch {
+      setError("This verification link is invalid or expired. Request a fresh email and try again.");
     } finally {
       setLoading(false);
     }
@@ -38,7 +36,7 @@ export default function VerifyEmailPage({ email, onVerified, onBack }) {
 
   const handleResend = async () => {
     if (!emailValue) {
-      setError("Please enter your email first");
+      setError("Enter your email address first.");
       return;
     }
     setLoading(true);
@@ -52,86 +50,58 @@ export default function VerifyEmailPage({ email, onVerified, onBack }) {
         body: JSON.stringify({ email: emailValue }),
       });
       const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        throw new Error(data.message || "Failed to resend OTP");
-      }
-
-      setInfo("A new verification OTP has been sent. Check your inbox and spam folder.");
-    } catch (err) {
-      setError(err.message);
+      if (!res.ok || !data.success) throw new Error(data.message || "Failed to send verification email");
+      setInfo("A fresh verification email is on its way. Open the link in your inbox to continue.");
+    } catch {
+      setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  if (success) {
-    return (
-      <div style={{ maxWidth: 400, margin: "40px auto", padding: 30, background: "#1f2937", borderRadius: 12, color: "white" }}>
-        <h2 style={{ textAlign: "center", marginBottom: 20 }}>✓ Email Verified!</h2>
-        <p style={{ textAlign: "center", color: "#9ca3af" }}>You can now login to your account.</p>
-      </div>
-    );
-  }
-
   return (
-    <div style={{ maxWidth: 400, margin: "40px auto", padding: 30, background: "#1f2937", borderRadius: 12, color: "white" }}>
-      <h2 style={{ textAlign: "center", marginBottom: 20 }}>Verify Email</h2>
-      <p style={{ textAlign: "center", color: "#9ca3af", marginBottom: 20 }}>Enter the OTP sent to your email</p>
-      
-      <form onSubmit={handleVerify}>
-        <div style={{ marginBottom: 15 }}>
-          <label style={{ display: "block", marginBottom: 5, color: "#9ca3af" }}>Email</label>
-          <input
-            type="email"
-            value={emailValue}
-            onChange={(e) => setEmailValue(e.target.value)}
-            required
-            style={{ width: "100%", padding: 10, borderRadius: 6, border: "1px solid #374151", background: "#111827", color: "white" }}
-          />
-        </div>
-        
-        <div style={{ marginBottom: 15 }}>
-          <label style={{ display: "block", marginBottom: 5, color: "#9ca3af" }}>OTP</label>
-          <input
-            type="text"
-            value={otp}
-            onChange={(e) => setOtp(e.target.value)}
-            maxLength={6}
-            required
-            placeholder="123456"
-            style={{ width: "100%", padding: 10, borderRadius: 6, border: "1px solid #374151", background: "#111827", color: "white", letterSpacing: 5, fontSize: 20, textAlign: "center" }}
-          />
-        </div>
+    <div className="auth-screen">
+      <style>{GLOBAL_STYLES}</style>
+      <div className="auth-card">
+        <div style={{ width: 44, height: 44, borderRadius: 12, background: "var(--gradient)", marginBottom: 18 }} />
+        <h1 style={{ color: "var(--text)", fontSize: 26, fontWeight: 800, marginBottom: 8 }}>
+          {success ? "Email verified" : token ? "Verifying your email" : "Check your inbox"}
+        </h1>
+        <p style={{ color: "var(--text-muted)", fontSize: 14, lineHeight: 1.6, marginBottom: 20 }}>
+          {success
+            ? "Your account is ready. You can now log in with your email and password."
+            : token
+              ? "Hold tight while we confirm your CloudVault account."
+              : "Open the verification link we sent after registration. You only need to do this once."}
+        </p>
 
-        {error && <p style={{ color: "#ef4444", marginBottom: 15, fontSize: 14 }}>{error}</p>}
-        {info && <p style={{ color: "#38bdf8", marginBottom: 15, fontSize: 14 }}>{info}</p>}
+        {!token && !success && (
+          <>
+            <label style={{ display: "block", marginBottom: 14 }}>
+              <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-secondary)" }}>Email address</span>
+              <input
+                className="input-field"
+                type="email"
+                value={emailValue}
+                onChange={(e) => setEmailValue(e.target.value)}
+                placeholder="you@company.com"
+                style={{ marginTop: 6 }}
+              />
+            </label>
+            <button type="button" onClick={handleResend} disabled={loading} className="btn-primary" style={{ width: "100%" }}>
+              {loading ? "Sending..." : "Resend verification email"}
+            </button>
+          </>
+        )}
 
-        <button
-          type="submit"
-          disabled={loading}
-          style={{ width: "100%", padding: 12, background: "#2563eb", color: "white", border: "none", borderRadius: 6, cursor: loading ? "not-allowed" : "pointer", marginBottom: 10 }}
-        >
-          {loading ? "Verifying..." : "Verify Email"}
+        {loading && <p style={{ color: "var(--accent-blue)", fontSize: 13, marginTop: 14 }}>Working on it...</p>}
+        {error && <p role="alert" style={{ color: "var(--danger)", fontSize: 13, lineHeight: 1.5, marginTop: 14 }}>{error}</p>}
+        {info && <p style={{ color: "var(--accent-blue)", fontSize: 13, lineHeight: 1.5, marginTop: 14 }}>{info}</p>}
+
+        <button type="button" onClick={onBack} className="btn-secondary" style={{ width: "100%", marginTop: 14 }}>
+          Back to login
         </button>
-
-        <button
-          type="button"
-          onClick={handleResend}
-          disabled={loading}
-          style={{ width: "100%", padding: 12, background: "#374151", color: "white", border: "none", borderRadius: 6, cursor: loading ? "not-allowed" : "pointer", marginBottom: 10 }}
-        >
-          {loading ? "Sending..." : "Resend OTP"}
-        </button>
-
-        <button
-          type="button"
-          onClick={onBack}
-          style={{ width: "100%", padding: 12, background: "transparent", color: "#9ca3af", border: "none", cursor: "pointer" }}
-        >
-          Back to Login
-        </button>
-      </form>
+      </div>
     </div>
   );
 }

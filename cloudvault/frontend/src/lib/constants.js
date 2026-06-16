@@ -6,7 +6,7 @@ export const API =
 export const BRAND = {
   name: "CloudVault",
   shortName: "CloudVault",
-  tagline: "Secure Cloud Storage For Everyone",
+  tagline: "The intelligent home for your digital life.",
   logo: "☁",
 };
 
