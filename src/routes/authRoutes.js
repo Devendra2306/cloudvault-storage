@@ -53,6 +53,13 @@ router.post('/verify-email', authController.verifyEmail);
 router.post('/forgot-password', validate(schemas.forgotPassword), authController.forgotPassword);
 
 /**
+ * @route   POST /api/v1/auth/verify-otp
+ * @desc    Verify OTP for password reset
+ * @access  Public
+ */
+router.post('/verify-otp', validate(schemas.verifyOtp), authController.verifyOtp);
+
+/**
  * @route   POST /api/v1/auth/reset-password
  * @desc    Reset password with token
  * @access  Public

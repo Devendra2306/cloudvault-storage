@@ -78,6 +78,18 @@ const schemas = {
     turnstileToken: Joi.string().optional(),
   }),
 
+  verifyOtp: Joi.object({
+    email: Joi.string().email().required().messages({
+      'string.email': 'Please provide a valid email address',
+      'any.required': 'Email is required',
+    }),
+    otp: Joi.string().length(6).pattern(/^\d{6}$/).required().messages({
+      'any.required': 'OTP is required',
+      'string.length': 'OTP must be 6 digits',
+      'string.pattern.base': 'OTP must be 6 digits',
+    }),
+  }),
+
   resetPassword: Joi.object({
     token: Joi.string().required().messages({
       'any.required': 'Reset token is required',
