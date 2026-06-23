@@ -6,7 +6,7 @@ const {
   generateRefreshToken,
   verifyRefreshToken,
 } = require('../config/jwt');
-const { sendVerificationEmail, sendPasswordResetEmail, sendWelcomeEmail } = require('../config/email');
+const { sendVerificationEmail, sendPasswordResetEmail, sendWelcomeEmail, sendOtpEmail, sendPasswordChangedEmail } = require('../config/email');
 const { verifyFirebaseIdToken } = require('../config/firebase');
 const {
   formatAccountUser,
@@ -402,7 +402,12 @@ const verifyEmail = async (req, res, next) => {
 };
 
 /**
- * Request password reset
+ * Generate a 6-digit OTP
+ */
+const generateOtp = () => Math.floor(100000 + Math.random() * 900000).toString();
+
+/**
+ * Request password reset — sends 6-digit OTP to email
  */
 const forgotPassword = async (req, res, next) => {
   try {
@@ -410,38 +415,101 @@ const forgotPassword = async (req, res, next) => {
 
     // Verify Turnstile token if provided
     if (turnstileToken) {
-      console.log('AUTH CONTROLLER: Verifying Turnstile token for forgot password');
       const turnstileResult = await verifyTurnstileToken(turnstileToken, req.ip);
       if (!turnstileResult.success) {
         throw new ValidationError(turnstileResult.error || 'Security verification failed');
       }
-      console.log('AUTH CONTROLLER: Turnstile verification successful');
     } else if (process.env.TURNSTILE_SECRET_KEY) {
-      // Turnstile is configured but no token provided
       throw new ValidationError('Security verification is required');
     }
 
-    // Find user
-    const user = await prisma.user.findUnique({
-      where: { email },
-    });
+    const user = await prisma.user.findUnique({ where: { email } });
 
     if (!user) {
-      // Don't reveal if user exists or not
       return res.json({
         success: true,
-        message: 'If an account exists with this email, a password reset link has been sent',
+        message: 'If an account exists with this email, an OTP has been sent',
       });
     }
 
-    // Create reset token
-    const resetToken = uuidv4();
-    console.log('AUTH CONTROLLER: Password reset token generated', {
-      userId: user.id,
-      email,
-      expiresInMinutes: 15,
+    // Invalidate any existing OTPs for this user
+    await prisma.verificationToken.updateMany({
+      where: {
+        userId: user.id,
+        tokenType: 'password_reset_otp',
+        usedAt: null,
+      },
+      data: { usedAt: new Date() },
     });
-    
+
+    const otp = generateOtp();
+    const otpToken = uuidv4(); // unique storage key
+
+    await prisma.verificationToken.create({
+      data: {
+        userId: user.id,
+        token: otpToken,
+        tokenType: 'password_reset_otp',
+        expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 min
+        // Store OTP in token field as: "otp:XXXXXX:uuid"
+      },
+    });
+
+    // Re-create with OTP embedded in token field
+    await prisma.verificationToken.update({
+      where: { token: otpToken },
+      data: { token: `otp:${otp}:${otpToken}` },
+    });
+
+    try {
+      await sendOtpEmail(email, user.fullName || email.split('@')[0], otp);
+    } catch (emailError) {
+      console.error('AUTH CONTROLLER: OTP email send failure:', emailError);
+    }
+
+    res.json({
+      success: true,
+      message: 'If an account exists with this email, an OTP has been sent',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Verify OTP — returns a reset session token
+ */
+const verifyOtp = async (req, res, next) => {
+  try {
+    const { email, otp } = req.body;
+    if (!email || !otp) throw new ValidationError('Email and OTP are required');
+
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) throw new ValidationError('Invalid OTP or email');
+
+    // Find matching OTP token
+    const tokens = await prisma.verificationToken.findMany({
+      where: {
+        userId: user.id,
+        tokenType: 'password_reset_otp',
+        usedAt: null,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const matching = tokens.find((t) => t.token === `otp:${otp}:${t.token.split(':')[2]}`);
+
+    if (!matching) throw new ValidationError('Invalid OTP');
+    if (matching.expiresAt < new Date()) throw new ValidationError('OTP has expired. Please request a new one.');
+
+    // Mark OTP as used
+    await prisma.verificationToken.update({
+      where: { id: matching.id },
+      data: { usedAt: new Date() },
+    });
+
+    // Create a short-lived password reset token (15 min)
+    const resetToken = uuidv4();
     await prisma.verificationToken.create({
       data: {
         userId: user.id,
@@ -451,22 +519,10 @@ const forgotPassword = async (req, res, next) => {
       },
     });
 
-    // Send reset email
-    try {
-      console.log('AUTH CONTROLLER: Sending password reset email to:', email);
-      const resetResult = await sendPasswordResetEmail(email, resetToken);
-      console.log('AUTH CONTROLLER: Password reset email result:', JSON.stringify(resetResult, null, 2));
-      if (!resetResult?.success) {
-        console.error('AUTH CONTROLLER: Password reset email send failed:', resetResult);
-      }
-    } catch (emailError) {
-      console.error('AUTH CONTROLLER: Password reset email send failure:', emailError);
-      console.error('AUTH CONTROLLER: Email error stack:', emailError.stack);
-    }
-
     res.json({
       success: true,
-      message: 'If an account exists with this email, a password reset link has been sent',
+      data: { resetToken },
+      message: 'OTP verified. You can now reset your password.',
     });
   } catch (error) {
     next(error);
@@ -480,55 +536,39 @@ const resetPassword = async (req, res, next) => {
   try {
     const { token, newPassword } = req.body;
 
-    // Find verification token
-    console.log('AUTH CONTROLLER: Looking up password reset token');
-    const verificationToken = await prisma.verificationToken.findUnique({
-      where: { token },
+    const verificationToken = await prisma.verificationToken.findFirst({
+      where: {
+        token,
+        tokenType: 'password_reset',
+        usedAt: null,
+      },
     });
 
-    if (!verificationToken) {
-      console.log('AUTH CONTROLLER: Invalid reset token');
-      throw new ValidationError('Invalid reset token');
-    }
+    if (!verificationToken) throw new ValidationError('Invalid or expired reset token');
+    if (verificationToken.expiresAt < new Date()) throw new ValidationError('Reset token has expired. Please start over.');
 
-    if (verificationToken.usedAt) {
-      console.log('AUTH CONTROLLER: Reset token already used');
-      throw new ValidationError('Token has already been used');
-    }
-
-    if (verificationToken.expiresAt < new Date()) {
-      console.log('AUTH CONTROLLER: Reset token expired at:', verificationToken.expiresAt);
-      throw new ValidationError('Reset token has expired');
-    }
-
-    if (verificationToken.tokenType !== 'password_reset') {
-      console.log('AUTH CONTROLLER: Invalid token type:', verificationToken.tokenType);
-      throw new ValidationError('Invalid token type');
-    }
-
-    console.log('AUTH CONTROLLER: Reset token valid, updating password for user:', verificationToken.userId);
-    // Hash new password
     const passwordHash = await bcrypt.hash(newPassword, 12);
 
-    // Update user password
     await prisma.user.update({
       where: { id: verificationToken.userId },
       data: { passwordHash },
     });
 
-    console.log('AUTH CONTROLLER: Marking reset token as used');
-    // Mark token as used
     await prisma.verificationToken.update({
       where: { id: verificationToken.id },
       data: { usedAt: new Date() },
     });
 
-    console.log('AUTH CONTROLLER: Revoking all sessions for user:', verificationToken.userId);
-    // Revoke all sessions for this user
     await prisma.session.updateMany({
       where: { userId: verificationToken.userId },
       data: { revokedAt: new Date() },
     });
+
+    // Send confirmation email
+    try {
+      const user = await prisma.user.findUnique({ where: { id: verificationToken.userId }, select: { email: true, fullName: true } });
+      if (user) await sendPasswordChangedEmail(user.email, user.fullName || user.email.split('@')[0]);
+    } catch {}
 
     res.json({
       success: true,
@@ -604,6 +644,7 @@ module.exports = {
   refreshToken,
   verifyEmail,
   forgotPassword,
+  verifyOtp,
   resetPassword,
   firebaseAuth,
 };

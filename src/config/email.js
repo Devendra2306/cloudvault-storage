@@ -28,6 +28,13 @@ const sendPasswordResetEmail = async (to, token) => {
 };
 
 /**
+ * Send OTP email for password reset
+ */
+const sendOtpEmail = async (to, fullName, otp) => {
+  return sendEmail(to, 'otpEmail', { name: fullName, otp });
+};
+
+/**
  * Send password changed alert
  */
 const sendPasswordChangedEmail = async (to, fullName) => {
@@ -76,6 +83,7 @@ module.exports = {
   sendWelcomeEmail,
   sendVerificationEmail,
   sendPasswordResetEmail,
+  sendOtpEmail,
   sendPasswordChangedEmail,
   sendNewLoginEmail,
   sendShareInvitationEmail,
