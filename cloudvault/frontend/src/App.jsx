@@ -68,6 +68,22 @@ function ProgressBar({ value }) {
   );
 }
 
+function BrandMark({ size = 44 }) {
+  return (
+    <span style={{
+      width: size, height: size, borderRadius: Math.round(size * 0.28),
+      background: "var(--gradient)", display: "inline-flex", alignItems: "center",
+      justifyContent: "center", boxShadow: "0 14px 30px rgba(0,183,79,.26)",
+      flexShrink: 0,
+    }}>
+      <svg width={Math.round(size * 0.62)} height={Math.round(size * 0.62)} viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <path d="M9.5 21.5h14a5.3 5.3 0 0 0 .4-10.6A8 8 0 0 0 8.4 8.8 6.5 6.5 0 0 0 9.5 21.5Z" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M10 21.5h14" stroke="white" strokeWidth="3" strokeLinecap="round"/>
+      </svg>
+    </span>
+  );
+}
+
 function DownloadManager({ jobs, history }) {
   if (!jobs.length && !history.length) return null;
   return (
@@ -281,18 +297,18 @@ function DriveHero({ username, stats, storagePercent, onUpload, onNewFolder }) {
 
   return (
     <div className="drive-hero" style={{
-      marginBottom: 28, padding: "28px 30px", borderRadius: "var(--radius-lg)",
-      background: "#fff",
+      marginBottom: 28, padding: "30px 32px", borderRadius: "var(--radius-lg)",
+      background: "linear-gradient(135deg, rgba(17,26,43,.98), rgba(13,27,47,.96))",
       border: "1px solid var(--border)",
-      boxShadow: "0 20px 45px rgba(15,23,42,.08)",
+      boxShadow: "0 24px 60px rgba(0,0,0,.2)",
       display: "flex", alignItems: "center", justifyContent: "space-between",
       gap: 20, flexWrap: "wrap", animation: "floatIn .35s ease",
     }}>
       <div>
-        <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--accent-blue)", marginBottom: 6 }}>
-          My Cloud
+        <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--accent)", marginBottom: 6 }}>
+          My Drive
         </div>
-        <h1 style={{ fontSize: 28, fontWeight: 800, color: "var(--text)", marginBottom: 6, lineHeight: 1.15 }}>
+        <h1 style={{ fontSize: 34, fontWeight: 900, color: "var(--text)", marginBottom: 6, lineHeight: 1.12 }}>
           {greeting}, {username || "there"}
         </h1>
         <p style={{ color: "var(--text-secondary)", fontSize: 14, maxWidth: 520 }}>
@@ -315,9 +331,9 @@ function AccountChrome({ children, onNavigate, onSignOut, onUpgrade }) {
       <TrialBanner account={account} onUpgrade={onUpgrade} />
       <StorageWarning account={account} onManage={() => onNavigate("billing")} />
       <header className="account-header" style={{
-        position: "sticky", top: 0, zIndex: 90, height: 60,
+        position: "sticky", top: 0, zIndex: 90, height: 76,
         borderBottom: "1px solid var(--border)",
-        background: "rgba(255,255,255,.86)",
+        background: "rgba(11,19,34,.88)",
         backdropFilter: "blur(16px)", display: "flex", alignItems: "center",
         justifyContent: "flex-end", gap: 12, padding: "0 28px 0 316px",
       }}>
@@ -1025,40 +1041,52 @@ export default function CloudVault() {
       <div className={`sidebar ${sidebarOpen ? "open" : ""}`} style={{
         position: "fixed", left: 0, top: 0, bottom: 0, width: 296,
         background: "var(--bg-sidebar)", borderRight: "1px solid var(--border)",
-        padding: "20px 18px", display: "flex", flexDirection: "column", gap: 7, zIndex: 100,
+        padding: "18px 16px", display: "flex", flexDirection: "column", gap: 7, zIndex: 100,
         transition: "transform .3s cubic-bezier(.4,0,.2,1)",
         ...(isMobile ? { transform: sidebarOpen ? "translateX(0)" : "translateX(-100%)" } : {})
       }}>
         {/* Logo */}
-        <div style={{ marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{
-            width: 44, height: 44, borderRadius: 999, background: "var(--gradient)",
-            display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20,
-            boxShadow: "0 10px 24px rgba(20,184,166,.24)", flexShrink: 0
-          }}>{BRAND.logo}</div>
+        <div style={{ marginBottom: 12, display: "flex", alignItems: "center", gap: 10 }}>
+          <BrandMark size={44} />
           <div>
-            <div style={{ fontSize: 26, fontWeight: 800, color: "var(--text)" }}>{BRAND.name}</div>
+            <div style={{ fontSize: 24, fontWeight: 900, color: "var(--text)", letterSpacing: "-0.02em" }}>{BRAND.name}</div>
             <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 1 }}>@{username}</div>
           </div>
         </div>
 
+        <button type="button" onClick={() => fileInput.current?.click()} className="btn-primary" style={{
+          minHeight: 58, borderRadius: 16, fontSize: 17, justifyContent: "center",
+          display: "flex", alignItems: "center", gap: 10, margin: "4px 0 18px",
+        }}>
+          + New
+        </button>
+
         {/* Nav items */}
         {[
-          { id: "drive", icon: BRAND.logo, label: "My Cloud" },
-          { id: "recent", icon: "🕘", label: "Recent" },
-          { id: "starred", icon: "★", label: "Starred" },
-          { id: "shared", icon: "🔗", label: "Shared" },
-          { id: "dashboard", icon: "📊", label: "Storage" },
-          { id: "trash", icon: "🗑", label: "Trash" },
-          { id: "activity", icon: "📋", label: "Activity" },
-          ...(userRole === "admin" || userRole === "super_admin" ? [{ id: "admin", icon: "⚙", label: "Admin" }] : []),
+          { id: "drive", icon: "Drive", label: "My Drive" },
+          { id: "recent", icon: "Recent", label: "Recent" },
+          { id: "starred", icon: "Star", label: "Starred" },
+          { id: "shared", icon: "Share", label: "Shared" },
+          { id: "dashboard", icon: "Usage", label: "Storage" },
+          { id: "trash", icon: "Trash", label: "Trash" },
+          { id: "activity", icon: "Logs", label: "Activity" },
+          ...(userRole === "admin" || userRole === "super_admin" ? [{ id: "admin", icon: "Admin", label: "Admin" }] : []),
         ].map((item) => (
           <button
             key={item.id}
             type="button"
             className={`nav-item${activeView === item.id ? " active" : ""}`}
             onClick={() => { setAppPage(null); setActiveView(item.id); setSidebarOpen(false); if (item.id === "drive") { setCurrentFolder(null); setFolderPath([]); } }}
-          >{item.icon} {item.label}</button>
+          >
+            <span style={{
+              minWidth: 46, height: 24, borderRadius: 8,
+              display: "inline-flex", alignItems: "center", justifyContent: "center",
+              background: activeView === item.id ? "rgba(0,183,79,.18)" : "rgba(148,163,184,.12)",
+              color: activeView === item.id ? "var(--accent)" : "var(--text-muted)",
+              fontSize: 10, fontWeight: 900, letterSpacing: ".02em",
+            }}>{item.icon}</span>
+            <span>{item.label}</span>
+          </button>
         ))}
 
         <div style={{ borderTop: "1px solid var(--border)", margin: "12px 0 8px" }} />
@@ -1079,11 +1107,14 @@ export default function CloudVault() {
         {/* Bottom section */}
         <div style={{ marginTop: "auto" }}>
           {/* Storage */}
-          <div style={{ marginBottom: 16, background: "var(--bg-card)", borderRadius: "var(--radius)", padding: "14px", border: "1px solid var(--border)" }}>
+          <div style={{ marginBottom: 16, background: "linear-gradient(180deg, rgba(0,183,79,.1), rgba(17,26,43,.9))", borderRadius: 18, padding: "16px", border: "1px solid rgba(0,183,79,.22)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "var(--text-secondary)", marginBottom: 8 }}>
               <span style={{ fontWeight: 600 }}>Free</span><span>{fmt(stats.storageUsed)} of {fmt(storageLimit)} used</span>
             </div>
             <ProgressBar value={storagePercent} />
+            <button type="button" onClick={() => setAppPage("billing")} className="btn-primary" style={{ width: "100%", marginTop: 14, minHeight: 44 }}>
+              Upgrade Now
+            </button>
           </div>
 
           {/* Sign out */}
@@ -1092,7 +1123,7 @@ export default function CloudVault() {
       </div>
 
       {/* Main Content */}
-      <div className="main-content" style={{ marginLeft: isMobile ? 0 : 296, padding: "24px 32px", minHeight: "100vh", paddingTop: 18 }}>
+      <div className="main-content" style={{ marginLeft: isMobile ? 0 : 296, padding: "28px 40px", minHeight: "100vh", paddingTop: 26 }}>
         <AppPages
           appPage={appPage}
           setAppPage={setAppPage}
@@ -1148,12 +1179,12 @@ export default function CloudVault() {
 
         <div className="drive-toolbar">
           <div className="drive-search" style={{ flex: 1, position: "relative", minWidth: 200 }}>
-            <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", fontSize: 16, opacity: .5 }}>🔍</span>
+            <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", fontSize: 11, opacity: .72, fontWeight: 900, letterSpacing: ".04em" }}>SEARCH</span>
             <input
               className="input-field"
-              placeholder={`Search ${BRAND.name}…`} value={search}
+              placeholder={`Search ${BRAND.name}...`} value={search}
               onChange={e => setSearch(e.target.value)}
-              style={{ width: "100%", maxWidth: 520, padding: "12px 14px 12px 42px" }}
+              style={{ width: "100%", maxWidth: 560, padding: "14px 14px 14px 78px", borderRadius: 14, background: "var(--bg-card)" }}
             />
           </div>
           <button
@@ -1172,9 +1203,9 @@ export default function CloudVault() {
 
           {activeView === "drive" && (
           <div className="drive-actions">
-            <button type="button" onClick={() => setShowNewFolder(v => !v)} className="btn-secondary">⊞ New folder</button>
-            <button type="button" onClick={() => fileInput.current?.click()} className="btn-primary">↑ Upload</button>
-            <button type="button" onClick={() => folderInput.current?.click()} className="btn-secondary">📁 Folder</button>
+            <button type="button" onClick={() => setShowNewFolder(v => !v)} className="btn-secondary">New folder</button>
+            <button type="button" onClick={() => fileInput.current?.click()} className="btn-primary">Upload</button>
+            <button type="button" onClick={() => folderInput.current?.click()} className="btn-secondary">Folder</button>
             <input ref={fileInput} type="file" multiple hidden onChange={e => { uploadFiles(e.target.files); e.target.value = ""; }} />
             <input ref={folderInput} type="file" multiple webkitdirectory="" hidden onChange={e => { uploadFiles(e.target.files, true); e.target.value = ""; }} />
           </div>
@@ -1315,17 +1346,17 @@ export default function CloudVault() {
                 width: 88, height: 88, margin: "0 auto 20px", borderRadius: 24,
                 background: "var(--gradient-soft)", display: "flex", alignItems: "center", justifyContent: "center",
                 fontSize: 40, boxShadow: "var(--glow)",
-              }}>☁️</div>
+              }}><BrandMark size={48} /></div>
               <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 8, color: "var(--text)" }}>
-                {fileFilter !== "all" ? "No matching files" : "Your cloud is empty"}
+                {fileFilter !== "all" ? "No matching files" : "No files in My Drive yet"}
               </div>
               <div style={{ fontSize: 14, color: "var(--text-muted)", marginBottom: 24, maxWidth: 360, margin: "0 auto 24px" }}>
                 {fileFilter !== "all" ? "Try a different filter or upload new files." : "Upload photos, documents, and more. Everything stays secure in your drive."}
               </div>
               {fileFilter === "all" && (
                 <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
-                  <button type="button" className="btn-primary" onClick={() => fileInput.current?.click()}>↑ Upload your first file</button>
-                  <button type="button" className="btn-secondary" onClick={() => setShowNewFolder(true)}>⊞ Create folder</button>
+                  <button type="button" className="btn-primary" onClick={() => fileInput.current?.click()}>Upload your first file</button>
+                  <button type="button" className="btn-secondary" onClick={() => setShowNewFolder(true)}>Create folder</button>
                 </div>
               )}
             </div>
