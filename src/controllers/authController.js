@@ -8,6 +8,7 @@ const {
 } = require('../config/jwt');
 const { sendVerificationEmail, sendPasswordResetEmail, sendWelcomeEmail, sendOtpEmail, sendPasswordChangedEmail } = require('../config/email');
 const { verifyFirebaseIdToken } = require('../config/firebase');
+const { isEmailVerificationEnforced } = require('../config/emailPolicy');
 const {
   formatAccountUser,
   newUserTrialData,
@@ -30,12 +31,9 @@ const isTurnstileRequired = () => {
 };
 
 const logEmailResult = (label, result) => {
-  const serialized = JSON.stringify(result, null, 2);
   if (result?.success === false) {
-    console.error(`AUTH CONTROLLER: ${label} failure:`, serialized);
-    return;
+    console.error(`${label} failed:`, result?.error || result?.message || 'Unknown error');
   }
-  console.log(`AUTH CONTROLLER: ${label} success:`, serialized);
 };
 
 const createAuthPayload = async (user, req, rememberMe = true) => {
@@ -69,12 +67,10 @@ const register = async (req, res, next) => {
 
     // Verify Turnstile token if provided
     if (turnstileToken) {
-      console.log('AUTH CONTROLLER: Verifying Turnstile token for registration');
       const turnstileResult = await verifyTurnstileToken(turnstileToken, req.ip);
       if (!turnstileResult.success) {
         throw new ValidationError(turnstileResult.error || 'Security verification failed');
       }
-      console.log('AUTH CONTROLLER: Turnstile verification successful');
     } else if (isTurnstileRequired()) {
       // Turnstile is configured but no token provided
       throw new ValidationError('Security verification is required');
@@ -99,6 +95,7 @@ const register = async (req, res, next) => {
         passwordHash,
         fullName,
         authProvider: 'email',
+        isVerified: !isEmailVerificationEnforced(),
         ...newUserTrialData(),
         storageQuota: BigInt(parseInt(process.env.DEFAULT_STORAGE_QUOTA, 10) || 5368709120),
       },
@@ -117,12 +114,7 @@ const register = async (req, res, next) => {
 
     // Create verification link token
     const verificationToken = uuidv4();
-    console.log('AUTH CONTROLLER: Email verification link generated', {
-      userId: user.id,
-      email,
-      expiresInHours: 24,
-    });
-    
+
     await prisma.verificationToken.create({
       data: {
         userId: user.id,
@@ -134,13 +126,10 @@ const register = async (req, res, next) => {
 
     // Send verification email with one-time link
     try {
-      console.log('AUTH CONTROLLER: Sending verification email to:', email);
       const emailResult = await sendVerificationEmail(email, verificationToken);
-      logEmailResult('Verification email send', emailResult);
+      logEmailResult('Verification email', emailResult);
     } catch (emailError) {
-      console.error('AUTH CONTROLLER: Verification email send failure:', emailError);
-      console.error('AUTH CONTROLLER: Email error stack:', emailError.stack);
-      // Continue anyway, user can request new email
+      console.error('Verification email send failure:', emailError.message);
     }
 
     res.status(201).json({
@@ -188,11 +177,6 @@ const resendVerification = async (req, res, next) => {
     }
 
     const verificationToken = uuidv4();
-    console.log('AUTH CONTROLLER: Verification link generated for resend', {
-      userId: user.id,
-      email,
-      expiresInHours: 24,
-    });
 
     await prisma.verificationToken.create({
       data: {
@@ -204,12 +188,10 @@ const resendVerification = async (req, res, next) => {
     });
 
     try {
-      console.log('AUTH CONTROLLER: Sending verification email to:', email);
       const emailResult = await sendVerificationEmail(email, verificationToken);
-      logEmailResult('Verification email send', emailResult);
+      logEmailResult('Verification email resend', emailResult);
     } catch (emailError) {
-      console.error('AUTH CONTROLLER: Verification email send failure:', emailError);
-      console.error('AUTH CONTROLLER: Email error stack:', emailError.stack);
+      console.error('Verification email resend failure:', emailError.message);
     }
 
     res.json({
@@ -230,12 +212,10 @@ const login = async (req, res, next) => {
 
     // Verify Turnstile token if provided
     if (turnstileToken) {
-      console.log('AUTH CONTROLLER: Verifying Turnstile token for login');
       const turnstileResult = await verifyTurnstileToken(turnstileToken, req.ip);
       if (!turnstileResult.success) {
         throw new ValidationError(turnstileResult.error || 'Security verification failed');
       }
-      console.log('AUTH CONTROLLER: Turnstile verification successful');
     } else if (isTurnstileRequired()) {
       // Turnstile is configured but no token provided
       throw new ValidationError('Security verification is required');
@@ -255,7 +235,7 @@ const login = async (req, res, next) => {
     }
 
     // Check email verification
-    if (!user.isVerified) {
+    if (isEmailVerificationEnforced() && !user.isVerified) {
       throw new AuthenticationError('Please verify your email before logging in');
     }
 
@@ -350,8 +330,6 @@ const verifyEmail = async (req, res, next) => {
     const { token } = req.body;
     if (!token) throw new ValidationError('Verification link is required');
 
-    // Find verification token
-    console.log('AUTH CONTROLLER: Looking up email verification token');
     const verificationToken = await prisma.verificationToken.findFirst({
       where: {
         token,
@@ -362,29 +340,23 @@ const verifyEmail = async (req, res, next) => {
     });
 
     if (!verificationToken) {
-      console.log('AUTH CONTROLLER: Invalid verification token');
       throw new ValidationError('Verification link is invalid or expired');
     }
 
     if (verificationToken.usedAt) {
-      console.log('AUTH CONTROLLER: Verification token already used');
       throw new ValidationError('Email already verified');
     }
 
     if (verificationToken.expiresAt < new Date()) {
-      console.log('AUTH CONTROLLER: Verification token expired at:', verificationToken.expiresAt);
       throw new ValidationError('Verification link has expired');
     }
 
-    console.log('AUTH CONTROLLER: Verification token valid, marking as used');
     // Mark token as used
     await prisma.verificationToken.update({
       where: { id: verificationToken.id },
       data: { usedAt: new Date() },
     });
 
-    // Verify user
-    console.log('AUTH CONTROLLER: Setting user as verified');
     await prisma.user.update({
       where: { id: verificationToken.userId },
       data: { isVerified: true },
@@ -392,11 +364,10 @@ const verifyEmail = async (req, res, next) => {
 
     // Send welcome email
     try {
-      console.log('AUTH CONTROLLER: Sending welcome email to:', verificationToken.user.email);
       const welcomeResult = await sendWelcomeEmail(verificationToken.user.email, verificationToken.user.fullName);
-      logEmailResult('Welcome email send', welcomeResult);
+      logEmailResult('Welcome email', welcomeResult);
     } catch (emailError) {
-      console.error('AUTH CONTROLLER: Welcome email send failure:', emailError);
+      console.error('Welcome email send failure:', emailError.message);
     }
 
     res.json({
@@ -471,7 +442,7 @@ const forgotPassword = async (req, res, next) => {
     try {
       await sendOtpEmail(email, user.fullName || email.split('@')[0], otp);
     } catch (emailError) {
-      console.error('AUTH CONTROLLER: OTP email send failure:', emailError);
+      console.error('OTP email send failure:', emailError.message);
     }
 
     res.json({

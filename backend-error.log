@@ -1,0 +1,14 @@
+RESEND ERROR BODY: {
+  "statusCode": 401,
+  "name": "validation_error",
+  "message": "API key is invalid"
+}
+AUTH CONTROLLER: Verification email send failure: {
+  "success": false,
+  "error": "API key is invalid",
+  "details": {
+    "statusCode": 401,
+    "name": "validation_error",
+    "message": "API key is invalid"
+  }
+}
