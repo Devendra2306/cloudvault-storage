@@ -4,24 +4,24 @@ export const GLOBAL_STYLES = `
 
   :root {
     --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    --bg-primary: #f8fafc;
+    --bg-primary: #f6f8fb;
     --bg-secondary: #ffffff;
     --bg-card: #ffffff;
-    --bg-card-hover: #f9fafb;
+    --bg-card-hover: #f8fafc;
     --bg-sidebar: #ffffff;
-    --surface-raised: #f1f5f9;
-    --border: #e5e7eb;
+    --surface-raised: #eef3f8;
+    --border: #dfe7f0;
     --border-hover: #bbf7d0;
     --text: #111827;
     --text-secondary: #374151;
     --text-muted: #6b7280;
-    --accent: #16a34a;
+    --accent: #00b74f;
     --accent-strong: #111827;
     --accent-blue: #2563eb;
     --accent-amber: #fbbf24;
     --danger: #dc2626;
-    --gradient: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
-    --gradient-soft: linear-gradient(135deg, rgba(34,197,94,.12), rgba(59,130,246,.08));
+    --gradient: linear-gradient(135deg, #00b74f 0%, #00d4a1 100%);
+    --gradient-soft: linear-gradient(135deg, rgba(0,183,79,.14), rgba(37,99,235,.08));
     --radius: 12px;
     --radius-lg: 20px;
     --shadow: 0 20px 50px rgba(15, 23, 42, 0.1);
@@ -30,14 +30,14 @@ export const GLOBAL_STYLES = `
   }
 
   [data-theme="dark"] {
-    --bg-primary: #0f172a;
-    --bg-secondary: #111827;
-    --bg-card: #111827;
-    --bg-card-hover: #1f2937;
-    --bg-sidebar: #0b1220;
-    --surface-raised: #1f2937;
-    --border: rgba(148, 163, 184, 0.18);
-    --border-hover: rgba(34,197,94,.45);
+    --bg-primary: #050914;
+    --bg-secondary: #0b1220;
+    --bg-card: #111a2b;
+    --bg-card-hover: #172338;
+    --bg-sidebar: #0b1322;
+    --surface-raised: #172338;
+    --border: rgba(148, 163, 184, 0.2);
+    --border-hover: rgba(0, 214, 113, 0.55);
     --text: #f8fafc;
     --text-secondary: #d1d5db;
     --text-muted: #94a3b8;
@@ -71,8 +71,8 @@ export const GLOBAL_STYLES = `
     --accent: #5eead4;
     --accent-blue: #60a5fa;
     --accent-strong: #f472b6;
-    --gradient: linear-gradient(135deg, #5eead4 0%, #60a5fa 55%, #a78bfa 100%);
-    --gradient-soft: linear-gradient(135deg, rgba(94,234,212,.16), rgba(96,165,250,.14));
+    --gradient: linear-gradient(135deg, #00b74f 0%, #00d4a1 55%, #60a5fa 100%);
+    --gradient-soft: linear-gradient(135deg, rgba(0,183,79,.18), rgba(96,165,250,.14));
   }
 
   [data-theme="purple"] {
@@ -123,26 +123,26 @@ export const GLOBAL_STYLES = `
     padding: 12px 22px;
     border-radius: 12px;
     border: none;
-    background: var(--accent);
+    background: var(--gradient);
     color: #fff;
     font-family: var(--font);
     font-weight: 700;
     font-size: 14px;
     cursor: pointer;
-    box-shadow: 0 14px 28px rgba(22,163,74,.24);
+    box-shadow: 0 14px 28px rgba(0,183,79,.24);
     transition: var(--transition);
   }
 
   .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 18px 36px rgba(22,163,74,.3);
+    box-shadow: 0 18px 36px rgba(0,183,79,.3);
   }
 
   .btn-secondary {
     padding: 10px 18px;
     border-radius: 12px;
     border: 1px solid var(--border);
-    background: #fff;
+    background: var(--bg-card);
     color: var(--text-secondary);
     font-family: var(--font);
     font-weight: 600;
@@ -154,7 +154,7 @@ export const GLOBAL_STYLES = `
   .btn-secondary:hover {
     border-color: var(--border-hover);
     color: var(--text);
-    background: #f0fdf4;
+    background: rgba(0,183,79,.08);
     transform: translateY(-2px);
   }
 
@@ -240,21 +240,21 @@ export const GLOBAL_STYLES = `
   }
 
   .nav-item:hover {
-    background: #f9fafb;
+    background: rgba(0,183,79,.08);
     color: var(--text);
     border-color: var(--border);
     transform: translateX(3px);
   }
 
   .nav-item.active {
-    border-color: #bbf7d0;
-    background: #f0fdf4;
-    color: #15803d;
+    border-color: rgba(0,183,79,.28);
+    background: rgba(0,183,79,.14);
+    color: var(--accent);
     box-shadow: none;
   }
 
   .stat-mini {
-    background: var(--bg-card);
+    background: var(--surface-raised);
     border-radius: var(--radius);
     padding: 12px;
     border: 1px solid var(--border);
@@ -320,9 +320,9 @@ export const GLOBAL_STYLES = `
   }
 
   .filter-chip.active {
-    border-color: #bbf7d0;
-    background: #f0fdf4;
-    color: #15803d;
+    border-color: rgba(0,183,79,.28);
+    background: rgba(0,183,79,.14);
+    color: var(--accent);
     box-shadow: none;
   }
 
@@ -340,9 +340,9 @@ export const GLOBAL_STYLES = `
 
   .folder-card:hover {
     background: var(--bg-card-hover);
-    border-color: rgba(251,191,36,.35);
+    border-color: rgba(0,183,79,.35);
     transform: translateY(-2px);
-    box-shadow: 0 12px 28px rgba(251,191,36,.08);
+    box-shadow: 0 12px 28px rgba(0,183,79,.08);
   }
 
   .file-list-card {
@@ -609,7 +609,7 @@ export const GLOBAL_STYLES = `
     width: 40px;
     height: 40px;
     border-radius: 12px;
-    background: #000;
+    background: var(--gradient);
     color: #fff;
     display: inline-flex;
     align-items: center;
@@ -617,7 +617,7 @@ export const GLOBAL_STYLES = `
     font-size: 11px;
     font-weight: 900;
     letter-spacing: 0;
-    box-shadow: 0 8px 16px rgba(0,0,0,.16);
+    box-shadow: 0 12px 28px rgba(0,183,79,.28);
     flex: 0 0 auto;
   }
 

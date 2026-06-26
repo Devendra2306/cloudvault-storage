@@ -21,6 +21,13 @@ const {
 const { verifyTurnstileToken } = require('../services/turnstileService');
 
 const formatAuthUser = (user) => formatAccountUser(user);
+const isTurnstileRequired = () => {
+  if (!process.env.TURNSTILE_SECRET_KEY) return false;
+  if (process.env.TURNSTILE_REQUIRED !== undefined) {
+    return process.env.TURNSTILE_REQUIRED === 'true';
+  }
+  return process.env.NODE_ENV === 'production';
+};
 
 const logEmailResult = (label, result) => {
   const serialized = JSON.stringify(result, null, 2);
@@ -68,7 +75,7 @@ const register = async (req, res, next) => {
         throw new ValidationError(turnstileResult.error || 'Security verification failed');
       }
       console.log('AUTH CONTROLLER: Turnstile verification successful');
-    } else if (process.env.TURNSTILE_SECRET_KEY) {
+    } else if (isTurnstileRequired()) {
       // Turnstile is configured but no token provided
       throw new ValidationError('Security verification is required');
     }
@@ -229,7 +236,7 @@ const login = async (req, res, next) => {
         throw new ValidationError(turnstileResult.error || 'Security verification failed');
       }
       console.log('AUTH CONTROLLER: Turnstile verification successful');
-    } else if (process.env.TURNSTILE_SECRET_KEY) {
+    } else if (isTurnstileRequired()) {
       // Turnstile is configured but no token provided
       throw new ValidationError('Security verification is required');
     }
@@ -419,7 +426,7 @@ const forgotPassword = async (req, res, next) => {
       if (!turnstileResult.success) {
         throw new ValidationError(turnstileResult.error || 'Security verification failed');
       }
-    } else if (process.env.TURNSTILE_SECRET_KEY) {
+    } else if (isTurnstileRequired()) {
       throw new ValidationError('Security verification is required');
     }
 
