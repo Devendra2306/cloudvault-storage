@@ -28,22 +28,15 @@ const app = express();
 // Security headers
 app.use(helmet());
 
-// Logging middleware for OPTIONS requests
-app.use((req, res, next) => {
-  if (req.method === 'OPTIONS') {
-    console.log('CORS Preflight Request:', {
-      method: req.method,
-      origin: req.headers.origin,
-      path: req.path,
-      headers: req.headers
-    });
-  }
-  // Log all API requests
-  if (req.path.startsWith('/api/v1')) {
-    console.log(`${req.method} ${req.path} - User: ${req.user?.id || 'anonymous'}`);
-  }
-  next();
-});
+// Request logging (development only)
+if (process.env.NODE_ENV !== 'production') {
+  app.use((req, res, next) => {
+    if (req.path.startsWith('/api/v1')) {
+      console.log(`${req.method} ${req.path}`);
+    }
+    next();
+  });
+}
 
 // CORS configuration
 const allowedOrigins = process.env.ALLOWED_ORIGINS

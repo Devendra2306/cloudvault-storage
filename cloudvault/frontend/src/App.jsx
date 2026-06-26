@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo, lazy, Suspense } from "react";
 import { BRAND } from "./lib/constants.js";
 import { apiFetch, payloadList, downloadFileWithProgress, triggerBrowserDownload, uploadFileWithProgress } from "./lib/api.js";
 import { fmt, timeAgo, fileIcon, FILE_FILTERS, isPreviewable } from "./lib/fileTypes.js";
@@ -24,16 +24,25 @@ import TrialBanner from "./components/TrialBanner.jsx";
 import VerifyEmailBanner from "./components/VerifyEmailBanner.jsx";
 import VerifyEmailPage from "./pages/VerifyEmailPage.jsx";
 import NotificationBell from "./components/NotificationBell.jsx";
-import ProfilePage from "./pages/ProfilePage.jsx";
-import SettingsPage from "./pages/SettingsPage.jsx";
-import SecurityPage from "./pages/SecurityPage.jsx";
-import BillingPage from "./pages/BillingPage.jsx";
-import HelpPage from "./pages/HelpPage.jsx";
-import ActivityPage from "./pages/ActivityPage.jsx";
-import FileListPage from "./pages/FileListPage.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
+import NavIcon from "./components/NavIcon.jsx";
 
-// ── Sub-components ────────────────────────────────────────────────────────────
+const ProfilePage = lazy(() => import("./pages/ProfilePage.jsx"));
+const SettingsPage = lazy(() => import("./pages/SettingsPage.jsx"));
+const SecurityPage = lazy(() => import("./pages/SecurityPage.jsx"));
+const BillingPage = lazy(() => import("./pages/BillingPage.jsx"));
+const HelpPage = lazy(() => import("./pages/HelpPage.jsx"));
+const ActivityPage = lazy(() => import("./pages/ActivityPage.jsx"));
+const FileListPage = lazy(() => import("./pages/FileListPage.jsx"));
+
+function PageLoader() {
+  return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 48 }}>
+      <Spinner size={28} />
+    </div>
+  );
+}
+
 function Toast({ msg, type, onClose }) {
   useEffect(() => {
     const t = setTimeout(onClose, 3500);
@@ -41,7 +50,7 @@ function Toast({ msg, type, onClose }) {
   }, [onClose]);
   const bg = type === "error" ? "var(--danger)" : type === "success" ? "var(--accent)" : "var(--accent-blue)";
   return (
-    <div className="toast" style={{
+    <div className="toast" role="alert" aria-live="polite" style={{
       position: "fixed", bottom: 32, right: 32, zIndex: 9999,
       background: bg, color: "#fff", padding: "14px 24px", borderRadius: "var(--radius)",
       fontFamily: "var(--font)", fontWeight: 600, fontSize: 14,
@@ -345,21 +354,6 @@ function AccountChrome({ children, onNavigate, onSignOut, onUpgrade }) {
   );
 }
 
-function ActionBtn({ icon, title, color, onClick }) {
-  const [h, setH] = useState(false);
-  return (
-    <button onClick={e => { e.stopPropagation(); onClick(); }} title={title}
-      onMouseEnter={() => setH(true)} onMouseLeave={() => setH(false)}
-      style={{
-        width: 32, height: 32, borderRadius: 8, border: "none",
-        background: h ? `${color}22` : "rgba(255,255,255,.12)",
-        color: h ? color : "rgba(255,255,255,.72)", cursor: "pointer",
-        fontSize: 14, transition: "var(--transition)", display: "flex",
-        alignItems: "center", justifyContent: "center"
-      }}>{icon}</button>
-  );
-}
-
 function getVerifyTokenFromUrl() {
   const path = window.location.pathname.replace(/\/+$/, "") || "/";
   if (!path.endsWith("/verify-email")) return null;
@@ -458,13 +452,7 @@ export default function CloudVault() {
   const notify = useCallback((msg, type = "info") => setToast({ msg, type }), []);
 
   const api = useCallback(
-    (path, opts) => {
-      console.log('=== API CALL START ===');
-      console.log('API PATH:', path);
-      console.log('API TOKEN PRESENT:', !!token);
-      console.log('API TOKEN LENGTH:', token?.length);
-      return apiFetch(path, opts, token);
-    },
+    (path, opts) => apiFetch(path, opts, token),
     [token]
   );
 
@@ -755,10 +743,6 @@ export default function CloudVault() {
   };
 
   const handleShare = async (file, payload) => {
-    console.log('=== HANDLE SHARE START ===');
-    console.log('FILE:', file.name);
-    console.log('PAYLOAD:', payload);
-    
     if (payload.shareType === "user") {
       return api(`/files/${file.id}/share/user`, {
         method: "POST",
@@ -1022,7 +1006,7 @@ export default function CloudVault() {
       <style>{GLOBAL_STYLES}</style>
 
       {/* Mobile hamburger */}
-      <button type="button" className="mobile-menu-button" onClick={() => setSidebarOpen(v => !v)} style={{
+      <button type="button" className="mobile-menu-button" aria-label="Open navigation menu" aria-expanded={sidebarOpen} onClick={() => setSidebarOpen(v => !v)} style={{
         display: "none", position: "fixed", top: 16, left: 16, zIndex: 200,
         background: "var(--bg-card)", border: "1.5px solid var(--border)", borderRadius: 10,
         width: 40, height: 40, alignItems: "center", justifyContent: "center",
@@ -1063,28 +1047,23 @@ export default function CloudVault() {
 
         {/* Nav items */}
         {[
-          { id: "drive", icon: "Drive", label: "My Drive" },
-          { id: "recent", icon: "Recent", label: "Recent" },
-          { id: "starred", icon: "Star", label: "Starred" },
-          { id: "shared", icon: "Share", label: "Shared" },
-          { id: "dashboard", icon: "Usage", label: "Storage" },
-          { id: "trash", icon: "Trash", label: "Trash" },
-          { id: "activity", icon: "Logs", label: "Activity" },
-          ...(userRole === "admin" || userRole === "super_admin" ? [{ id: "admin", icon: "Admin", label: "Admin" }] : []),
+          { id: "drive", icon: "drive", label: "My Drive" },
+          { id: "recent", icon: "recent", label: "Recent" },
+          { id: "starred", icon: "starred", label: "Starred" },
+          { id: "shared", icon: "shared", label: "Shared" },
+          { id: "dashboard", icon: "usage", label: "Storage" },
+          { id: "trash", icon: "trash", label: "Trash" },
+          { id: "activity", icon: "activity", label: "Activity" },
+          ...(userRole === "admin" || userRole === "super_admin" ? [{ id: "admin", icon: "admin", label: "Admin" }] : []),
         ].map((item) => (
           <button
             key={item.id}
             type="button"
             className={`nav-item${activeView === item.id ? " active" : ""}`}
+            aria-current={activeView === item.id ? "page" : undefined}
             onClick={() => { setAppPage(null); setActiveView(item.id); setSidebarOpen(false); if (item.id === "drive") { setCurrentFolder(null); setFolderPath([]); } }}
           >
-            <span style={{
-              minWidth: 46, height: 24, borderRadius: 8,
-              display: "inline-flex", alignItems: "center", justifyContent: "center",
-              background: activeView === item.id ? "rgba(0,183,79,.18)" : "rgba(148,163,184,.12)",
-              color: activeView === item.id ? "var(--accent)" : "var(--text-muted)",
-              fontSize: 10, fontWeight: 900, letterSpacing: ".02em",
-            }}>{item.icon}</span>
+            <NavIcon name={item.icon} active={activeView === item.id} />
             <span>{item.label}</span>
           </button>
         ))}
@@ -1136,18 +1115,28 @@ export default function CloudVault() {
           systemHealth={systemHealth}
           loading={loading}
           onRefreshAccount={() => {}}
+          theme={theme}
+          setTheme={setTheme}
         />
         {!appPage && activeView === "recent" && (
-          <FileListPage title="Recent files" files={recentFiles} emptyMessage="No recent files yet." onBack={() => setActiveView("drive")} onOpen={setPreview} />
+          <Suspense fallback={<PageLoader />}>
+            <FileListPage title="Recent files" files={recentFiles} emptyMessage="No recent files yet." onBack={() => setActiveView("drive")} onOpen={setPreview} />
+          </Suspense>
         )}
         {!appPage && activeView === "starred" && (
-          <FileListPage title="Starred" files={starredFiles} emptyMessage="Star files to see them here." onBack={() => setActiveView("drive")} onOpen={setPreview} />
+          <Suspense fallback={<PageLoader />}>
+            <FileListPage title="Starred" files={starredFiles} emptyMessage="Star files to see them here." onBack={() => setActiveView("drive")} onOpen={setPreview} />
+          </Suspense>
         )}
         {!appPage && activeView === "shared" && (
-          <FileListPage title="Shared with you" files={sharedFiles} emptyMessage="Nothing shared yet." onBack={() => setActiveView("drive")} onOpen={setPreview} />
+          <Suspense fallback={<PageLoader />}>
+            <FileListPage title="Shared with you" files={sharedFiles} emptyMessage="Nothing shared yet." onBack={() => setActiveView("drive")} onOpen={setPreview} />
+          </Suspense>
         )}
         {!appPage && activeView === "activity" && (
-          <ActivityPage api={api} onBack={() => setActiveView("drive")} />
+          <Suspense fallback={<PageLoader />}>
+            <ActivityPage api={api} onBack={() => setActiveView("drive")} />
+          </Suspense>
         )}
         {!appPage && activeView === "trash" && (
           <TrashView
@@ -1430,44 +1419,60 @@ export default function CloudVault() {
   );
 }
 
-function AppPages({ appPage, setAppPage, api, notify, stats, usageDetail, adminUsers, systemHealth, loading, onRefreshAccount }) {
+function AppPages({ appPage, setAppPage, api, notify, stats, usageDetail, adminUsers, systemHealth, loading, onRefreshAccount, theme, setTheme }) {
   const { account, refreshAll } = useAccount();
   if (!appPage) return null;
 
   const back = () => setAppPage(null);
 
   if (appPage === "profile") {
-    return <ProfilePage account={account} onBack={back} />;
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <ProfilePage account={account} onBack={back} />
+      </Suspense>
+    );
   }
   if (appPage === "settings") {
     return (
-      <SettingsPage
-        account={account}
-        api={api}
-        onBack={back}
-        onUpdated={() => refreshAll()}
-        notify={notify}
-        theme={theme}
-        onThemeChange={setTheme}
-      />
+      <Suspense fallback={<PageLoader />}>
+        <SettingsPage
+          account={account}
+          api={api}
+          onBack={back}
+          onUpdated={() => refreshAll()}
+          notify={notify}
+          theme={theme}
+          onThemeChange={setTheme}
+        />
+      </Suspense>
     );
   }
   if (appPage === "security") {
-    return <SecurityPage api={api} account={account} onBack={back} notify={notify} />;
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <SecurityPage api={api} account={account} onBack={back} notify={notify} />
+      </Suspense>
+    );
   }
   if (appPage === "billing") {
     return (
-      <BillingPage
-        account={account}
-        api={api}
-        onBack={back}
-        notify={notify}
-        onUpdated={() => refreshAll()}
-      />
+      <Suspense fallback={<PageLoader />}>
+        <BillingPage
+          account={account}
+          api={api}
+          onBack={back}
+          notify={notify}
+          onUpdated={() => refreshAll()}
+        />
+      </Suspense>
     );
   }
   if (appPage === "help") {
-    return <HelpPage onBack={back} />;
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <HelpPage onBack={back} />
+      </Suspense>
+    );
   }
   return null;
 }

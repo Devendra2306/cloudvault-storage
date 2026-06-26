@@ -1,21 +1,16 @@
 const { verifyAccessToken } = require('../config/jwt');
 const prisma = require('../config/database');
 
+const isDev = process.env.NODE_ENV !== 'production';
+
 /**
- * Authentication middleware
- * Verifies JWT token and attaches user to request
+ * Authentication middleware — verifies JWT and attaches user to request.
  */
 const authenticate = async (req, res, next) => {
   try {
-    console.log('=== AUTH MIDDLEWARE START ===');
-    console.log('AUTH HEADER:', req.headers.authorization);
-    console.log('PATH:', req.path);
-    console.log('METHOD:', req.method);
-
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      console.error('ERROR: No auth header or invalid format');
       return res.status(401).json({
         success: false,
         error: 'Unauthorized',
@@ -23,15 +18,11 @@ const authenticate = async (req, res, next) => {
       });
     }
 
-    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
-    console.log('TOKEN LENGTH:', token.length);
-    console.log('TOKEN PREFIX:', token.substring(0, 20) + '...');
+    const token = authHeader.substring(7);
 
     try {
       const decoded = verifyAccessToken(token);
-      console.log('TOKEN DECODED:', { userId: decoded.userId });
 
-      // Get user from database
       const user = await prisma.user.findUnique({
         where: { id: decoded.userId },
         select: {
@@ -48,7 +39,6 @@ const authenticate = async (req, res, next) => {
       });
 
       if (!user) {
-        console.error('ERROR: User not found');
         return res.status(401).json({
           success: false,
           error: 'Unauthorized',
@@ -57,7 +47,6 @@ const authenticate = async (req, res, next) => {
       }
 
       if (!user.isActive) {
-        console.error('ERROR: Account deactivated');
         return res.status(403).json({
           success: false,
           error: 'Forbidden',
@@ -65,13 +54,10 @@ const authenticate = async (req, res, next) => {
         });
       }
 
-      console.log('AUTH SUCCESS:', { userId: user.id, email: user.email });
       req.user = user;
       next();
     } catch (jwtError) {
-      console.error('JWT ERROR:', jwtError);
-      console.error('JWT ERROR NAME:', jwtError.name);
-      console.error('JWT ERROR MESSAGE:', jwtError.message);
+      if (isDev) console.error('JWT verification failed:', jwtError.message);
       return res.status(401).json({
         success: false,
         error: 'Unauthorized',
@@ -79,7 +65,7 @@ const authenticate = async (req, res, next) => {
       });
     }
   } catch (error) {
-    console.error('AUTH MIDDLEWARE ERROR:', error);
+    console.error('Authentication middleware error:', error.message);
     return res.status(500).json({
       success: false,
       error: 'Internal Server Error',
@@ -89,19 +75,18 @@ const authenticate = async (req, res, next) => {
 };
 
 /**
- * Optional authentication middleware
- * Attaches user if token is valid, but doesn't require it
+ * Optional authentication — attaches user when token is valid, but does not require it.
  */
 const optionalAuthenticate = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
-    
+
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return next();
     }
 
     const token = authHeader.substring(7);
-    
+
     try {
       const decoded = verifyAccessToken(token);
       const user = await prisma.user.findUnique({
@@ -122,13 +107,13 @@ const optionalAuthenticate = async (req, res, next) => {
       if (user && user.isActive) {
         req.user = user;
       }
-    } catch (jwtError) {
-      // Ignore JWT errors for optional auth
+    } catch {
+      // Ignore invalid tokens for optional auth
     }
-    
+
     next();
   } catch (error) {
-    console.error('Optional auth middleware error:', error);
+    if (isDev) console.error('Optional auth middleware error:', error.message);
     next();
   }
 };
