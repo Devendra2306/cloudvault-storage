@@ -5,6 +5,16 @@
 
 const https = require('https');
 
+const TURNSTILE_TEST_SECRET_KEY = '1x0000000000000000000000000000000AA';
+
+function getTurnstileSecretKey() {
+  if (process.env.NODE_ENV !== 'production' && process.env.TURNSTILE_USE_TEST_KEYS !== 'false') {
+    return TURNSTILE_TEST_SECRET_KEY;
+  }
+
+  return process.env.TURNSTILE_SECRET_KEY;
+}
+
 /**
  * Verify Turnstile token with Cloudflare
  * @param {string} token - The Turnstile token from frontend
@@ -12,7 +22,9 @@ const https = require('https');
  * @returns {Promise<{success: boolean, error?: string}>}
  */
 async function verifyTurnstileToken(token, remoteIp = null) {
-  if (!process.env.TURNSTILE_SECRET_KEY) {
+  const secretKey = getTurnstileSecretKey();
+
+  if (!secretKey) {
     console.error('TURNSTILE SERVICE: TURNSTILE_SECRET_KEY not configured');
     return { success: false, error: 'Turnstile not configured on server' };
   }
@@ -22,8 +34,6 @@ async function verifyTurnstileToken(token, remoteIp = null) {
     return { success: false, error: 'Turnstile token is required' };
   }
 
-  const secretKey = process.env.TURNSTILE_SECRET_KEY;
-  
   const postData = JSON.stringify({
     secret: secretKey,
     response: token,

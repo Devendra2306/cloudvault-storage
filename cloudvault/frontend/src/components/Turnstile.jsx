@@ -75,8 +75,9 @@ export default function Turnstile({ onVerified, onError, onExpire, theme = "auto
           },
           "error-callback": (err) => {
             console.error("TURNSTILE: Verification error:", err);
-            setError("Verification failed. Please try again.");
-            onError?.(err);
+            const message = "Verification failed. For local testing, use the Turnstile test site key; for production, make sure this hostname is allowed in Cloudflare.";
+            setError(message);
+            onError?.(message);
           },
           "expired-callback": () => {
             console.log("TURNSTILE: Token expired");

@@ -713,7 +713,7 @@ export default function AuthScreen({ onAuth, onBack, onNeedsVerification, initia
               <Turnstile
                 key={turnstileKey}
                 onVerified={(t) => { setTurnstileToken(t); setTurnstileVerified(true); }}
-                onError={() => { setError("Security check failed. Please refresh."); setTurnstileVerified(false); }}
+                onError={(message) => { setError(message || "Security check failed. Please refresh."); setTurnstileVerified(false); }}
                 onExpire={() => { setTurnstileToken(null); setTurnstileVerified(false); }}
               />
             </div>
