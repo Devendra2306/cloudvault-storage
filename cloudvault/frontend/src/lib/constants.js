@@ -8,7 +8,7 @@ export const BRAND = {
   shortName: "CloudVault",
   tagline: "The intelligent home for your digital life.",
   logo: "CV",
-  logoImage: "/calovaultlogo.png",
+  logoImage: "/cloudvault-logo.svg",
   logoVideo: "/calovaultlogo.mp4",
 };
 
