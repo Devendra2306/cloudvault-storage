@@ -1,89 +1,95 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { BRAND, API } from "../lib/constants.js";
 import { fmt } from "../lib/fileTypes.js";
 import { PLANS } from "../lib/plans.js";
 import { GLOBAL_STYLES } from "../styles/globalStyles.js";
 
-const FEATURES = [
+const PRODUCTS = [
   {
-    title: "Effortless syncing",
-    desc: "Drag, drop, and organize files from one calm workspace that stays in sync everywhere.",
+    title: "Cloud storage",
+    desc: "10 GB of free storage. Store files of any size, back up folders, sync across devices, and share with full control.",
     icon: "☁",
   },
   {
     title: "Private sharing",
-    desc: "Send secure links with clear permissions, passwords, and expiration controls.",
-    icon: "🔒",
-  },
-  {
-    title: "Fast previews",
-    desc: "Open images, documents, and downloads without breaking your flow.",
-    icon: "⚡",
+    desc: "Share files and folders with anyone — even without an account. Set passwords, expiration dates, and permissions.",
+    icon: "🔗",
   },
   {
     title: "Smart search",
-    desc: "Find anything instantly with filters, tags, and full-text search across your drive.",
+    desc: "Find anything instantly with filters, tags, and full-text search across your entire drive.",
     icon: "🔍",
   },
   {
-    title: "Version history",
-    desc: "Track changes and restore previous versions when you need them.",
-    icon: "📋",
-  },
-  {
     title: "Enterprise security",
-    desc: "Encrypted storage, activity logs, and role-based access for teams.",
+    desc: "Encrypted storage, activity logs, and role-based access. Your data stays private by default.",
     icon: "🛡",
   },
 ];
 
-const TESTIMONIALS = [
+const WHY_CHOOSE = [
   {
-    quote: "CloudVault replaced three tools for our team. Uploads are fast, sharing is simple, and the UI just feels right.",
-    name: "Sarah Chen",
-    role: "Product Designer, Acme Corp",
+    title: "Never run out of space",
+    desc: "Start with 10 GB free. Upgrade anytime for more storage when you need it.",
   },
   {
-    quote: "We migrated 2TB of client assets in a weekend. The folder structure and permissions made onboarding painless.",
-    name: "Marcus Webb",
-    role: "Engineering Lead, GlobalTech",
+    title: "Share with anyone",
+    desc: "Give read-only or full access. Set passwords or create expiring links.",
   },
   {
-    quote: "Finally a drive that looks premium and works on mobile. Our sales team shares proposals in seconds.",
-    name: "Priya Sharma",
-    role: "Operations, Nexus",
+    title: "Be in control",
+    desc: "Your data is in your hands. Manage permissions and access at every level.",
+  },
+  {
+    title: "Works everywhere",
+    desc: "Access your files through the web on desktop, tablet, and mobile.",
   },
 ];
 
 const FAQS = [
   {
     q: "Is CloudVault free to use?",
-    a: "Yes. Every account includes 10 GB of free storage with no credit card required. Upgrade anytime for more space and team features.",
+    a: "Yes. Every account includes 10 GB of free storage with no credit card required.",
   },
   {
     q: "How secure are my files?",
-    a: "Files are encrypted in transit and at rest. Share links support passwords, view limits, and expiration dates for fine-grained control.",
+    a: "Files are encrypted in transit and at rest. Share links support passwords and expiration dates.",
   },
   {
     q: "Can I share files with people outside my team?",
-    a: "Absolutely. Create public or protected links, or invite collaborators by email with view, download, or edit permissions.",
-  },
-  {
-    q: "Does CloudVault work on mobile?",
-    a: "Yes. CloudVault is fully responsive and works in any modern browser on phone, tablet, and desktop.",
+    a: "Absolutely. Create public or protected links with view, download, or edit permissions.",
   },
   {
     q: "Can I cancel or change my plan?",
-    a: "Plans are flexible. Upgrade, downgrade, or cancel from your billing settings at any time.",
+    a: "Plans are flexible. Upgrade, downgrade, or cancel from billing settings anytime.",
   },
 ];
 
 const NAV_ITEMS = [
-  { label: "Features", href: "#features" },
-  { label: "How it works", href: "#how-it-works" },
+  { label: "Products", href: "#products" },
+  { label: "Security", href: "#security" },
   { label: "Pricing", href: "#pricing" },
   { label: "FAQ", href: "#faq" },
 ];
+
+function useScrollReveal() {
+  useEffect(() => {
+    const els = document.querySelectorAll(".scroll-reveal");
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
+    );
+    els.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+}
 
 export default function LandingPage({ onGetStarted, onLogin, onSignUp }) {
   const [stats, setStats] = useState({
@@ -92,6 +98,9 @@ export default function LandingPage({ onGetStarted, onLogin, onSignUp }) {
     storageUsed: 0,
     storageCapacity: 10 * 1024 ** 4,
   });
+  const headerRef = useRef(null);
+
+  useScrollReveal();
 
   useEffect(() => {
     fetch(`${API}/public/stats`)
@@ -102,13 +111,25 @@ export default function LandingPage({ onGetStarted, onLogin, onSignUp }) {
       .catch(() => {});
   }, []);
 
+  useEffect(() => {
+    const onScroll = () => {
+      if (headerRef.current) {
+        headerRef.current.style.background = window.scrollY > 40
+          ? "rgba(0,0,0,.95)"
+          : "rgba(0,0,0,.85)";
+      }
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
     <div className="marketing-shell">
       <style>{GLOBAL_STYLES}</style>
 
-      <header className="landing-header">
+      <header className="landing-header" ref={headerRef}>
         <button type="button" className="brand-lockup" onClick={onGetStarted} aria-label={`${BRAND.name} home`}>
-          <span className="brand-mark">{BRAND.logo}</span>
+          <span className="brand-mark"><img src={BRAND.logoImage} alt="" /></span>
           <span>{BRAND.name}</span>
         </button>
         <nav className="landing-links" aria-label="Primary">
@@ -118,124 +139,170 @@ export default function LandingPage({ onGetStarted, onLogin, onSignUp }) {
         </nav>
         <div className="landing-nav">
           <button type="button" className="btn-ghost" onClick={onLogin}>Log in</button>
-          <button type="button" className="btn-primary" onClick={onSignUp}>Get Started Free</button>
+          <button type="button" className="btn-mega-red" onClick={onSignUp}>Sign up free</button>
         </div>
       </header>
 
       <main>
+        {/* Hero — top to bottom flow */}
         <section className="hero-section">
           <div className="hero-glow hero-glow-green" aria-hidden="true" />
           <div className="hero-glow hero-glow-blue" aria-hidden="true" />
-          <div className="hero-copy animate-fade-up">
-            <div className="eyebrow"><span aria-hidden="true" /> Introducing {BRAND.name}</div>
+          <div className="hero-copy">
+            <div className="eyebrow"><span aria-hidden="true" /> Secure cloud storage by default</div>
             <h1>
-              The intelligent home for your <span>digital life.</span>
+              Online privacy for everyone —
+              <span>your intelligent cloud drive.</span>
             </h1>
             <p>
-              Never lose a file again. Store, organize, and securely share your documents,
-              photos, and projects from anywhere — on any device.
+              Privacy is not an option with {BRAND.name}; it&apos;s standard. Store, organize,
+              and securely share your files from one place — on any device.
             </p>
-            <div className="hero-actions">
+            <div className="hero-actions animate-fade-up delay-1">
               <button type="button" className="btn-primary btn-hero-dark" onClick={onGetStarted}>
-                Start for free
+                Sign up for 10 GB free
               </button>
               <button type="button" className="btn-secondary btn-hero-light" onClick={onLogin}>
-                Sign in
+                Log in
               </button>
             </div>
             <div className="hero-note">No credit card required · 10 GB free forever</div>
           </div>
 
-          <div className="dashboard-preview animate-fade-up delay-1" aria-label="CloudVault preview">
+          {/* MEGA-style app preview — vertical stack inside */}
+          <div className="dashboard-preview animate-fade-up delay-2" aria-label="CloudVault preview">
+            <div className="hero-video-orbit" aria-hidden="true">
+              <video src={BRAND.logoVideo} autoPlay muted loop playsInline preload="metadata" />
+            </div>
             <div className="preview-panel">
-              <aside className="preview-sidebar">
-                <div className="preview-logo">
-                  <span className="brand-mark small">{BRAND.logo}</span>
-                  <strong>My Storage</strong>
-                </div>
-                {["Recent", "Starred", "Shared", "Trash"].map((item, index) => (
-                  <div key={item} className={`preview-nav-item${index === 0 ? " active" : ""}`}>{item}</div>
-                ))}
-                <div className="preview-usage">
-                  <div><span>Storage Usage</span><strong>4.5 GB / 10 GB</strong></div>
-                  <div className="preview-bar"><span /></div>
-                </div>
-              </aside>
-              <section className="preview-files">
-                <div className="preview-topline">
-                  <h3>Recent Files</h3>
-                  <button type="button" aria-hidden="true" tabIndex={-1}>Upload</button>
-                </div>
-                {[
-                  ["Project Alpha", "1.2 GB · Last edited 2h ago"],
-                  ["Q3 Financials.xlsx", "2.4 MB · Last edited 2h ago"],
-                  ["Campaign Banner.png", "4.1 MB · Last edited 2h ago"],
-                ].map(([name, meta]) => (
-                  <div key={name} className="preview-file">
-                    <div className="preview-file-icon" aria-hidden="true" />
-                    <div>
-                      <h4>{name}</h4>
-                      <p>{meta}</p>
-                    </div>
+              <div className="preview-top-bar">
+                <span className="brand-mark small"><img src={BRAND.logoImage} alt="" /></span>
+                <div className="preview-search">🔍 Search Cloud drive</div>
+              </div>
+              <div className="preview-body">
+                <aside className="preview-sidebar">
+                  <div className="preview-logo">
+                    <span className="brand-mark small"><img src={BRAND.logoImage} alt="" /></span>
+                    <strong>Drive</strong>
                   </div>
-                ))}
-              </section>
+                  {["Cloud drive", "Recent", "Starred", "Shared", "Trash"].map((item, index) => (
+                    <div key={item} className={`preview-nav-item${index === 0 ? " active" : ""}`}>{item}</div>
+                  ))}
+                  <div className="preview-usage">
+                    <div><span>Free</span><strong>4.5 GB / 10 GB</strong></div>
+                    <div className="preview-bar"><span /></div>
+                  </div>
+                </aside>
+                <section className="preview-files">
+                  <div className="preview-topline">
+                    <h3>Cloud drive</h3>
+                    <button type="button" aria-hidden="true" tabIndex={-1}>↑ Upload</button>
+                  </div>
+                  {[
+                    ["Project Alpha", "1.2 GB · Last edited 2h ago"],
+                    ["Q3 Financials.xlsx", "2.4 MB · Last edited 2h ago"],
+                    ["Campaign Banner.png", "4.1 MB · Last edited 2h ago"],
+                  ].map(([name, meta], i) => (
+                    <div key={name} className="preview-file" style={{ animationDelay: `${i * 0.1}s` }}>
+                      <div className="preview-file-icon" aria-hidden="true" />
+                      <div>
+                        <h4>{name}</h4>
+                        <p>{meta}</p>
+                      </div>
+                    </div>
+                  ))}
+                </section>
+              </div>
             </div>
           </div>
         </section>
 
-        <section className="logo-strip" aria-label="Trusted by">
-          <p>Trusted by innovative teams worldwide</p>
-          <div>
-            {["Acme Corp", "GlobalTech", "NEXUS", "Horizon", "Vertex"].map((name) => (
-              <span key={name}>{name}</span>
-            ))}
+        {/* Products hub */}
+        <section id="products" className="mega-section-dark">
+          <div className="mega-section-inner scroll-reveal">
+            <p className="section-kicker">All in one place</p>
+            <h2 style={{ fontSize: "clamp(28px, 4vw, 44px)", fontWeight: 800, lineHeight: 1.15, marginBottom: 12 }}>
+              Store and share files. Browse and protect.
+            </h2>
+            <p style={{ color: "#b3b3b3", fontSize: 17, maxWidth: 640, lineHeight: 1.6 }}>
+              {BRAND.name} combines secure cloud storage with powerful tools to upload, download,
+              and manage your files with confidence.
+            </p>
+            <div className="mega-product-grid">
+              {PRODUCTS.map((product, i) => (
+                <article key={product.title} className={`mega-product-card scroll-reveal delay-${i + 1}`}>
+                  <div className="mega-product-icon" aria-hidden="true">{product.icon}</div>
+                  <h3>{product.title}</h3>
+                  <p>{product.desc}</p>
+                </article>
+              ))}
+            </div>
           </div>
         </section>
 
-        <section id="features" className="content-section split-section">
-          <div>
-            <p className="section-kicker">Why CloudVault?</p>
-            <h2>More than storage. Your central hub.</h2>
-          </div>
-          <p>
-            In a world scattered with devices and apps, CloudVault brings everything together
-            in a single, secure place for photos, documents, and creative projects.
-          </p>
-        </section>
-
-        <section id="how-it-works" className="content-section feature-grid">
-          {FEATURES.map((feature) => (
-            <article key={feature.title} className="feature-card animate-fade-up">
-              <div className="feature-icon" aria-hidden="true">{feature.icon}</div>
-              <h3>{feature.title}</h3>
-              <p>{feature.desc}</p>
-            </article>
-          ))}
-        </section>
-
-        <section className="stats-band" aria-label="Platform statistics">
-          <div className="stat-mini">
-            <strong>{stats.filesStored.toLocaleString()}+</strong>
-            <span>Files stored</span>
-          </div>
-          <div className="stat-mini">
-            <strong>{fmt(stats.storageCapacity)}</strong>
-            <span>Storage capacity</span>
-          </div>
-          <div className="stat-mini">
-            <strong>{stats.activeUsers.toLocaleString()}+</strong>
-            <span>Active users</span>
+        {/* Security section */}
+        <section id="security" className="mega-section">
+          <div className="mega-security-block scroll-reveal">
+            <div>
+              <p className="section-kicker">Security that&apos;s always on</p>
+              <h2>Your data stays encrypted and private.</h2>
+              <p>
+                We protect your data with encryption in transit and at rest — the highest level
+                of online security. Only you and people you authorize can access your files.
+              </p>
+              <button type="button" className="btn-mega-red" style={{ marginTop: 28 }} onClick={onGetStarted}>
+                Learn more
+              </button>
+            </div>
+            <div className="mega-shield" aria-hidden="true">🔐</div>
           </div>
         </section>
 
-        <section id="pricing" className="content-section pricing-section">
-          <div className="section-center">
+        {/* Why choose */}
+        <section className="mega-section-dark">
+          <div className="mega-section-inner scroll-reveal">
+            <p className="section-kicker">Why choose {BRAND.name}?</p>
+            <h2 style={{ fontSize: "clamp(28px, 4vw, 40px)", fontWeight: 800, marginBottom: 40 }}>
+              Built for how you work today.
+            </h2>
+            <div className="mega-product-grid">
+              {WHY_CHOOSE.map((item, i) => (
+                <article key={item.title} className={`mega-product-card scroll-reveal delay-${i + 1}`}>
+                  <h3>{item.title}</h3>
+                  <p>{item.desc}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Stats */}
+        <section className="stats-band scroll-reveal" aria-label="Platform statistics" style={{
+          display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24, textAlign: "center",
+          borderTop: "1px solid rgba(255,255,255,.06)", borderBottom: "1px solid rgba(255,255,255,.06)",
+        }}>
+          <div className="stat-mini scroll-reveal delay-1">
+            <strong style={{ fontSize: 36, color: "#fff", display: "block" }}>{stats.filesStored.toLocaleString()}+</strong>
+            <span style={{ color: "#737373" }}>Files stored</span>
+          </div>
+          <div className="stat-mini scroll-reveal delay-2">
+            <strong style={{ fontSize: 36, color: "#fff", display: "block" }}>{fmt(stats.storageCapacity)}</strong>
+            <span style={{ color: "#737373" }}>Storage capacity</span>
+          </div>
+          <div className="stat-mini scroll-reveal delay-3">
+            <strong style={{ fontSize: 36, color: "#fff", display: "block" }}>{stats.activeUsers.toLocaleString()}+</strong>
+            <span style={{ color: "#737373" }}>Active users</span>
+          </div>
+        </section>
+
+        {/* Pricing */}
+        <section id="pricing" className="mega-section">
+          <div className="scroll-reveal section-center">
             <p className="section-kicker">Pricing</p>
-            <h2>Simple plans for clean storage.</h2>
-            <p className="section-subtitle">Start free. Scale when you need more.</p>
+            <h2 style={{ fontSize: "clamp(28px, 4vw, 40px)", fontWeight: 800 }}>Simple plans for everyone.</h2>
+            <p className="section-subtitle" style={{ color: "#b3b3b3", marginTop: 12 }}>Start free. Scale when you need more.</p>
           </div>
-          <div className="pricing-grid">
+          <div className="pricing-grid scroll-reveal delay-1">
             {PLANS.map((plan) => (
               <article key={plan.id} className={`plan-card${plan.highlight ? " highlight" : ""}`}>
                 {plan.highlight && <span className="plan-badge">Most popular</span>}
@@ -247,7 +314,7 @@ export default function LandingPage({ onGetStarted, onLogin, onSignUp }) {
                     <li key={f}>{f}</li>
                   ))}
                 </ul>
-                <button type="button" className={plan.highlight ? "btn-primary" : "btn-secondary"} onClick={onGetStarted}>
+                <button type="button" className={plan.highlight ? "btn-mega-red" : "btn-secondary"} onClick={onGetStarted}>
                   Choose {plan.name}
                 </button>
               </article>
@@ -255,45 +322,31 @@ export default function LandingPage({ onGetStarted, onLogin, onSignUp }) {
           </div>
         </section>
 
-        <section className="content-section testimonials-section" aria-label="Customer testimonials">
-          <div className="section-center">
-            <p className="section-kicker">Testimonials</p>
-            <h2>Loved by teams everywhere.</h2>
-          </div>
-          <div className="testimonials-grid">
-            {TESTIMONIALS.map((t) => (
-              <blockquote key={t.name} className="testimonial-card">
-                <p className="testimonial-quote">&ldquo;{t.quote}&rdquo;</p>
-                <footer>
-                  <strong>{t.name}</strong>
-                  <span>{t.role}</span>
-                </footer>
-              </blockquote>
-            ))}
-          </div>
-        </section>
-
-        <section id="faq" className="content-section faq-section">
-          <div className="section-center">
-            <p className="section-kicker">FAQ</p>
-            <h2>Questions? We have answers.</h2>
-          </div>
-          <div className="faq-list">
-            {FAQS.map((item) => (
-              <details key={item.q} className="faq-item">
-                <summary>{item.q}</summary>
-                <p>{item.a}</p>
-              </details>
-            ))}
+        {/* FAQ */}
+        <section id="faq" className="mega-section-dark">
+          <div className="mega-section-inner scroll-reveal">
+            <div className="section-center">
+              <p className="section-kicker">FAQ</p>
+              <h2 style={{ fontSize: "clamp(28px, 4vw, 40px)", fontWeight: 800 }}>Questions? We have answers.</h2>
+            </div>
+            <div className="faq-list">
+              {FAQS.map((item) => (
+                <details key={item.q} className="faq-item scroll-reveal">
+                  <summary>{item.q}</summary>
+                  <p>{item.a}</p>
+                </details>
+              ))}
+            </div>
           </div>
         </section>
 
-        <section className="cta-band">
-          <h2>Ready to organize your digital life?</h2>
-          <p>Join thousands of users who trust CloudVault with their most important files.</p>
+        {/* CTA */}
+        <section className="cta-band scroll-reveal">
+          <h2>Millions trust secure cloud storage.</h2>
+          <p>Join users who store and protect their data in the cloud.</p>
           <div className="hero-actions">
-            <button type="button" className="btn-primary btn-hero-dark" onClick={onGetStarted}>
-              Get started free
+            <button type="button" className="btn-mega-red" onClick={onGetStarted}>
+              Sign up for free
             </button>
             <button type="button" className="btn-secondary btn-hero-light" onClick={onLogin}>
               Log in
@@ -305,13 +358,13 @@ export default function LandingPage({ onGetStarted, onLogin, onSignUp }) {
       <footer className="landing-footer">
         <div className="footer-grid">
           <div className="footer-brand">
-            <span className="brand-mark">{BRAND.logo}</span>
+            <span className="brand-mark"><img src={BRAND.logoImage} alt="" /></span>
             <strong>{BRAND.name}</strong>
             <p>Secure cloud storage for individuals and teams.</p>
           </div>
           <div className="footer-links">
             <h4>Product</h4>
-            <a href="#features">Features</a>
+            <a href="#products">Products</a>
             <a href="#pricing">Pricing</a>
             <a href="#faq">FAQ</a>
           </div>

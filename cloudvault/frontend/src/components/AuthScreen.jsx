@@ -33,15 +33,12 @@ function Spinner({ size = 20 }) {
 function BrandMark({ size = 42 }) {
   return (
     <span style={{
-      width: size, height: size, borderRadius: Math.round(size * 0.3),
-      background: "var(--gradient)", display: "inline-flex", alignItems: "center",
-      justifyContent: "center", boxShadow: "0 14px 30px rgba(0,183,79,.28)",
-      flexShrink: 0,
+      width: size, height: size, borderRadius: "50%",
+      background: "var(--mega-red, #d90007)", display: "inline-flex", alignItems: "center",
+      justifyContent: "center", boxShadow: "0 8px 24px rgba(217,0,7,.35)",
+      flexShrink: 0, overflow: "hidden",
     }}>
-      <svg width={Math.round(size * 0.62)} height={Math.round(size * 0.62)} viewBox="0 0 32 32" fill="none" aria-hidden="true">
-        <path d="M9.5 21.5h14a5.3 5.3 0 0 0 .4-10.6A8 8 0 0 0 8.4 8.8 6.5 6.5 0 0 0 9.5 21.5Z" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M10 21.5h14" stroke="white" strokeWidth="3" strokeLinecap="round"/>
-      </svg>
+      <img src={BRAND.logoImage} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
     </span>
   );
 }
@@ -466,51 +463,54 @@ export default function AuthScreen({ onAuth, onBack, onNeedsVerification, initia
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div style={{
-      minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center",
-      background: "linear-gradient(135deg, #07111f 0%, #0b1322 46%, #050914 100%)",
-      padding: "20px 16px",
-      fontFamily: "var(--font)",
-    }}>
+    <div className="auth-splash">
       <style>{GLOBAL_STYLES}</style>
       <style>{`
         :root {
-          --cv-bg-card: #111a2b;
-          --cv-surface-raised: #172338;
-          --cv-border: rgba(148,163,184,.22);
-          --cv-border-strong: rgba(0,183,79,.38);
-          --cv-text: #f8fafc;
-          --cv-text-muted: #94a3b8;
-          --cv-accent: #00b74f;
+          --cv-bg-card: #141414;
+          --cv-surface-raised: #1a1a1a;
+          --cv-border: rgba(255,255,255,.08);
+          --cv-border-strong: rgba(217,0,7,.4);
+          --cv-text: #ffffff;
+          --cv-text-muted: #737373;
+          --cv-accent: #d90007;
           --cv-danger: #ef4444;
           --cv-radius-lg: 14px;
         }
         @keyframes cv-spin { to { transform: rotate(360deg); } }
-        @keyframes cv-slide-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes cv-slide-in { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes cv-fade { from { opacity: 0; } to { opacity: 1; } }
-        .cv-auth-card { animation: cv-slide-in 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-        .cv-auth-step { animation: cv-fade 0.22s ease; }
+        .cv-auth-card { animation: cv-slide-in 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        .cv-auth-step { animation: cv-fade 0.3s ease; }
       `}</style>
+
+      {/* MEGA-style floating cloud logo */}
+      <div className="auth-cloud-logo" style={{ marginBottom: 48 }}>
+        <div className="auth-cloud-bg" />
+        <div className="auth-mega-mark">
+          <div className="auth-mega-circle"><img src={BRAND.logoImage} alt="" /></div>
+        </div>
+      </div>
 
       <div className="cv-auth-card" style={{
         width: "100%", maxWidth: 440,
-        background: "rgba(17, 26, 43, .96)",
-        borderRadius: 22, border: "1px solid rgba(148,163,184,.22)",
-        boxShadow: "0 32px 80px rgba(0,0,0,0.42), 0 4px 16px rgba(0,0,0,0.18)",
+        background: "rgba(20, 20, 20, .96)",
+        borderRadius: 20, border: "1px solid rgba(255,255,255,.08)",
+        boxShadow: "0 32px 80px rgba(0,0,0,0.55)",
         overflow: "hidden",
         position: "relative",
       }}>
-        {/* Gradient header bar */}
+        {/* Red accent bar */}
         <div style={{
-          height: 4, background: "var(--gradient)",
+          height: 3, background: "var(--cv-accent)",
           position: "absolute", top: 0, left: 0, right: 0,
         }} />
 
-        <div style={{ padding: "40px 36px 36px" }}>
-          {/* Logo + Brand */}
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 32 }}>
-            <BrandMark size={42} />
-            <div style={{ fontSize: 17, fontWeight: 800, color: "var(--text)", letterSpacing: "-0.02em" }}>
+        <div style={{ padding: "36px 32px 32px" }}>
+          {/* Brand */}
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 28, justifyContent: "center" }}>
+            <BrandMark size={36} />
+            <div style={{ fontSize: 18, fontWeight: 800, color: "var(--cv-text)", letterSpacing: "-0.02em" }}>
               {BRAND.name}
             </div>
           </div>
@@ -727,14 +727,14 @@ export default function AuthScreen({ onAuth, onBack, onNeedsVerification, initia
             style={{
               width: "100%", marginTop: 20, padding: "14px 20px",
               background: canSubmit
-                ? "var(--gradient)"
+                ? "var(--cv-accent)"
                 : "var(--surface-raised)",
               color: canSubmit ? "#fff" : "var(--text-muted)",
               border: "none", borderRadius: 14, fontSize: 15, fontWeight: 700,
               cursor: canSubmit ? "pointer" : "not-allowed",
               display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
               transition: "all 0.2s ease",
-              boxShadow: canSubmit ? "0 16px 34px rgba(0,183,79,0.28)" : "none",
+              boxShadow: canSubmit ? "0 16px 34px rgba(217,0,7,0.28)" : "none",
               transform: canSubmit ? "translateY(0)" : "translateY(0)",
             }}
             onMouseEnter={(e) => { if (canSubmit) e.currentTarget.style.transform = "translateY(-1px)"; }}
