@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
  */
 export default function Turnstile({ onVerified, onError, onExpire, theme = "auto", size = "normal" }) {
   const containerRef = useRef(null);
+  const widgetIdRef = useRef(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -13,10 +14,12 @@ export default function Turnstile({ onVerified, onError, onExpire, theme = "auto
   useEffect(() => {
     // Load Turnstile script
     if (!window.turnstile) {
-      const script = document.createElement("script");
+      const existingScript = document.querySelector('script[data-cv-turnstile="true"]');
+      const script = existingScript || document.createElement("script");
       script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
       script.async = true;
       script.defer = true;
+      script.dataset.cvTurnstile = "true";
       script.onload = () => {
         setIsLoaded(true);
         setIsLoading(false);
@@ -27,7 +30,7 @@ export default function Turnstile({ onVerified, onError, onExpire, theme = "auto
         setIsLoading(false);
         onError?.("Failed to load Turnstile");
       };
-      document.head.appendChild(script);
+      if (!existingScript) document.head.appendChild(script);
     } else {
       setIsLoaded(true);
       setIsLoading(false);
@@ -35,9 +38,10 @@ export default function Turnstile({ onVerified, onError, onExpire, theme = "auto
 
     return () => {
       // Cleanup widget if component unmounts
-      if (containerRef.current && window.turnstile) {
+      if (widgetIdRef.current && window.turnstile) {
         try {
-          window.turnstile.remove(containerRef.current);
+          window.turnstile.remove(widgetIdRef.current);
+          widgetIdRef.current = null;
         } catch (e) {
           console.error("TURNSTILE: Error removing widget:", e);
         }
@@ -46,7 +50,7 @@ export default function Turnstile({ onVerified, onError, onExpire, theme = "auto
   }, []);
 
   useEffect(() => {
-    if (isLoaded && containerRef.current && window.turnstile) {
+    if (isLoaded && containerRef.current && window.turnstile && !widgetIdRef.current) {
       const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY;
       
       if (!siteKey) {
@@ -60,7 +64,7 @@ export default function Turnstile({ onVerified, onError, onExpire, theme = "auto
       console.log("TURNSTILE: Rendering widget with site key:", siteKey);
 
       try {
-        window.turnstile.render(containerRef.current, {
+        widgetIdRef.current = window.turnstile.render(containerRef.current, {
           sitekey: siteKey,
           theme,
           size,
@@ -89,9 +93,9 @@ export default function Turnstile({ onVerified, onError, onExpire, theme = "auto
   }, [isLoaded, theme, size, onVerified, onError, onExpire]);
 
   const reset = () => {
-    if (containerRef.current && window.turnstile) {
+    if (widgetIdRef.current && window.turnstile) {
       try {
-        window.turnstile.reset(containerRef.current);
+        window.turnstile.reset(widgetIdRef.current);
         setError(null);
       } catch (e) {
         console.error("TURNSTILE: Error resetting widget:", e);

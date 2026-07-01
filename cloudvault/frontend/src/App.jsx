@@ -80,15 +80,13 @@ function ProgressBar({ value }) {
 function BrandMark({ size = 44 }) {
   return (
     <span style={{
-      width: size, height: size, borderRadius: Math.round(size * 0.28),
-      background: "var(--gradient)", display: "inline-flex", alignItems: "center",
-      justifyContent: "center", boxShadow: "0 14px 30px rgba(0,183,79,.26)",
-      flexShrink: 0,
+      width: size, height: size, borderRadius: "50%",
+      background: "var(--mega-red)", display: "inline-flex", alignItems: "center",
+      justifyContent: "center", boxShadow: "0 8px 24px var(--mega-red-glow)",
+      flexShrink: 0, overflow: "hidden",
+      animation: "softPulse 3s ease infinite",
     }}>
-      <svg width={Math.round(size * 0.62)} height={Math.round(size * 0.62)} viewBox="0 0 32 32" fill="none" aria-hidden="true">
-        <path d="M9.5 21.5h14a5.3 5.3 0 0 0 .4-10.6A8 8 0 0 0 8.4 8.8 6.5 6.5 0 0 0 9.5 21.5Z" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M10 21.5h14" stroke="white" strokeWidth="3" strokeLinecap="round"/>
-      </svg>
+      <img src={BRAND.logoImage} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
     </span>
   );
 }
@@ -96,15 +94,12 @@ function BrandMark({ size = 44 }) {
 function DownloadManager({ jobs, history }) {
   if (!jobs.length && !history.length) return null;
   return (
-    <div className="download-panel" style={{
-      position: "fixed", right: 18, bottom: 18, zIndex: 1200,
-      width: "min(360px, calc(100vw - 32px))", background: "var(--bg-primary)",
-      border: "1px solid var(--border)", borderRadius: 16, boxShadow: "var(--shadow)",
-      overflow: "hidden", animation: "slideUp .2s ease"
-    }}>
+    <div className="transfer-panel">
       <div style={{ padding: "14px 16px", borderBottom: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <strong style={{ fontSize: 13 }}>Download manager</strong>
-        <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{jobs.filter(j => j.status === "downloading").length} active</span>
+        <strong style={{ fontSize: 13 }}>Transfers</strong>
+        <span style={{ fontSize: 11, background: "var(--mega-red)", color: "#fff", padding: "2px 8px", borderRadius: 99, fontWeight: 700 }}>
+          {jobs.filter(j => j.status === "downloading").length}
+        </span>
       </div>
       <div style={{ maxHeight: 260, overflow: "auto", padding: 12 }}>
         {jobs.map((job) => (
@@ -231,19 +226,16 @@ function FileCardGrid({ file, token, onDelete, onShare, onPreview, onRename, onD
 
   return (
     <div
-      className="glass-card"
+      className="glass-card mega-file-card"
       style={{
-        borderRadius: "var(--radius-lg)", overflow: "hidden",
+        borderRadius: 12, overflow: "hidden",
         display: "flex", flexDirection: "column",
-        transition: "var(--transition)",
       }}
-      onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "var(--glow)"; }}
-      onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}
     >
       {/* Thumbnail area */}
       <div style={{
         height: 170, display: "flex", alignItems: "center", justifyContent: "center",
-        background: "linear-gradient(135deg, rgba(240,253,244,.95), rgba(239,246,255,.95))", borderBottom: "1px solid var(--border)",
+        background: "linear-gradient(135deg, rgba(217,0,7,.08), rgba(20,20,20,.95))", borderBottom: "1px solid var(--border)",
         position: "relative", overflow: "hidden"
       }}>
         {isImage ? (
@@ -297,37 +289,23 @@ function StorageWarning({ account, onManage }) {
 }
 
 function DriveHero({ username, stats, storagePercent, onUpload, onNewFolder }) {
-  const greeting = (() => {
-    const h = new Date().getHours();
-    if (h < 12) return "Good morning";
-    if (h < 17) return "Good afternoon";
-    return "Good evening";
-  })();
-
   return (
-    <div className="drive-hero" style={{
-      marginBottom: 28, padding: "30px 32px", borderRadius: "var(--radius-lg)",
-      background: "linear-gradient(135deg, rgba(17,26,43,.98), rgba(13,27,47,.96))",
-      border: "1px solid var(--border)",
-      boxShadow: "0 24px 60px rgba(0,0,0,.2)",
-      display: "flex", alignItems: "center", justifyContent: "space-between",
-      gap: 20, flexWrap: "wrap", animation: "floatIn .35s ease",
-    }}>
-      <div>
-        <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--accent)", marginBottom: 6 }}>
-          My Drive
-        </div>
-        <h1 style={{ fontSize: 34, fontWeight: 900, color: "var(--text)", marginBottom: 6, lineHeight: 1.12 }}>
-          {greeting}, {username || "there"}
-        </h1>
-        <p style={{ color: "var(--text-secondary)", fontSize: 14, maxWidth: 520 }}>
-          {stats.totalFiles} files · {stats.totalFolders} folders · {Math.round(storagePercent)}% storage used
-        </p>
+    <div className="mega-drive-header">
+      <h1 style={{ fontSize: 28, fontWeight: 800, color: "var(--text)", marginBottom: 20 }}>
+        Cloud drive
+      </h1>
+      <div className="mega-drive-actions">
+        <button type="button" className="btn-primary mega-upload-btn" onClick={onUpload}>
+          ↑ Upload
+        </button>
+        <button type="button" className="btn-secondary mega-folder-btn" onClick={onNewFolder}>
+          + New folder
+        </button>
       </div>
-      <div className="drive-hero-actions" style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-        <button type="button" className="btn-primary" onClick={onUpload}>↑ Upload files</button>
-        <button type="button" className="btn-secondary" onClick={onNewFolder}>⊞ New folder</button>
-      </div>
+      <p style={{ color: "var(--text-muted)", fontSize: 13, marginBottom: 8 }}>
+        {stats.totalFiles} files · {stats.totalFolders} folders · {Math.round(storagePercent)}% storage used
+        {username ? ` · @${username}` : ""}
+      </p>
     </div>
   );
 }
@@ -339,12 +317,12 @@ function AccountChrome({ children, onNavigate, onSignOut, onUpgrade }) {
       <VerifyEmailBanner account={account} onOpenSettings={() => onNavigate("settings")} />
       <TrialBanner account={account} onUpgrade={onUpgrade} />
       <StorageWarning account={account} onManage={() => onNavigate("billing")} />
-      <header className="account-header" style={{
-        position: "sticky", top: 0, zIndex: 90, height: 76,
+      <header className="account-header mega-top-bar" style={{
+        position: "sticky", top: 0, zIndex: 90,
         borderBottom: "1px solid var(--border)",
-        background: "rgba(11,19,34,.88)",
+        background: "rgba(0,0,0,.92)",
         backdropFilter: "blur(16px)", display: "flex", alignItems: "center",
-        justifyContent: "flex-end", gap: 12, padding: "0 28px 0 316px",
+        justifyContent: "space-between", gap: 16, padding: "0 24px 0 280px",
       }}>
         <NotificationBell notifications={notifications} unreadCount={unreadCount} onMarkAllRead={markAllRead} />
         <ProfileMenu account={account} onNavigate={onNavigate} onSignOut={onSignOut} />
@@ -418,7 +396,7 @@ export default function CloudVault() {
   const [dragging, setDragging] = useState(false);
   const [viewMode, setViewMode] = useState(() => localStorage.getItem("cv_viewMode") || "list");
   const [fileFilter, setFileFilter] = useState("all");
-  const [theme, setTheme] = useState(() => localStorage.getItem("cv_theme") || "light");
+  const [theme, setTheme] = useState(() => localStorage.getItem("cv_theme") || "dark");
   const [confirm, setConfirm] = useState(null);
   const [renaming, setRenaming] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -1023,24 +1001,24 @@ export default function CloudVault() {
 
       {/* Sidebar */}
       <div className={`sidebar ${sidebarOpen ? "open" : ""}`} style={{
-        position: "fixed", left: 0, top: 0, bottom: 0, width: 296,
+        position: "fixed", left: 0, top: 0, bottom: 0, width: 260,
         background: "var(--bg-sidebar)", borderRight: "1px solid var(--border)",
-        padding: "18px 16px", display: "flex", flexDirection: "column", gap: 7, zIndex: 100,
-        transition: "transform .3s cubic-bezier(.4,0,.2,1)",
+        padding: "16px 12px", display: "flex", flexDirection: "column", gap: 4, zIndex: 100,
+        transition: "transform .35s cubic-bezier(.4,0,.2,1)",
         ...(isMobile ? { transform: sidebarOpen ? "translateX(0)" : "translateX(-100%)" } : {})
       }}>
         {/* Logo */}
-        <div style={{ marginBottom: 12, display: "flex", alignItems: "center", gap: 10 }}>
-          <BrandMark size={44} />
+        <div style={{ marginBottom: 16, display: "flex", alignItems: "center", gap: 10, padding: "4px 8px" }}>
+          <BrandMark size={40} />
           <div>
-            <div style={{ fontSize: 24, fontWeight: 900, color: "var(--text)", letterSpacing: "-0.02em" }}>{BRAND.name}</div>
-            <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 1 }}>@{username}</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: "var(--text)", letterSpacing: "-0.02em" }}>Drive</div>
+            <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 1 }}>@{username}</div>
           </div>
         </div>
 
         <button type="button" onClick={() => fileInput.current?.click()} className="btn-primary" style={{
-          minHeight: 58, borderRadius: 16, fontSize: 17, justifyContent: "center",
-          display: "flex", alignItems: "center", gap: 10, margin: "4px 0 18px",
+          minHeight: 48, borderRadius: 999, fontSize: 15, justifyContent: "center",
+          display: "flex", alignItems: "center", gap: 8, margin: "0 0 16px",
         }}>
           + New
         </button>
@@ -1086,13 +1064,13 @@ export default function CloudVault() {
         {/* Bottom section */}
         <div style={{ marginTop: "auto" }}>
           {/* Storage */}
-          <div style={{ marginBottom: 16, background: "linear-gradient(180deg, rgba(0,183,79,.1), rgba(17,26,43,.9))", borderRadius: 18, padding: "16px", border: "1px solid rgba(0,183,79,.22)" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "var(--text-secondary)", marginBottom: 8 }}>
+          <div style={{ marginBottom: 16, background: "var(--surface-raised)", borderRadius: 14, padding: "14px", border: "1px solid var(--border)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "var(--text-secondary)", marginBottom: 8 }}>
               <span style={{ fontWeight: 600 }}>Free</span><span>{fmt(stats.storageUsed)} of {fmt(storageLimit)} used</span>
             </div>
             <ProgressBar value={storagePercent} />
-            <button type="button" onClick={() => setAppPage("billing")} className="btn-primary" style={{ width: "100%", marginTop: 14, minHeight: 44 }}>
-              Upgrade Now
+            <button type="button" onClick={() => setAppPage("billing")} className="btn-secondary" style={{ width: "100%", marginTop: 12, minHeight: 40, borderRadius: 999 }}>
+              Upgrade
             </button>
           </div>
 
@@ -1102,7 +1080,7 @@ export default function CloudVault() {
       </div>
 
       {/* Main Content */}
-      <div className="main-content" style={{ marginLeft: isMobile ? 0 : 296, padding: "28px 40px", minHeight: "100vh", paddingTop: 26 }}>
+      <div className="main-content" style={{ marginLeft: isMobile ? 0 : 260, padding: "20px 32px", minHeight: "100vh" }}>
         <AppPages
           appPage={appPage}
           setAppPage={setAppPage}
@@ -1166,16 +1144,17 @@ export default function CloudVault() {
           onNewFolder={() => setShowNewFolder(true)}
         />
 
-        <div className="drive-toolbar">
-          <div className="drive-search" style={{ flex: 1, position: "relative", minWidth: 200 }}>
-            <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", fontSize: 11, opacity: .72, fontWeight: 900, letterSpacing: ".04em" }}>SEARCH</span>
+        <div className="drive-toolbar" style={{ flexDirection: "column", alignItems: "stretch", gap: 16 }}>
+          <div className="mega-search-bar drive-search">
+            <span className="search-icon" aria-hidden="true">🔍</span>
             <input
               className="input-field"
-              placeholder={`Search ${BRAND.name}...`} value={search}
+              placeholder={`Search Cloud drive...`} value={search}
               onChange={e => setSearch(e.target.value)}
-              style={{ width: "100%", maxWidth: 560, padding: "14px 14px 14px 78px", borderRadius: 14, background: "var(--bg-card)" }}
+              style={{ width: "100%", padding: "12px 20px 12px 44px", borderRadius: 999, background: "var(--bg-card)", border: "1px solid var(--border)" }}
             />
           </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
           <button
             type="button"
             className="icon-btn"
@@ -1191,14 +1170,15 @@ export default function CloudVault() {
           </div>
 
           {activeView === "drive" && (
-          <div className="drive-actions">
-            <button type="button" onClick={() => setShowNewFolder(v => !v)} className="btn-secondary">New folder</button>
-            <button type="button" onClick={() => fileInput.current?.click()} className="btn-primary">Upload</button>
+          <div className="drive-actions" style={{ marginLeft: "auto" }}>
+            <button type="button" onClick={() => setShowNewFolder(v => !v)} className="btn-secondary mega-folder-btn">New folder</button>
+            <button type="button" onClick={() => fileInput.current?.click()} className="btn-primary mega-upload-btn">Upload</button>
             <button type="button" onClick={() => folderInput.current?.click()} className="btn-secondary">Folder</button>
             <input ref={fileInput} type="file" multiple hidden onChange={e => { uploadFiles(e.target.files); e.target.value = ""; }} />
             <input ref={folderInput} type="file" multiple webkitdirectory="" hidden onChange={e => { uploadFiles(e.target.files, true); e.target.value = ""; }} />
           </div>
           )}
+          </div>
         </div>
 
         {activeView === "drive" && (

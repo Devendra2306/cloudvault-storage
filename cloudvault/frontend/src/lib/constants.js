@@ -8,6 +8,8 @@ export const BRAND = {
   shortName: "CloudVault",
   tagline: "The intelligent home for your digital life.",
   logo: "CV",
+  logoImage: "/calovaultlogo.png",
+  logoVideo: "/calovaultlogo.mp4",
 };
 
 export const USE_FIREBASE_AUTH = import.meta.env.VITE_USE_FIREBASE_AUTH === "true";
