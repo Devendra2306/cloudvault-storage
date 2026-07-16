@@ -7,8 +7,6 @@ if (!process.env.RESEND_API_KEY) {
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 const EMAIL_FROM = process.env.EMAIL_FROM || 'noreply@cloudvault.co.in';
 const APP_URL = process.env.APP_URL || 'https://cloudvault.co.in';
-
-console.log('EMAIL SERVICE: Loaded', {
   configured: Boolean(resend),
   emailFrom: EMAIL_FROM,
   appUrl: APP_URL,
@@ -85,25 +83,18 @@ async function sendEmail(to, templateName, templateData, text) {
       html,
       ...(text ? { text } : {}),
     };
-
-    console.log('RESEND REQUEST:', {
       from: payload.from,
       to: payload.to,
       subject: payload.subject,
     });
 
     const result = await resend.emails.send(payload);
-
-    console.log('RESEND RESPONSE BODY:', JSON.stringify(result, null, 2));
     if (result?.error) {
-      console.error('RESEND ERROR BODY:', JSON.stringify(result.error, null, 2));
       return { success: false, error: result.error.message || 'Resend email send failed', details: result.error };
     }
-    console.log(`Email sent successfully to ${to}:`, result);
     return { success: true, data: result };
   } catch (error) {
     console.error('Failed to send email:', error);
-    console.error('RESEND ERROR BODY:', JSON.stringify(error?.response?.data || error?.response || error, null, 2));
     return { success: false, error: error.message, details: error?.response?.data || error?.response };
   }
 }

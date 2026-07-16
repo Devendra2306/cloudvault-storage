@@ -13,11 +13,6 @@ const sanitizeShare = (share) => ({ ...share, password: share.password ? undefin
  */
 const createFileShare = async (req, res, next) => {
   try {
-    console.log('=== CREATE FILE SHARE START ===');
-    console.log('FILE ID:', req.params.id);
-    console.log('USER ID:', req.user.id);
-    console.log('SHARE TYPE:', req.body.shareType);
-    console.log('PERMISSION:', req.body.permission);
 
     const { id } = req.params;
     const { shareType, permission, password, expiresAt, maxViews, sharedWithEmail, email } = req.body;
@@ -28,12 +23,10 @@ const createFileShare = async (req, res, next) => {
     });
 
     if (!file) {
-      console.error('ERROR: File not found');
       throw new NotFoundError('File not found');
     }
 
     if (file.userId !== userId) {
-      console.error('ERROR: Permission denied');
       throw new ForbiddenError('You do not have permission to share this file');
     }
 
@@ -43,18 +36,15 @@ const createFileShare = async (req, res, next) => {
       : null;
 
     if (shareType === 'user' && !sharedWithUser) {
-      console.error('ERROR: User not found');
       throw new ValidationError('User with this email not found');
     }
 
     if (sharedWithUser?.id === userId) {
-      console.error('ERROR: Cannot share with yourself');
       throw new ValidationError('Cannot share file with yourself');
     }
 
     // Generate unique share token
     const shareToken = uuidv4();
-    console.log('SHARE TOKEN GENERATED:', shareToken);
 
     // Create share
     const share = await prisma.fileShare.create({
@@ -301,9 +291,6 @@ const revokeFileShare = async (req, res, next) => {
  */
 const accessSharedFile = async (req, res, next) => {
   try {
-    console.log('=== ACCESS SHARED FILE START ===');
-    console.log('SHARE TOKEN:', req.params.token);
-    console.log('PASSWORD PROVIDED:', !!req.query.password);
 
     const { token } = req.params;
     const { password } = req.query;
@@ -325,11 +312,7 @@ const accessSharedFile = async (req, res, next) => {
       },
     });
 
-    console.log('SHARE FOUND:', !!share);
-    console.log('SHARE DETAILS:', share ? { id: share.id, isActive: share.isActive, fileId: share.fileId } : 'none');
-
     if (!share) {
-      console.error('ERROR: Share not found for token:', token);
       return res.status(404).json({
         success: false,
         error: 'Share not found',
@@ -338,7 +321,6 @@ const accessSharedFile = async (req, res, next) => {
     }
 
     if (!share.isActive) {
-      console.error('ERROR: Share has been revoked');
       return res.status(403).json({
         success: false,
         error: 'Share revoked',
@@ -347,7 +329,6 @@ const accessSharedFile = async (req, res, next) => {
     }
 
     if (share.expiresAt && share.expiresAt < new Date()) {
-      console.error('ERROR: Share has expired');
       return res.status(403).json({
         success: false,
         error: 'Share expired',
@@ -356,7 +337,6 @@ const accessSharedFile = async (req, res, next) => {
     }
 
     if (share.maxViews && share.viewCount >= share.maxViews) {
-      console.error('ERROR: Share has reached maximum views');
       return res.status(403).json({
         success: false,
         error: 'Share limit reached',
