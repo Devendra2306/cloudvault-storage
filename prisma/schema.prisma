@@ -137,6 +137,7 @@ model FileShare {
   fileId        String
   sharedBy      String
   sharedWith    String?
+  sharedWithEmail String?
   shareToken    String    @unique
   shareType     String    // 'link', 'user', 'email'
   permission    String    @default("view")
@@ -164,7 +165,8 @@ model FolderShare {
   id         String   @id @default(uuid())
   folderId   String
   sharedBy   String
-  sharedWith String
+  sharedWith String?
+  sharedWithEmail String?
   permission String   @default("view")
   isActive   Boolean  @default(true)
   createdAt  DateTime @default(now())
@@ -172,7 +174,7 @@ model FolderShare {
 
   folder     Folder   @relation(fields: [folderId], references: [id], onDelete: Cascade)
   sharedByUser User   @relation("SharedBy", fields: [sharedBy], references: [id], onDelete: Cascade)
-  sharedWithUser User @relation("SharedWith", fields: [sharedWith], references: [id], onDelete: Cascade)
+  sharedWithUser User? @relation("SharedWith", fields: [sharedWith], references: [id], onDelete: Cascade)
 
   @@unique([folderId, sharedWith])
   @@index([folderId])

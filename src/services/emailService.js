@@ -70,7 +70,7 @@ function resolveTemplate(templateName, templateData) {
 async function sendEmail(to, templateName, templateData, text) {
   if (!resend) {
     console.warn('Email service not configured. Skipping email send.');
-    return { success: false, message: 'Email service not configured' };
+    return { success: false, message: 'Email service not configured. Missing RESEND_API_KEY.' };
   }
 
   try {
