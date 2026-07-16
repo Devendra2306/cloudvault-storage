@@ -144,7 +144,7 @@ export default function LandingPage({ onGetStarted, onLogin, onSignUp }) {
       </header>
 
       <main>
-        {/* Hero — top to bottom flow */}
+        {/* Hero */}
         <section className="hero-section">
           <div className="hero-glow hero-glow-green" aria-hidden="true" />
           <div className="hero-glow hero-glow-blue" aria-hidden="true" />
@@ -168,8 +168,7 @@ export default function LandingPage({ onGetStarted, onLogin, onSignUp }) {
             </div>
             <div className="hero-note">No credit card required · 10 GB free forever</div>
           </div>
-
-          {/* MEGA-style app preview — vertical stack inside */}
+          {/* App preview */}
           <div className="dashboard-preview animate-fade-up delay-2" aria-label="CloudVault preview">
             <div className="hero-video-orbit" aria-hidden="true">
               <video src={BRAND.logoVideo} autoPlay muted loop playsInline preload="metadata" />

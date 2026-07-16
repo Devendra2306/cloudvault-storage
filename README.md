@@ -1,309 +1,224 @@
-# CloudVault Drive - Google Drive Style Cloud Storage
+# CloudVault
 
-A full-featured cloud storage application built with Node.js, Express, PostgreSQL, and AWS S3.
+CloudVault is a secure cloud storage web application for uploading, organizing, previewing, downloading, and sharing files. It provides a drive-style interface with folders, recent files, trash recovery, storage tracking, account controls, authentication, and security checks.
 
-## Features
+## Project Overview
 
-### MVP Features (Implemented)
-- ✅ User authentication (JWT-based)
-- ✅ User registration with email verification
-- ✅ Password reset functionality
-- ✅ User profile management
-- ✅ Folder hierarchy system (create, read, update, delete, move)
-- ✅ File upload/download with S3 integration
-- ✅ File management (rename, move, copy, delete, restore)
-- ✅ Storage quota enforcement
-- ✅ File type validation
-- ✅ Security headers and rate limiting
-- ✅ Input validation
-- ✅ Error handling
+CloudVault is built as a full-stack application with a React frontend and an Express backend. Users can create an account, sign in, manage files and folders, preview supported files, share content, restore deleted items, monitor storage usage, and manage profile/security settings.
 
-### V2 Features (Planned)
-- File sharing (public links, user sharing)
-- Folder sharing with permissions
-- Full-text search
-- Recent files tracking
-- Trash bin with auto-cleanup
-- File previews and thumbnails
-- Starred files
+The project includes:
 
-### Production Features (Planned)
-- Storage analytics
-- Admin panel
-- Performance optimization (caching, CDN)
-- Monitoring and logging
-- CI/CD pipeline
+- User registration and login
+- JWT access and refresh token authentication
+- Optional Firebase/social authentication support
+- Cloudflare Turnstile protection for auth forms
+- Email verification and password reset support
+- File upload, download, preview, rename, move, copy, delete, restore, and permanent delete
+- Folder creation, navigation, move, restore, and delete
+- Recent, starred, shared, trash, activity, billing, storage, profile, settings, and security views
+- Admin-facing controls
+- Storage quota and file size controls
+- S3-compatible object storage integration
+- Prisma-based database access
 
 ## Tech Stack
 
-- **Backend:** Node.js, Express.js
-- **Database:** PostgreSQL with Prisma ORM
-- **Storage:** AWS S3
-- **Cache:** Redis
-- **Authentication:** JWT
-- **Validation:** Joi
-- **Security:** Helmet, Rate Limiting
+### Frontend
+
+- React 18
+- Vite
+- Custom CSS through shared global styles
+- Firebase client SDK support
+- Cloudflare Turnstile widget
+
+### Backend
+
+- Node.js
+- Express.js
+- Prisma ORM
+- JWT authentication
+- bcrypt password hashing
+- Joi and express-validator validation
+- Multer upload handling
+- Winston logging
+- Helmet, CORS, and rate limiting
+
+### Storage and Services
+
+- AWS S3 or S3-compatible object storage
+- Cloudflare Turnstile
+- Firebase Authentication support
+- Resend email support
+- Redis support
 
 ## Project Structure
 
-```
-PROJECT-4.0/
-├── src/
-│   ├── config/           # Configuration files
-│   │   ├── database.js   # PostgreSQL connection
-│   │   ├── jwt.js        # JWT configuration
-│   │   ├── s3.js         # AWS S3 configuration
-│   │   ├── redis.js      # Redis configuration
-│   │   └── email.js      # Email service
-│   ├── controllers/      # Route controllers
-│   │   ├── authController.js
-│   │   ├── userController.js
-│   │   ├── fileController.js
-│   │   └── folderController.js
-│   ├── middleware/       # Express middleware
-│   │   ├── auth.js       # Authentication
-│   │   ├── validation.js # Request validation
-│   │   ├── errorHandler.js
-│   │   └── upload.js     # File upload middleware
-│   ├── routes/          # API routes
-│   │   ├── authRoutes.js
-│   │   ├── userRoutes.js
-│   │   ├── fileRoutes.js
-│   │   └── folderRoutes.js
-│   └── app.js            # Express app setup
-├── prisma/
-│   ├── schema.prisma     # Database schema
-│   └── prisma.config.ts  # Prisma configuration
-├── .env.example          # Environment variables template
-├── server.js             # Application entry point
-└── package.json          # Dependencies
-```
-
-## Setup Instructions
-
-### Prerequisites
-- Node.js (v18 or higher)
-- PostgreSQL (v14 or higher)
-- Redis (optional, for caching)
-- AWS account with S3 access
-
-### Installation
-
-1. Clone the repository
-```bash
-git clone <repository-url>
-cd PROJECT-4.0
+```text
+PROJECT 4.0/
+  cloudvault/
+    frontend/
+      public/
+      src/
+        components/
+        context/
+        hooks/
+        lib/
+        pages/
+        styles/
+      index.html
+      package.json
+      vite.config.js
+  prisma/
+    migrations/
+    schema.prisma
+    seed.js
+  scripts/
+  src/
+    config/
+    controllers/
+    middleware/
+    routes/
+    services/
+    utils/
+    app.js
+  package.json
+  server.js
 ```
 
-2. Install dependencies
+## Environment Configuration
+
+The backend reads configuration from the root `.env` file. The frontend reads Vite variables from `cloudvault/frontend/.env` and local development overrides from `cloudvault/frontend/.env.local`.
+
+Required backend configuration includes:
+
+- `DATABASE_URL`
+- `JWT_SECRET`
+- `JWT_REFRESH_SECRET`
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+- `AWS_REGION`
+- `AWS_S3_BUCKET_NAME`
+- `ALLOWED_ORIGINS`
+- `APP_URL`
+- `RESEND_API_KEY`
+- `EMAIL_FROM`
+- `TURNSTILE_SECRET_KEY`
+
+Required frontend configuration includes:
+
+- `VITE_API_BASE_URL`
+- `VITE_TURNSTILE_SITE_KEY`
+- Firebase `VITE_FIREBASE_*` values when Firebase auth is enabled
+
+For local development, Cloudflare Turnstile can use Cloudflare's official test keys. Production must use the real site key and secret key configured for the deployed hostname.
+
+## Installation
+
+Install backend dependencies:
+
 ```bash
 npm install
 ```
 
-3. Configure environment variables
+Install frontend dependencies:
+
 ```bash
-cp .env.example .env
+npm install --prefix cloudvault/frontend
 ```
 
-Edit `.env` with your configuration:
-```env
-# Database
-DATABASE_URL=postgresql://user:password@localhost:5432/cloudvault
+Generate the Prisma client:
 
-# AWS S3
-AWS_ACCESS_KEY_ID=your_access_key_id
-AWS_SECRET_ACCESS_KEY=your_secret_access_key
-AWS_REGION=us-east-1
-AWS_S3_BUCKET_NAME=your-bucket-name
-
-# Redis
-REDIS_URL=redis://localhost:6379
-
-# JWT
-JWT_SECRET=your_jwt_secret_key_change_this_in_production
-JWT_REFRESH_SECRET=your_refresh_secret_key_change_this_in_production
-JWT_ACCESS_EXPIRY=15m
-JWT_REFRESH_EXPIRY=7d
-
-# Email
-EMAIL_SERVICE=sendgrid
-EMAIL_API_KEY=your_email_api_key
-EMAIL_FROM=noreply@cloudvault.com
-
-# App
-PORT=3000
-NODE_ENV=development
-ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001
-
-# Storage Quotas (in bytes)
-DEFAULT_STORAGE_QUOTA=5368709120
-MAX_FILE_SIZE=104857600
-
-# Rate Limiting
-RATE_LIMIT_WINDOW_MS=900000
-RATE_LIMIT_MAX_REQUESTS=200
-UPLOAD_RATE_LIMIT_MAX=100
-```
-
-4. Set up PostgreSQL database
-```bash
-# Create database
-createdb cloudvault
-
-# Run migrations
-npm run prisma:migrate
-```
-
-5. Generate Prisma client
 ```bash
 npm run prisma:generate
 ```
 
-6. Start the server
+Apply database migrations:
+
 ```bash
-npm start
+npm run prisma:migrate
 ```
 
-For development with auto-reload:
+Optional seed:
+
+```bash
+npm run prisma:seed
+```
+
+## Running the Project
+
+Start the backend:
+
 ```bash
 npm run dev
 ```
 
-## API Endpoints
-
-### Authentication
-- `POST /api/v1/auth/register` - Register new user
-- `POST /api/v1/auth/login` - Login user
-- `POST /api/v1/auth/logout` - Logout user
-- `POST /api/v1/auth/refresh` - Refresh access token
-- `POST /api/v1/auth/verify-email` - Verify email address
-- `POST /api/v1/auth/forgot-password` - Request password reset
-- `POST /api/v1/auth/reset-password` - Reset password
-
-### User Management
-- `GET /api/v1/users/me` - Get current user profile
-- `PUT /api/v1/users/me` - Update user profile
-- `PUT /api/v1/users/me/password` - Change password
-- `POST /api/v1/users/me/avatar` - Upload avatar
-
-### Folders
-- `POST /api/v1/folders` - Create folder
-- `GET /api/v1/folders` - List folders
-- `GET /api/v1/folders/:id` - Get folder details
-- `PUT /api/v1/folders/:id` - Update folder
-- `DELETE /api/v1/folders/:id` - Delete folder (move to trash)
-- `POST /api/v1/folders/:id/restore` - Restore folder from trash
-- `POST /api/v1/folders/:id/move` - Move folder
-
-### Files
-- `POST /api/v1/files/upload` - Upload file
-- `GET /api/v1/files` - List files
-- `GET /api/v1/files/:id` - Get file details
-- `GET /api/v1/files/:id/download` - Get download URL
-- `PUT /api/v1/files/:id` - Update file
-- `POST /api/v1/files/:id/move` - Move file
-- `POST /api/v1/files/:id/copy` - Copy file
-- `DELETE /api/v1/files/:id` - Delete file (move to trash)
-- `POST /api/v1/files/:id/restore` - Restore file from trash
-- `DELETE /api/v1/files/:id/permanent` - Permanently delete file
-
-## Database Schema
-
-The application uses PostgreSQL with the following main tables:
-- `users` - User accounts
-- `folders` - Folder hierarchy
-- `files` - File metadata
-- `file_shares` - File sharing links
-- `folder_shares` - Folder sharing
-- `recent_files` - Recent file access
-- `storage_analytics` - Usage statistics
-- `activity_logs` - User activity tracking
-- `sessions` - Session management
-- `verification_tokens` - Email verification tokens
-
-See `DATABASE_SCHEMA.md` for detailed schema documentation.
-
-## Security Features
-
-- JWT-based authentication
-- Password hashing with bcrypt
-- Rate limiting per endpoint
-- Security headers (Helmet)
-- CORS configuration
-- Input validation with Joi
-- File type validation
-- Storage quota enforcement
-- SQL injection prevention (Prisma ORM)
-
-## Development
-
-### Prisma Studio
-```bash
-npm run prisma:studio
-```
-
-### Database Migrations
-```bash
-# Create migration
-npx prisma migrate dev --name migration_name
-
-# Apply migrations
-npm run prisma:migrate
-
-# Reset database (development only)
-npx prisma migrate reset
-```
-
-## Testing
-
-The application includes comprehensive test suites:
-- Unit tests for models and services
-- Integration tests for API endpoints
-- End-to-end tests for user journeys
+Start the frontend:
 
 ```bash
-# Run all tests
-npm test
-
-# Run specific test suite
-npm test -- auth
-npm test -- files
+npm run dev --prefix cloudvault/frontend
 ```
 
-## Deployment
+Default local services:
 
-### Environment Setup
-1. Set up production PostgreSQL database
-2. Configure AWS S3 bucket with proper CORS
-3. Set up Redis (optional but recommended)
-4. Configure environment variables
-5. Run database migrations
-6. Build and deploy application
+- Backend API: `http://localhost:3001/api/v1`
+- Frontend: `http://localhost:3000`
 
-### Docker Deployment
+## Build
+
+Build the frontend:
+
 ```bash
-docker-compose up -d
+npm run build --prefix cloudvault/frontend
 ```
 
-## Performance Optimization
+Start the backend in production mode:
 
-- Redis caching for frequently accessed data
-- Database indexing on foreign keys
-- Connection pooling for PostgreSQL and S3
-- CDN integration for file delivery
-- Lazy loading for large datasets
+```bash
+npm start
+```
 
-## Monitoring
+## API Areas
 
-- Winston logging for structured logs
-- Health check endpoint at `/health`
-- Error tracking with Sentry (optional)
-- Performance monitoring (optional)
+Main backend route groups:
 
-## License
+- `/api/v1/auth`
+- `/api/v1/account`
+- `/api/v1/admin`
+- `/api/v1/billing`
+- `/api/v1/dashboard`
+- `/api/v1/files`
+- `/api/v1/folders`
+- `/api/v1/notifications`
+- `/api/v1/public`
+- `/api/v1/recent`
+- `/api/v1/search`
+- `/api/v1/share`
+- `/api/v1/storage`
+- `/api/v1/trash`
+- `/api/v1/users`
 
-MIT
+## Security
 
-## Support
+CloudVault uses:
 
-For issues and questions, please open an issue on GitHub.
+- JWT access and refresh tokens
+- bcrypt password hashing
+- Cloudflare Turnstile for auth form protection
+- Rate limiting
+- CORS allowlist
+- Helmet security headers
+- Request validation
+- File size limits
+- Storage quota checks
+- Prisma ORM query protection
+
+## Database
+
+The Prisma schema defines users, sessions, files, folders, shares, activity, billing/trial data, verification tokens, and storage-related records. Migrations are stored in `prisma/migrations`.
+
+## Notes
+
+- Keep real secrets out of commits.
+- Use production Cloudflare Turnstile keys only on approved production hostnames.
+- Use S3 bucket policies and CORS settings that match the deployed API and frontend domains.
+- Run migrations before deploying backend changes that depend on schema updates.

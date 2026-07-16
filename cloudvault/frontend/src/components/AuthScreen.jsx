@@ -484,7 +484,7 @@ export default function AuthScreen({ onAuth, onBack, onNeedsVerification, initia
         .cv-auth-step { animation: cv-fade 0.3s ease; }
       `}</style>
 
-      {/* MEGA-style floating cloud logo */}
+      {/* Floating cloud logo */}
       <div className="auth-cloud-logo" style={{ marginBottom: 48 }}>
         <div className="auth-cloud-bg" />
         <div className="auth-mega-mark">
