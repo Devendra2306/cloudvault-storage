@@ -243,7 +243,12 @@ export default function AuthScreen({ onAuth, onBack, onNeedsVerification, initia
   const [turnstileToken, setTurnstileToken] = useState(null);
   const [turnstileVerified, setTurnstileVerified] = useState(false);
   const [turnstileKey, setTurnstileKey] = useState(0);
-  const turnstileEnabled = Boolean(import.meta.env.VITE_TURNSTILE_SITE_KEY);
+  const turnstileSiteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY;
+  const isLocalHost =
+    typeof window !== "undefined" &&
+    ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
+  const isTurnstileTestKey = turnstileSiteKey?.startsWith("1x");
+  const turnstileEnabled = Boolean(turnstileSiteKey && (!isTurnstileTestKey || isLocalHost));
 
   // Firebase
   const firebaseReady = isFirebaseConfigured();
