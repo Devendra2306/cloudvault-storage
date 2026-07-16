@@ -52,9 +52,19 @@ export default function Turnstile({ onVerified, onError, onExpire, theme = "auto
   useEffect(() => {
     if (isLoaded && containerRef.current && window.turnstile && !widgetIdRef.current) {
       const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY;
+      const isLocalHost = ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
+      const isTestKey = siteKey?.startsWith("1x");
       
       if (!siteKey) {
         const errorMsg = "Turnstile site key not configured";
+        setError(errorMsg);
+        onError?.(errorMsg);
+        setIsLoading(false);
+        return;
+      }
+
+      if (isTestKey && !isLocalHost) {
+        const errorMsg = "Turnstile production site key is not configured";
         setError(errorMsg);
         onError?.(errorMsg);
         setIsLoading(false);
