@@ -1,12 +1,26 @@
 import { useMemo, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
-import { Copy, Twitter, Linkedin, Check, X, Mail } from "lucide-react";
+import { Copy, Check, X, Mail } from "lucide-react";
 
 // Fallback for WhatsApp icon
 const WhatsAppIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21" />
     <path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1a5 5 0 0 0 5 5h1a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1" />
+  </svg>
+);
+
+const TwitterIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z" />
+  </svg>
+);
+
+const LinkedinIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+    <rect x="2" y="9" width="4" height="12" />
+    <circle cx="4" cy="4" r="2" />
   </svg>
 );
 
@@ -121,13 +135,13 @@ export default function ShareModal({ file, onShare, onCancel }) {
                   <p style={{ color: "var(--text-muted)", fontSize: 14, marginBottom: 24, textAlign: "center" }}>Share directly to your favorite platforms</p>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
                     <button onClick={() => shareToSocial('twitter')} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: 16, background: "rgba(29, 161, 242, 0.1)", color: "#1da1f2", border: "1px solid rgba(29, 161, 242, 0.2)", borderRadius: 16, cursor: "pointer", fontWeight: 600, transition: "0.2s" }}>
-                      <Twitter size={20} /> Twitter
+                      <TwitterIcon /> Twitter
                     </button>
                     <button onClick={() => shareToSocial('whatsapp')} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: 16, background: "rgba(37, 211, 102, 0.1)", color: "#25d366", border: "1px solid rgba(37, 211, 102, 0.2)", borderRadius: 16, cursor: "pointer", fontWeight: 600, transition: "0.2s" }}>
                       <WhatsAppIcon /> WhatsApp
                     </button>
                     <button onClick={() => shareToSocial('linkedin')} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: 16, background: "rgba(0, 119, 181, 0.1)", color: "#0077b5", border: "1px solid rgba(0, 119, 181, 0.2)", borderRadius: 16, cursor: "pointer", fontWeight: 600, transition: "0.2s" }}>
-                      <Linkedin size={20} /> LinkedIn
+                      <LinkedinIcon /> LinkedIn
                     </button>
                     <button onClick={() => shareToSocial('email')} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: 16, background: "rgba(255, 255, 255, 0.05)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 16, cursor: "pointer", fontWeight: 600, transition: "0.2s" }}>
                       <Mail size={20} /> Email App
