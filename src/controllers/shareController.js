@@ -83,6 +83,7 @@ const createFileShare = async (req, res, next) => {
     await createNotification(userId, 'share_created', 'Share created', `"${file.name}" is ready to share.`, { fileId: id, shareId: share.id });
 
     let emailResult = null;
+    let emailWarning = null;
     if (shareType === 'email' && recipientEmail) {
       emailResult = await sendShareInvitationEmail({
         to: recipientEmail,
@@ -94,7 +95,8 @@ const createFileShare = async (req, res, next) => {
         passwordProtected: Boolean(password),
       });
       if (emailResult && !emailResult.success) {
-        throw new Error(emailResult.message || 'Email service failure');
+        console.warn('EMAIL SEND FAILED:', emailResult.message || emailResult.error);
+        emailWarning = emailResult.message || 'Email service failure';
       }
       if (sharedWithUser) {
         await createNotification(sharedWithUser.id, 'share_received', 'New shared file', `${req.user.fullName || req.user.email} shared "${file.name}" with you.`, { fileId: id, shareId: share.id });
@@ -103,10 +105,10 @@ const createFileShare = async (req, res, next) => {
 
     res.status(201).json({
       success: true,
+      message: emailWarning ? `Share created, but email failed: ${emailWarning}` : 'File shared successfully',
       data: {
         ...sanitizeShare(share),
-        shareUrl,
-        email: emailResult,
+        shareUrl
       },
     });
   } catch (error) {
