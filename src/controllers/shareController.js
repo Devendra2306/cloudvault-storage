@@ -62,6 +62,7 @@ const createFileShare = async (req, res, next) => {
         fileId: id,
         sharedBy: userId,
         sharedWith: sharedWithUser?.id || null,
+        sharedWithEmail: recipientEmail || null,
         shareToken,
         shareType,
         permission,
@@ -92,6 +93,9 @@ const createFileShare = async (req, res, next) => {
         expiresAt,
         passwordProtected: Boolean(password),
       });
+      if (emailResult && !emailResult.success) {
+        throw new Error(emailResult.message || 'Email service failure');
+      }
       if (sharedWithUser) {
         await createNotification(sharedWithUser.id, 'share_received', 'New shared file', `${req.user.fullName || req.user.email} shared "${file.name}" with you.`, { fileId: id, shareId: share.id });
       }
@@ -227,7 +231,7 @@ const listFileShares = async (req, res, next) => {
 
     const sharesWithUrl = shares.map((share) => ({
       ...sanitizeShare(share),
-      shareUrl: share.shareType === 'link' 
+      shareUrl: ['link', 'email'].includes(share.shareType)
         ? shareUrlFor(share.shareToken)
         : null,
     }));
@@ -361,17 +365,17 @@ const accessSharedFile = async (req, res, next) => {
     // Check password if set
     if (share.password) {
       if (!password) {
-        return res.status(401).json({
+        return res.status(403).json({
           success: false,
-          error: 'Unauthorized',
+          error: 'Forbidden',
           message: 'Password required',
         });
       }
 
       if (share.password !== password) {
-        return res.status(401).json({
+        return res.status(403).json({
           success: false,
-          error: 'Unauthorized',
+          error: 'Forbidden',
           message: 'Invalid password',
         });
       }

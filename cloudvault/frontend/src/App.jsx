@@ -521,7 +521,6 @@ export default function CloudVault() {
   useEffect(() => { refresh(1, false); }, [refresh]);
 
   useEffect(() => {
-    if (!token) return;
     api("/users/me").then((u) => setUserRole(u?.role || "user")).catch(() => {});
   }, [token, api]);
 
@@ -721,12 +720,6 @@ export default function CloudVault() {
   };
 
   const handleShare = async (file, payload) => {
-    if (payload.shareType === "user") {
-      return api(`/files/${file.id}/share/user`, {
-        method: "POST",
-        body: JSON.stringify({ sharedWithEmail: payload.sharedWithEmail || payload.email, permission: payload.permission }),
-      });
-    }
     return api(`/files/${file.id}/share`, {
       method: "POST",
       body: JSON.stringify(payload),
@@ -970,6 +963,10 @@ export default function CloudVault() {
       />
     );
   }
+
+  if (screen === "shared-link") return <SharedLinkPage token={shareToken} />;
+
+  if (isInitializing) return <PageLoader />;
 
   const FileCard = viewMode === "grid" ? FileCardGrid : FileCardList;
 
