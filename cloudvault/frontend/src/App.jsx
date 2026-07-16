@@ -966,8 +966,6 @@ export default function CloudVault() {
 
   if (screen === "shared-link") return <SharedLinkPage token={shareToken} />;
 
-  if (isInitializing) return <PageLoader />;
-
   const FileCard = viewMode === "grid" ? FileCardGrid : FileCardList;
 
   return (
