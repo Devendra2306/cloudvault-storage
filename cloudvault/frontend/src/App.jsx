@@ -344,6 +344,15 @@ function getResetTokenFromUrl() {
   return new URLSearchParams(window.location.search).get("token");
 }
 
+function getShareTokenFromUrl() {
+  const path = window.location.pathname.replace(/\/+$/, "") || "/";
+  if (path.startsWith("/share/")) {
+    const parts = path.split("/");
+    if (parts.length >= 3) return parts[2];
+  }
+  return null;
+}
+
 function useViewport() {
   const [width, setWidth] = useState(() => window.innerWidth);
 
@@ -364,12 +373,15 @@ function useViewport() {
 export default function CloudVault() {
   const [verifyEmailToken, setVerifyEmailToken] = useState(getVerifyTokenFromUrl);
   const [resetPasswordToken, setResetPasswordToken] = useState(getResetTokenFromUrl);
+  const [shareToken, setShareToken] = useState(getShareTokenFromUrl);
   const [screen, setScreen] = useState(() => {
     const token = localStorage.getItem("cv_token") || sessionStorage.getItem("cv_token");
     const resetToken = getResetTokenFromUrl();
+    const shareUrlToken = getShareTokenFromUrl();
     const verifyPath = window.location.pathname.replace(/\/+$/, "") || "/";
     if (verifyPath.endsWith("/verify-email")) return "verify-email";
     if (resetToken) return "reset-password";
+    if (shareUrlToken) return "shared-link";
     return token ? "app" : "landing";
   });
   const [authMode, setAuthMode] = useState("login");
