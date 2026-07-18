@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { apiFetch, triggerBrowserDownload } from "../lib/api.js";
+import { API } from "../lib/constants.js";
 import { fmt, fileIcon } from "../lib/fileTypes.js";
 
 export default function SharedLinkPage({ token }) {
@@ -42,7 +43,7 @@ export default function SharedLinkPage({ token }) {
     try {
       const url = `/share/${token}/download${password ? `?password=${encodeURIComponent(password)}` : ""}`;
       
-      const res = await fetch(`http://localhost:3000/api/v1${url}`);
+      const res = await fetch(`${API}${url}`);
       if (!res.ok) throw new Error("Download failed");
       
       const blob = await res.blob();
