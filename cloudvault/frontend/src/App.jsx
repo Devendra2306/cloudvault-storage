@@ -26,6 +26,7 @@ import VerifyEmailPage from "./pages/VerifyEmailPage.jsx";
 import NotificationBell from "./components/NotificationBell.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
 import NavIcon from "./components/NavIcon.jsx";
+import SharedLinkPage from "./pages/SharedLinkPage.jsx";
 
 const ProfilePage = lazy(() => import("./pages/ProfilePage.jsx"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage.jsx"));
