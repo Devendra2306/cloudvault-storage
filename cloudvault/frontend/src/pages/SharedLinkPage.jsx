@@ -116,7 +116,7 @@ export default function SharedLinkPage({ token }) {
 
       <main style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
         <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 24, padding: 40, maxWidth: 480, width: "100%", textAlign: "center", boxShadow: "0 24px 80px rgba(0,0,0,0.2)" }}>
-          <div style={{ fontSize: 64, marginBottom: 24 }}>{fileIcon(file)}</div>
+          <div style={{ fontSize: 64, marginBottom: 24 }}>{fileIcon(file.mimeType)}</div>
           <h1 style={{ margin: "0 0 8px", fontSize: 24, fontWeight: 700, wordBreak: "break-word" }}>{file.name}</h1>
           <p style={{ margin: "0 0 24px", color: "var(--text-muted)", fontSize: 15 }}>
             {fmt(file.size)} • {file.mimeType || "Unknown type"}
