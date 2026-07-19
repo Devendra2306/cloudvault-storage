@@ -977,7 +977,13 @@ export default function CloudVault() {
     );
   }
 
-  if (screen === "shared-link") return <SharedLinkPage token={shareToken} />;
+  if (screen === "shared-link") {
+    return (
+      <div data-theme={theme} className="app-shell" style={{ display: "flex", flexDirection: "column", minHeight: "100vh", background: "var(--bg)", color: "var(--text)" }}>
+        <SharedLinkPage token={shareToken} />
+      </div>
+    );
+  }
 
   const FileCard = viewMode === "grid" ? FileCardGrid : FileCardList;
 

@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { apiFetch, triggerBrowserDownload } from "../lib/api.js";
 import { API } from "../lib/constants.js";
-import { fmt, fileIcon } from "../lib/fileTypes.js";
+import { fmt, fileIcon, isPreviewable } from "../lib/fileTypes.js";
+import PreviewModal from "../components/PreviewModal.jsx";
 
 export default function SharedLinkPage({ token }) {
   const [loading, setLoading] = useState(true);
@@ -11,6 +12,7 @@ export default function SharedLinkPage({ token }) {
   const [passwordRequired, setPasswordRequired] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   const fetchShare = async (pwd = "") => {
     setLoading(true);
@@ -54,6 +56,13 @@ export default function SharedLinkPage({ token }) {
       setDownloading(false);
       setProgress(0);
     }
+  };
+
+  const fetchPreviewBlob = async () => {
+    const url = `/share/${token}/download${password ? `?password=${encodeURIComponent(password)}` : ""}`;
+    const res = await fetch(`${API}${url}`);
+    if (!res.ok) throw new Error("Failed to load preview");
+    return await res.blob();
   };
 
   if (loading) {
@@ -133,18 +142,29 @@ export default function SharedLinkPage({ token }) {
           </div>
 
           <div style={{ display: "flex", gap: 12 }}>
+            {isPreviewable(file) && (
+              <button
+                onClick={() => setPreviewOpen(true)}
+                style={{ flex: 1, padding: "14px", background: "var(--surface)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 12, fontWeight: 600, fontSize: 15, cursor: "pointer", transition: "all 0.2s" }}
+              >
+                Preview
+              </button>
+            )}
+
             {(permission === "download" || permission === "edit") ? (
               <button
                 onClick={handleDownload}
                 disabled={downloading}
-                style={{ flex: 1, padding: "14px", background: "var(--accent-blue)", color: "#fff", border: "none", borderRadius: 12, fontWeight: 600, fontSize: 15, cursor: downloading ? "not-allowed" : "pointer", opacity: downloading ? 0.7 : 1 }}
+                style={{ flex: 1, padding: "14px", background: "var(--accent-blue)", color: "#fff", border: "none", borderRadius: 12, fontWeight: 600, fontSize: 15, cursor: downloading ? "not-allowed" : "pointer", opacity: downloading ? 0.7 : 1, transition: "all 0.2s" }}
               >
                 {downloading ? "Downloading..." : "Download File"}
               </button>
             ) : (
-              <div style={{ flex: 1, padding: "14px", background: "rgba(255,255,255,0.05)", color: "var(--text-muted)", border: "none", borderRadius: 12, fontWeight: 600, fontSize: 15 }}>
-                View Only
-              </div>
+              !isPreviewable(file) && (
+                <div style={{ flex: 1, padding: "14px", background: "rgba(255,255,255,0.05)", color: "var(--text-muted)", border: "none", borderRadius: 12, fontWeight: 600, fontSize: 15 }}>
+                  View Only
+                </div>
+              )
             )}
           </div>
           
@@ -155,6 +175,15 @@ export default function SharedLinkPage({ token }) {
           )}
         </div>
       </main>
+
+      {previewOpen && (
+        <PreviewModal
+          file={file}
+          token={null}
+          onClose={() => setPreviewOpen(false)}
+          customFetchBlob={fetchPreviewBlob}
+        />
+      )}
     </div>
   );
 }
