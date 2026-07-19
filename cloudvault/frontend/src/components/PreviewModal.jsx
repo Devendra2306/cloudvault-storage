@@ -18,7 +18,7 @@ function Spinner({ size = 22 }) {
   );
 }
 
-export default function PreviewModal({ file, token, onClose }) {
+export default function PreviewModal({ file, token, onClose, customFetchBlob }) {
   const [url, setUrl] = useState(null);
   const [textContent, setTextContent] = useState("");
   const [loading, setLoading] = useState(true);
@@ -36,7 +36,9 @@ export default function PreviewModal({ file, token, onClose }) {
       setLoading(true);
       setError("");
       try {
-        const blob = await downloadFileWithProgress(file.id, token, { disposition: "preview" });
+        const blob = customFetchBlob
+          ? await customFetchBlob()
+          : await downloadFileWithProgress(file.id, token, { disposition: "preview" });
         if (cancelled) return;
         if (kind === "text") {
           const text = await blob.text();
