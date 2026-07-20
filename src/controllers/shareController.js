@@ -3,6 +3,7 @@ const prisma = require('../config/database');
 const { NotFoundError, ForbiddenError, ValidationError } = require('../middleware/errorHandler');
 const { sendShareInvitationEmail } = require('../config/email');
 const { createNotification, logActivity } = require('../services/userAccount');
+const { getObjectStream } = require('../config/s3');
 
 const frontendUrl = () => process.env.APP_URL || 'http://localhost:3000';
 const shareUrlFor = (token) => `${frontendUrl()}/share/${token}`;
@@ -363,18 +364,12 @@ const accessSharedFile = async (req, res, next) => {
       }
     }
 
-    // Increment view count
-    await prisma.fileShare.update({
-      where: { id: share.id },
-      data: { viewCount: { increment: 1 } },
-    });
-
-    await prisma.file.update({
-      where: { id: share.file.id },
-      data: { viewCount: { increment: 1 }, lastAccessedAt: new Date() },
-    });
-
-    await logActivity(share.sharedBy, 'shared_file_viewed', 'file', share.file.id, share.file.name, req);
+    // Increment view count — run in parallel for speed
+    Promise.all([
+      prisma.fileShare.update({ where: { id: share.id }, data: { viewCount: { increment: 1 } } }),
+      prisma.file.update({ where: { id: share.file.id }, data: { viewCount: { increment: 1 }, lastAccessedAt: new Date() } }),
+      logActivity(share.sharedBy, 'shared_file_viewed', 'file', share.file.id, share.file.name, req),
+    ]).catch(() => {/* fire-and-forget analytics */});
 
     res.json({
       success: true,
@@ -391,6 +386,92 @@ const accessSharedFile = async (req, res, next) => {
         sharedBy: share.file.user,
       },
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Download shared file (public endpoint) — streams file bytes from S3
+ */
+const downloadSharedFile = async (req, res, next) => {
+  try {
+    const { token } = req.params;
+    const { password } = req.query;
+
+    const share = await prisma.fileShare.findUnique({
+      where: { shareToken: token },
+      include: { file: true },
+    });
+
+    if (!share) return res.status(404).json({ success: false, error: 'Share not found' });
+    if (!share.isActive) return res.status(403).json({ success: false, error: 'Share revoked' });
+    if (share.expiresAt && share.expiresAt < new Date()) return res.status(403).json({ success: false, error: 'Share expired' });
+    if (share.maxViews && share.viewCount >= share.maxViews) return res.status(403).json({ success: false, error: 'Share limit reached' });
+
+    if (share.password) {
+      if (!password) return res.status(403).json({ success: false, error: 'Password required' });
+      if (share.password !== password) return res.status(403).json({ success: false, error: 'Invalid password' });
+    }
+
+    // Check permission for download
+    if (share.permission === 'view') {
+      return res.status(403).json({ success: false, error: 'Download not permitted', message: 'This share link only allows viewing.' });
+    }
+
+    const s3Object = await getObjectStream(share.file.s3Key);
+    const contentType = share.file.mimeType || s3Object.ContentType || 'application/octet-stream';
+    const safeName = (share.file.name || 'download').replace(/[^\w.\- ()\[\]]/g, '_');
+
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Content-Disposition', `attachment; filename="${safeName}"; filename*=UTF-8''${encodeURIComponent(share.file.name || 'download')}`);
+    if (s3Object.ContentLength != null) res.setHeader('Content-Length', String(s3Object.ContentLength));
+    res.setHeader('Cache-Control', 'private, max-age=3600');
+
+    // Fire-and-forget analytics
+    Promise.all([
+      prisma.file.update({ where: { id: share.file.id }, data: { downloadCount: { increment: 1 }, lastAccessedAt: new Date() } }),
+      logActivity(share.sharedBy, 'shared_file_downloaded', 'file', share.file.id, share.file.name, req),
+    ]).catch(() => {});
+
+    s3Object.Body.pipe(res);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Preview/stream shared file (public endpoint) — streams file bytes inline
+ */
+const previewSharedFile = async (req, res, next) => {
+  try {
+    const { token } = req.params;
+    const { password } = req.query;
+
+    const share = await prisma.fileShare.findUnique({
+      where: { shareToken: token },
+      include: { file: true },
+    });
+
+    if (!share) return res.status(404).json({ success: false, error: 'Share not found' });
+    if (!share.isActive) return res.status(403).json({ success: false, error: 'Share revoked' });
+    if (share.expiresAt && share.expiresAt < new Date()) return res.status(403).json({ success: false, error: 'Share expired' });
+
+    if (share.password) {
+      if (!password) return res.status(403).json({ success: false, error: 'Password required' });
+      if (share.password !== password) return res.status(403).json({ success: false, error: 'Invalid password' });
+    }
+
+    const s3Object = await getObjectStream(share.file.s3Key);
+    const contentType = share.file.mimeType || s3Object.ContentType || 'application/octet-stream';
+    const safeName = (share.file.name || 'file').replace(/[^\w.\- ()\[\]]/g, '_');
+
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Content-Disposition', `inline; filename="${safeName}"`);
+    if (s3Object.ContentLength != null) res.setHeader('Content-Length', String(s3Object.ContentLength));
+    res.setHeader('Cache-Control', 'private, max-age=1800');
+
+    s3Object.Body.pipe(res);
   } catch (error) {
     next(error);
   }
@@ -585,6 +666,8 @@ module.exports = {
   listFileShares,
   revokeFileShare,
   accessSharedFile,
+  downloadSharedFile,
+  previewSharedFile,
   shareFolder,
   listFolderShares,
   revokeFolderShare,
