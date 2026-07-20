@@ -24,6 +24,109 @@ const LinkedinIcon = () => (
   </svg>
 );
 
+// Extract clean filename from potentially corrupted names like [Location(id=..., name='X')]
+function displayName(raw) {
+  if (!raw) return "Untitled";
+  // If name contains "name='" pattern, extract the actual filename
+  const m = raw.match(/name=['"](.*?)['"]/);
+  if (m) return m[1];
+  // If it starts with [ and looks like a debug repr, just show last part
+  if (raw.startsWith("[") && raw.includes("(")) return raw;
+  return raw;
+}
+
+const PERMISSIONS = [
+  { value: "view", label: "View only", icon: "👁" },
+  { value: "download", label: "View & Download", icon: "📥" },
+  { value: "edit", label: "Edit metadata", icon: "✏️" },
+];
+
+function PermissionPicker({ value, onChange }) {
+  const [open, setOpen] = useState(false);
+  const selected = PERMISSIONS.find((p) => p.value === value) || PERMISSIONS[0];
+
+  return (
+    <div style={{ position: "relative" }}>
+      <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "var(--text-muted)", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Permission</label>
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        style={{
+          width: "100%",
+          padding: "12px 14px",
+          background: "var(--bg-card-hover, rgba(255,255,255,0.05))",
+          border: "1px solid var(--border)",
+          borderRadius: 12,
+          color: "var(--text)",
+          outline: "none",
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          fontFamily: "var(--font, inherit)",
+          fontSize: 14,
+          fontWeight: 500,
+          textAlign: "left",
+        }}
+      >
+        <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span>{selected.icon}</span>
+          <span>{selected.label}</span>
+        </span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ transform: open ? "rotate(180deg)" : "none", transition: "0.2s" }}><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+
+      {open && (
+        <>
+          <div onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 50 }} />
+          <div style={{
+            position: "absolute",
+            top: "calc(100% + 6px)",
+            left: 0,
+            right: 0,
+            background: "var(--bg-card, #1a1a1a)",
+            border: "1px solid var(--border)",
+            borderRadius: 14,
+            boxShadow: "0 16px 48px rgba(0,0,0,0.4)",
+            zIndex: 51,
+            overflow: "hidden",
+            animation: "fadeIn 0.15s ease",
+          }}>
+            {PERMISSIONS.map((p) => (
+              <button
+                key={p.value}
+                onClick={() => { onChange(p.value); setOpen(false); }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  width: "100%",
+                  padding: "13px 16px",
+                  border: "none",
+                  background: p.value === value ? "rgba(59,130,246,0.12)" : "transparent",
+                  color: "var(--text)",
+                  fontFamily: "var(--font, inherit)",
+                  fontSize: 14,
+                  fontWeight: p.value === value ? 600 : 500,
+                  cursor: "pointer",
+                  textAlign: "left",
+                  transition: "background 0.15s",
+                }}
+                onMouseEnter={(e) => { if (p.value !== value) e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = p.value === value ? "rgba(59,130,246,0.12)" : "transparent"; }}
+              >
+                <span style={{ fontSize: 16 }}>{p.icon}</span>
+                <span>{p.label}</span>
+                {p.value === value && <span style={{ marginLeft: "auto", color: "var(--accent-blue, #3b82f6)" }}>✓</span>}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 export default function ShareModal({ file, onShare, onCancel }) {
   const [shareType, setShareType] = useState("link");
   const [permission, setPermission] = useState("view");
@@ -84,8 +187,8 @@ export default function ShareModal({ file, onShare, onCancel }) {
         
         {/* Header */}
         <div style={{ padding: '24px 32px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.02)' }}>
-          <div>
-            <h3 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: 'var(--text)' }}>Share "{file.name}"</h3>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Share "{displayName(file.name)}"</h3>
             <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--text-muted)' }}>Securely distribute this file</p>
           </div>
           <button onClick={onCancel} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 8, borderRadius: 50 }}>
@@ -163,14 +266,7 @@ export default function ShareModal({ file, onShare, onCancel }) {
                   </div>
                 </div>
 
-                <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>Permission</label>
-                  <select value={permission} onChange={(e) => setPermission(e.target.value)} style={{ width: '100%', padding: '12px 14px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: 12, color: 'var(--text)', outline: 'none' }}>
-                    <option value="view">View only</option>
-                    <option value="download">View & Download</option>
-                    <option value="edit">Edit metadata</option>
-                  </select>
-                </div>
+                <PermissionPicker value={permission} onChange={setPermission} />
               </div>
 
               {shareType === "email" && (

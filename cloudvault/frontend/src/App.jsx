@@ -979,7 +979,7 @@ export default function CloudVault() {
 
   if (screen === "shared-link") {
     return (
-      <div data-theme={theme} className="app-shell" style={{ display: "flex", flexDirection: "column", minHeight: "100vh", background: "var(--bg)", color: "var(--text)" }}>
+      <div data-theme={theme} className="app-shell">
         <SharedLinkPage token={shareToken} />
       </div>
     );
