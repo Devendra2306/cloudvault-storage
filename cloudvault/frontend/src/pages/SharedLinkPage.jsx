@@ -358,7 +358,7 @@ export default function SharedLinkPage({ token }) {
   };
 
   const fetchPreviewBlob = async () => {
-    const url = `/share/${token}/download${password ? `?password=${encodeURIComponent(password)}` : ""}`;
+    const url = `/share/${token}/preview${password ? `?password=${encodeURIComponent(password)}` : ""}`;
     const res = await fetch(`${API}${url}`);
     if (!res.ok) throw new Error("Failed to load preview");
     return await res.blob();
