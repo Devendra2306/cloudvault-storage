@@ -531,6 +531,29 @@ export const GLOBAL_STYLES = `
     border-color: var(--border-hover);
   }
 
+  /* Focus rings for accessibility and polish */
+  input:focus-visible, textarea:focus-visible, button:focus-visible, select:focus-visible, [tabindex]:focus-visible {
+    outline: 2px solid var(--accent-blue);
+    outline-offset: 2px;
+  }
+
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--accent-blue) !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  }
+
+  /* Fix native select/option for dark themes */
+  select option {
+    background: var(--bg-card);
+    color: var(--text);
+  }
+
+  .select-field option {
+    background: var(--bg-card);
+    color: var(--text);
+    padding: 8px 12px;
+  }
+
   .download-panel {
     position: fixed;
     right: 18px;
@@ -630,6 +653,12 @@ export const GLOBAL_STYLES = `
 
   .input-field:hover {
     border-color: var(--border-hover);
+  }
+
+  .search-input-animated:focus {
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2), 0 8px 24px rgba(0, 0, 0, 0.1) !important;
+    transform: translateY(-1px);
+    background: var(--surface-raised) !important;
   }
 
   .landing-header {

@@ -246,7 +246,7 @@ function FileCardGrid({ file, token, onDelete, onShare, onPreview, onRename, onD
         )}
         <div style={{
           position: "absolute", right: 8, bottom: 8, fontSize: 10, fontWeight: 700,
-          background: "#111827", color: "#fff", padding: "2px 6px", borderRadius: 6
+          background: "var(--bg-card)", color: "var(--text)", padding: "2px 6px", borderRadius: 6
         }}>
           {fmt(file.size)}
         </div>
@@ -368,6 +368,31 @@ function useViewport() {
     isMobile: width <= 768,
     isSmall: width <= 520,
   };
+}
+
+function CustomSelect({ value, onChange, options, style }) {
+  const [open, setOpen] = useState(false);
+  const label = options.find(o => o.value === value)?.label || value;
+  return (
+    <div style={{ position: "relative", ...style }}>
+      <button type="button" onClick={() => setOpen(!open)} className="select-field" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, width: "100%" }}>
+        <span>{label}</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ transform: open ? "rotate(180deg)" : "none", transition: "0.2s", opacity: 0.5 }}><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      {open && (
+        <>
+          <div onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 90 }} />
+          <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, minWidth: "100%", background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 12, boxShadow: "0 12px 40px rgba(0,0,0,0.35)", zIndex: 91, overflow: "hidden", animation: "fadeIn 0.15s ease" }}>
+            {options.map(o => (
+              <button key={o.value} onClick={() => { onChange(o.value); setOpen(false); }} style={{ display: "block", width: "100%", padding: "10px 14px", border: "none", background: o.value === value ? "rgba(59,130,246,0.12)" : "transparent", color: "var(--text)", fontFamily: "var(--font)", fontSize: 13, fontWeight: o.value === value ? 600 : 500, cursor: "pointer", textAlign: "left", transition: "background 0.15s", whiteSpace: "nowrap" }} onMouseEnter={e => { if (o.value !== value) e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }} onMouseLeave={e => { e.currentTarget.style.background = o.value === value ? "rgba(59,130,246,0.12)" : "transparent"; }}>
+                {o.label}{o.value === value && <span style={{ marginLeft: 8, color: "var(--accent-blue)" }}>✓</span>}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
 }
 
 // ── Main App ──────────────────────────────────────────────────────────────────
@@ -565,6 +590,18 @@ export default function CloudVault() {
 
   useEffect(() => { localStorage.setItem("cv_viewMode", viewMode); }, [viewMode]);
   useEffect(() => { localStorage.setItem("cv_theme", theme); }, [theme]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        const searchInput = document.querySelector(".search-input-animated");
+        if (searchInput) searchInput.focus();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   useEffect(() => {
     const onTokenRefresh = (e) => {
@@ -1078,12 +1115,12 @@ export default function CloudVault() {
         {/* Bottom section */}
         <div style={{ marginTop: "auto" }}>
           {/* Storage */}
-          <div style={{ marginBottom: 16, background: "var(--surface-raised)", borderRadius: 14, padding: "14px", border: "1px solid var(--border)" }}>
+          <div style={{ marginBottom: 16, background: "var(--surface-raised)", borderRadius: 14, padding: "14px", border: "1px solid var(--border)" }} title={`${fmt(stats.storageUsed)} of ${fmt(storageLimit)} used`}>
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "var(--text-secondary)", marginBottom: 8 }}>
               <span style={{ fontWeight: 600 }}>Free</span><span>{fmt(stats.storageUsed)} of {fmt(storageLimit)} used</span>
             </div>
             <ProgressBar value={storagePercent} />
-            <button type="button" onClick={() => setAppPage("billing")} className="btn-secondary" style={{ width: "100%", marginTop: 12, minHeight: 40, borderRadius: 999 }}>
+            <button type="button" onClick={() => setAppPage("billing")} className="btn-mega-red" style={{ width: "100%", marginTop: 12, minHeight: 40, animation: "softPulse 3s ease infinite" }}>
               Upgrade
             </button>
           </div>
@@ -1159,14 +1196,17 @@ export default function CloudVault() {
         />
 
         <div className="drive-toolbar" style={{ flexDirection: "column", alignItems: "stretch", gap: 16 }}>
-          <div className="mega-search-bar drive-search">
-            <span className="search-icon" aria-hidden="true">🔍</span>
+          <div className="mega-search-bar drive-search" style={{ position: "relative" }}>
+            <span className="search-icon" aria-hidden="true" style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)", pointerEvents: "none" }}>🔍</span>
             <input
-              className="input-field"
+              className="input-field search-input-animated"
               placeholder={`Search Cloud drive...`} value={search}
               onChange={e => setSearch(e.target.value)}
-              style={{ width: "100%", padding: "12px 20px 12px 44px", borderRadius: 999, background: "var(--bg-card)", border: "1px solid var(--border)" }}
+              style={{ width: "100%", padding: "12px 60px 12px 44px", borderRadius: 999, background: "var(--bg-card)", border: "1px solid var(--border)", transition: "all .2s ease" }}
             />
+            <div style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "rgba(255,255,255,.08)", padding: "2px 6px", borderRadius: 6, fontSize: 11, fontWeight: 700, color: "var(--text-muted)", pointerEvents: "none", border: "1px solid var(--border)" }}>
+              ⌘K
+            </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
           <button
@@ -1197,21 +1237,21 @@ export default function CloudVault() {
 
         {activeView === "drive" && (
         <div className="drive-sortbar">
-          <select value={sortBy} onChange={e => setSortBy(e.target.value)} className="select-field">
-            <option value="createdAt">Date</option>
-            <option value="name">Name</option>
-            <option value="size">Size</option>
-            <option value="updatedAt">Modified</option>
-          </select>
-          <select value={sortOrder} onChange={e => setSortOrder(e.target.value)} className="select-field">
-            <option value="desc">Descending</option>
-            <option value="asc">Ascending</option>
-          </select>
+          <CustomSelect value={sortBy} onChange={setSortBy} options={[
+            { value: "createdAt", label: "Date" },
+            { value: "name", label: "Name" },
+            { value: "size", label: "Size" },
+            { value: "updatedAt", label: "Modified" },
+          ]} />
+          <CustomSelect value={sortOrder} onChange={setSortOrder} options={[
+            { value: "desc", label: "Descending" },
+            { value: "asc", label: "Ascending" },
+          ]} />
           {allTags.length > 0 && (
-            <select value={tagFilter} onChange={e => setTagFilter(e.target.value)} className="select-field" style={{ gridColumn: isSmall ? "1 / -1" : undefined }}>
-              <option value="">All tags</option>
-              {allTags.map(t => <option key={t} value={t}>{t}</option>)}
-            </select>
+            <CustomSelect value={tagFilter} onChange={setTagFilter} options={[
+              { value: "", label: "All tags" },
+              ...allTags.map(t => ({ value: t, label: t })),
+            ]} style={{ gridColumn: isSmall ? "1 / -1" : undefined }} />
           )}
         </div>
         )}
