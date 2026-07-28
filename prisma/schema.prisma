@@ -265,3 +265,20 @@ model VerificationToken {
   @@index([token])
   @@index([expiresAt])
 }
+
+model PrintJob {
+  id          String    @id @default(uuid())
+  code        String    @unique
+  fileName    String
+  fileSize    BigInt
+  mimeType    String?
+  s3Key       String    @unique
+  status      String    @default("pending")
+  downloads   Int       @default(0)
+  expiresAt   DateTime
+  createdAt   DateTime  @default(now())
+
+  @@index([code])
+  @@index([expiresAt])
+  @@index([status])
+}

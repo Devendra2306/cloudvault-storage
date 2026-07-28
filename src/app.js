@@ -22,7 +22,7 @@ const publicRoutes = require('./routes/publicRoutes');
 const accountRoutes = require('./routes/accountRoutes');
 const billingRoutes = require('./routes/billingRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
-
+const printRoutes = require('./routes/printRoutes');
 const app = express();
 
 // Security headers
@@ -48,6 +48,8 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
       'https://www.cloudvault.co.in',
       'https://cloudvault.co.in',
       'https://cloudvault-storage-2jsb.vercel.app',
+      'https://print.cloudvault.co.in',
+      'http://localhost:5174', // local print frontend
     ];
 
 console.log('CORS allowed origins:', allowedOrigins);
@@ -118,6 +120,7 @@ app.use('/api/v1/public', publicRoutes);
 app.use('/api/v1/account', accountRoutes);
 app.use('/api/v1/billing', billingRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
+app.use('/api/v1/print', printRoutes);
 app.use('/api/v1', shareRoutes);
 console.log('All API routes registered successfully');
 
@@ -131,5 +134,11 @@ app.use(errorHandler);
 // createRedisClient().catch((err) => {
 //   console.warn('Redis initialization failed, app will work without caching:', err.message);
 // });
+
+// Start background job for expired print jobs cleanup (runs every hour)
+const { cleanupExpiredJobs } = require('./controllers/printController');
+setInterval(cleanupExpiredJobs, 60 * 60 * 1000);
+// Also run once on startup
+setTimeout(cleanupExpiredJobs, 5000);
 
 module.exports = app;
