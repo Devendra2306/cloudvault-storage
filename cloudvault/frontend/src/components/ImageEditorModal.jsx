@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ReactCrop, { centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
-import { downloadFileWithProgress, uploadFiles } from '../lib/api.js';
+import { downloadFileWithProgress, uploadFileWithProgress } from '../lib/api.js';
 
 function centerAspectCrop(mediaWidth, mediaHeight, aspect) {
   return centerCrop(
@@ -117,7 +117,12 @@ export default function ImageEditorModal({ file, token, onClose, onUploadComplet
         
         // Upload the new file to the same folder
         try {
-          await uploadFiles([editedFile], file.folderId, token);
+          const formData = new FormData();
+          formData.append('files', editedFile);
+          if (file.folderId) {
+            formData.append('folderId', file.folderId);
+          }
+          await uploadFileWithProgress('/files/upload', formData, token, () => {});
           onUploadComplete();
           onClose();
         } catch (uploadErr) {
