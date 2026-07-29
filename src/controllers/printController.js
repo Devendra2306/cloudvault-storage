@@ -18,33 +18,12 @@ const generateCode = async () => {
   return code;
 };
 
-// Upload file to S3 and create PrintJob
+// Upload files to S3 and create PrintJob + PrintFiles
 const uploadPrintJob = async (req, res, next) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ success: false, error: 'No file uploaded' });
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ success: false, error: 'No files uploaded' });
     }
-
-    const sanitizedName = sanitize(req.file.originalname);
-    const ext = path.extname(sanitizedName);
-    const s3Key = `print-queue/${uuidv4()}${ext}`;
-
-    // Upload to S3
-    const uploader = new Upload({
-      client: s3,
-      params: {
-        Bucket: BUCKET,
-        Key: s3Key,
-        Body: req.file.buffer,
-        ContentType: req.file.mimetype,
-        Metadata: {
-          originalName: sanitizedName,
-          type: 'print-job',
-        },
-      },
-    });
-
-    await uploader.done();
 
     const code = await generateCode();
     
@@ -55,20 +34,56 @@ const uploadPrintJob = async (req, res, next) => {
     const printJob = await prisma.printJob.create({
       data: {
         code,
-        fileName: sanitizedName,
-        fileSize: req.file.size,
-        mimeType: req.file.mimetype,
-        s3Key,
         expiresAt,
       },
     });
+
+    const filePromises = req.files.map(async (file) => {
+      const sanitizedName = sanitize(file.originalname);
+      const ext = path.extname(sanitizedName);
+      const s3Key = `print-queue/${uuidv4()}${ext}`;
+
+      // Upload to S3
+      const uploader = new Upload({
+        client: s3,
+        params: {
+          Bucket: BUCKET,
+          Key: s3Key,
+          Body: file.buffer,
+          ContentType: file.mimetype,
+          Metadata: {
+            originalName: sanitizedName,
+            type: 'print-job',
+          },
+        },
+      });
+
+      await uploader.done();
+
+      return prisma.printFile.create({
+        data: {
+          jobId: printJob.id,
+          fileName: sanitizedName,
+          fileSize: file.size,
+          mimeType: file.mimetype,
+          s3Key,
+        },
+      });
+    });
+
+    const savedFiles = await Promise.all(filePromises);
 
     res.status(201).json({
       success: true,
       data: {
         code: printJob.code,
-        fileName: printJob.fileName,
         expiresAt: printJob.expiresAt,
+        files: savedFiles.map(f => ({
+          id: f.id,
+          fileName: f.fileName,
+          fileSize: f.fileSize.toString(),
+          mimeType: f.mimeType
+        }))
       }
     });
   } catch (error) {
@@ -81,7 +96,10 @@ const uploadPrintJob = async (req, res, next) => {
 const getPrintJob = async (req, res, next) => {
   try {
     const { code } = req.params;
-    const printJob = await prisma.printJob.findUnique({ where: { code } });
+    const printJob = await prisma.printJob.findUnique({ 
+      where: { code },
+      include: { files: true }
+    });
 
     if (!printJob) {
       return res.status(404).json({ success: false, error: 'Code not found or expired' });
@@ -91,12 +109,16 @@ const getPrintJob = async (req, res, next) => {
       success: true,
       data: {
         code: printJob.code,
-        fileName: printJob.fileName,
-        fileSize: printJob.fileSize.toString(),
-        mimeType: printJob.mimeType,
         status: printJob.status,
         createdAt: printJob.createdAt,
         expiresAt: printJob.expiresAt,
+        files: printJob.files.map(f => ({
+          id: f.id,
+          fileName: f.fileName,
+          fileSize: f.fileSize.toString(),
+          mimeType: f.mimeType,
+          downloads: f.downloads
+        }))
       }
     });
   } catch (error) {
@@ -104,45 +126,50 @@ const getPrintJob = async (req, res, next) => {
   }
 };
 
-// Download/Stream file
+// Download/Stream file (requires fileId now since a job can have multiple files)
 const downloadPrintJob = async (req, res, next) => {
   try {
     const { code } = req.params;
+    const { fileId } = req.query; // Must pass ?fileId=...
     const { preview } = req.query; // ?preview=true to view inline
 
-    const printJob = await prisma.printJob.findUnique({ where: { code } });
+    if (!fileId) {
+      return res.status(400).json({ success: false, error: 'fileId query parameter required' });
+    }
 
-    if (!printJob) {
-      return res.status(404).json({ success: false, error: 'Code not found or expired' });
+    const printFile = await prisma.printFile.findUnique({
+      where: { id: fileId },
+      include: { job: true }
+    });
+
+    if (!printFile || printFile.job.code !== code) {
+      return res.status(404).json({ success: false, error: 'File not found' });
     }
 
     const command = new GetObjectCommand({
       Bucket: BUCKET,
-      Key: printJob.s3Key,
+      Key: printFile.s3Key,
     });
 
     const s3Item = await s3.send(command);
 
     if (preview === 'true') {
-      res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(printJob.fileName)}"`);
+      res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(printFile.fileName)}"`);
     } else {
-      res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(printJob.fileName)}"`);
+      res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(printFile.fileName)}"`);
     }
 
-    if (printJob.mimeType) {
-      res.setHeader('Content-Type', printJob.mimeType);
+    if (printFile.mimeType) {
+      res.setHeader('Content-Type', printFile.mimeType);
     }
 
-    res.setHeader('Content-Length', printJob.fileSize.toString());
+    res.setHeader('Content-Length', printFile.fileSize.toString());
 
-    // Update download count and status if not previewing
+    // Update download count if not previewing
     if (preview !== 'true') {
-      await prisma.printJob.update({
-        where: { id: printJob.id },
-        data: {
-          downloads: { increment: 1 },
-          status: 'downloaded'
-        }
+      await prisma.printFile.update({
+        where: { id: printFile.id },
+        data: { downloads: { increment: 1 } }
       });
     }
 
@@ -155,23 +182,29 @@ const downloadPrintJob = async (req, res, next) => {
   }
 };
 
-// Delete a print job
+// Delete a single file from a print job
 const deletePrintJob = async (req, res, next) => {
   try {
     const { code } = req.params;
-    const printJob = await prisma.printJob.findUnique({ where: { code } });
-
-    if (!printJob) {
-      return res.status(404).json({ success: false, error: 'Code not found' });
+    const { fileId } = req.query;
+    
+    if (fileId) {
+      const printFile = await prisma.printFile.findUnique({ where: { id: fileId }, include: { job: true } });
+      if (!printFile || printFile.job.code !== code) {
+        return res.status(404).json({ success: false, error: 'File not found' });
+      }
+      await s3.send(new DeleteObjectCommand({ Bucket: BUCKET, Key: printFile.s3Key }));
+      await prisma.printFile.delete({ where: { id: fileId } });
+      return res.json({ success: true, message: 'File deleted successfully' });
     }
 
-    // Delete from S3
-    await s3.send(new DeleteObjectCommand({
-      Bucket: BUCKET,
-      Key: printJob.s3Key
-    }));
+    // If no fileId, delete the whole job
+    const printJob = await prisma.printJob.findUnique({ where: { code }, include: { files: true } });
+    if (!printJob) return res.status(404).json({ success: false, error: 'Code not found' });
 
-    // Delete from DB
+    for (const f of printJob.files) {
+      await s3.send(new DeleteObjectCommand({ Bucket: BUCKET, Key: f.s3Key }));
+    }
     await prisma.printJob.delete({ where: { id: printJob.id } });
 
     res.json({ success: true, message: 'Print job deleted successfully' });
@@ -180,16 +213,19 @@ const deletePrintJob = async (req, res, next) => {
   }
 };
 
-// Cleanup expired jobs (can be called by a cron)
+// Cleanup expired jobs
 const cleanupExpiredJobs = async () => {
   try {
     const expiredJobs = await prisma.printJob.findMany({
-      where: { expiresAt: { lt: new Date() } }
+      where: { expiresAt: { lt: new Date() } },
+      include: { files: true }
     });
 
     for (const job of expiredJobs) {
       try {
-        await s3.send(new DeleteObjectCommand({ Bucket: BUCKET, Key: job.s3Key }));
+        for (const f of job.files) {
+          await s3.send(new DeleteObjectCommand({ Bucket: BUCKET, Key: f.s3Key }));
+        }
         await prisma.printJob.delete({ where: { id: job.id } });
       } catch (err) {
         console.error(`Failed to cleanup expired job ${job.id}:`, err);

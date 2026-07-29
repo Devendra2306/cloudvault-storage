@@ -13,6 +13,8 @@ const folderRoutes = require('./routes/folderRoutes');
 const fileRoutes = require('./routes/fileRoutes');
 const trashRoutes = require('./routes/trashRoutes');
 const shareRoutes = require('./routes/shareRoutes');
+const printRoutes = require('./routes/printRoutes');
+const commentsRoutes = require('./routes/commentsRoutes');
 const searchRoutes = require('./routes/searchRoutes');
 const storageRoutes = require('./routes/storageRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
@@ -22,7 +24,6 @@ const publicRoutes = require('./routes/publicRoutes');
 const accountRoutes = require('./routes/accountRoutes');
 const billingRoutes = require('./routes/billingRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
-const printRoutes = require('./routes/printRoutes');
 const app = express();
 
 // Security headers
@@ -111,6 +112,8 @@ app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/folders', folderRoutes);
 app.use('/api/v1/files', fileRoutes);
 app.use('/api/v1/trash', trashRoutes);
+app.use('/api/v1/print', printRoutes);
+app.use('/api/v1/comments', commentsRoutes);
 app.use('/api/v1/search', searchRoutes);
 app.use('/api/v1/storage', storageRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);

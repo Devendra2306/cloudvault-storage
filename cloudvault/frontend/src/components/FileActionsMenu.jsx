@@ -5,6 +5,7 @@ export default function FileActionsMenu({
   onMove,
   onCopy,
   onTags,
+  onEdit,
   onDelete,
 }) {
   const [open, setOpen] = useState(false);
@@ -18,7 +19,10 @@ export default function FileActionsMenu({
     return () => document.removeEventListener("click", close);
   }, [open]);
 
+  const isImage = file?.mimeType?.startsWith('image/');
+  
   const items = [
+    ...(isImage ? [{ cue: "Edit", label: "Edit image", onClick: () => onEdit && onEdit(file) }] : []),
     { cue: "#", label: "Tags", onClick: () => onTags(file) },
     { cue: "Move", label: "Move", onClick: () => onMove(file) },
     { cue: "Copy", label: "Copy file", onClick: () => onCopy(file) },

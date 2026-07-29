@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { downloadFileWithProgress } from "../lib/api.js";
 import { previewKind } from "../lib/fileTypes.js";
+import CommentsPanel from "./CommentsPanel.jsx";
 
 function Spinner({ size = 22 }) {
   return (
@@ -26,6 +27,7 @@ export default function PreviewModal({ file, token, onClose, customFetchBlob }) 
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
   const [fullscreen, setFullscreen] = useState(false);
+  const [showComments, setShowComments] = useState(false);
   const kind = previewKind(file.mimeType);
 
   useEffect(() => {
@@ -177,10 +179,12 @@ export default function PreviewModal({ file, token, onClose, customFetchBlob }) 
           padding: fullscreen ? 16 : 24,
           boxShadow: fullscreen ? "none" : "var(--shadow)",
           display: "flex",
-          flexDirection: "column",
+          flexDirection: "row",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, gap: 12 }}>
+        {/* Main Preview Area */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: fullscreen ? 16 : 24, overflow: "hidden" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, gap: 12 }}>
           <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 16, flex: 1, overflow: "hidden", textOverflow: "ellipsis" }}>
             {file.name}
           </div>
@@ -192,6 +196,7 @@ export default function PreviewModal({ file, token, onClose, customFetchBlob }) 
               {toolbarBtn(fullscreen ? "⊡" : "⛶", () => setFullscreen((f) => !f))}
             </div>
           )}
+          {toolbarBtn("💬 Comments", () => setShowComments((c) => !c))}
           <button
             type="button"
             onClick={onClose}
@@ -208,7 +213,14 @@ export default function PreviewModal({ file, token, onClose, customFetchBlob }) 
             ✕
           </button>
         </div>
-        <div style={{ display: "flex", justifyContent: "center" }}>{renderContent()}</div>
+        <div style={{ display: "flex", justifyContent: "center", flex: 1, overflow: "auto" }}>{renderContent()}</div>
+      </div>
+      
+      {/* Comments Panel */}
+      {showComments && !fullscreen && (
+        <CommentsPanel file={file} token={token} />
+      )}
+      
       </div>
     </div>
   );

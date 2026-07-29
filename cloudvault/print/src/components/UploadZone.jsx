@@ -1,18 +1,25 @@
 import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { UploadCloud, File, Loader } from 'lucide-react';
-import { printApi } from '../lib/api';
+import { printApi, api } from '../lib/api';
 
 const UploadZone = ({ onUploadSuccess }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState('');
 
   const onDrop = useCallback(async (acceptedFiles) => {
-    const file = acceptedFiles[0];
-    if (!file) return;
+    if (!acceptedFiles || acceptedFiles.length === 0) return;
     
-    if (file.size > 50 * 1024 * 1024) {
-      setError('File is too large. Max size is 50MB.');
+    // Check sizes
+    for (const file of acceptedFiles) {
+      if (file.size > 50 * 1024 * 1024) {
+        setError(`File ${file.name} is too large. Max size is 50MB.`);
+        return;
+      }
+    }
+
+    if (acceptedFiles.length > 10) {
+      setError('You can only upload up to 10 files at once.');
       return;
     }
 
@@ -20,11 +27,17 @@ const UploadZone = ({ onUploadSuccess }) => {
     setError('');
 
     try {
-      const response = await printApi.uploadFile(file);
-      if (response.success) {
-        onUploadSuccess(response.data);
+      const formData = new FormData();
+      acceptedFiles.forEach(file => formData.append('files', file));
+
+      const response = await api.post('/print/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      if (response.data.success) {
+        onUploadSuccess(response.data.data);
       } else {
-        setError(response.error || 'Upload failed');
+        setError(response.data.error || 'Upload failed');
       }
     } catch (err) {
       setError(err.response?.data?.error || err.message || 'Upload failed');
@@ -35,8 +48,8 @@ const UploadZone = ({ onUploadSuccess }) => {
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    maxFiles: 1,
-    multiple: false,
+    maxFiles: 10,
+    multiple: true,
   });
 
   return (

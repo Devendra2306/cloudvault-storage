@@ -43,6 +43,7 @@ model User {
   sessions      Session[]
   verificationTokens VerificationToken[]
   notifications      Notification[]
+  comments           FileComment[]
 
   @@index([email])
   @@index([role])
@@ -120,6 +121,7 @@ model File {
   folder          Folder?   @relation(fields: [folderId], references: [id], onDelete: SetNull)
   shares          FileShare[]
   recentFiles     RecentFile[]
+  comments        FileComment[]
 
   @@index([userId])
   @@index([folderId])
@@ -269,16 +271,42 @@ model VerificationToken {
 model PrintJob {
   id          String    @id @default(uuid())
   code        String    @unique
-  fileName    String
-  fileSize    BigInt
-  mimeType    String?
-  s3Key       String    @unique
   status      String    @default("pending")
-  downloads   Int       @default(0)
   expiresAt   DateTime
   createdAt   DateTime  @default(now())
+
+  files       PrintFile[]
 
   @@index([code])
   @@index([expiresAt])
   @@index([status])
+}
+
+model PrintFile {
+  id          String    @id @default(uuid())
+  jobId       String
+  fileName    String
+  fileSize    BigInt
+  mimeType    String?
+  s3Key       String    @unique
+  downloads   Int       @default(0)
+  
+  job         PrintJob  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([jobId])
+}
+
+model FileComment {
+  id          String    @id @default(uuid())
+  fileId      String
+  userId      String
+  content     String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  file        File      @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([fileId])
+  @@index([userId])
 }

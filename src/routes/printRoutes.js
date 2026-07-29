@@ -11,10 +11,10 @@ const upload = multer({
 
 /**
  * @route   POST /api/v1/print/upload
- * @desc    Upload a file and get a print code
+ * @desc    Upload multiple files and get a print code
  * @access  Public
  */
-router.post('/upload', upload.single('file'), printController.uploadPrintJob);
+router.post('/upload', upload.array('files', 10), printController.uploadPrintJob);
 
 /**
  * @route   GET /api/v1/print/:code

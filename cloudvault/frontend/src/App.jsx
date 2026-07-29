@@ -12,6 +12,7 @@ import MoveCopyDialog from "./components/MoveCopyDialog.jsx";
 import TagsDialog from "./components/TagsDialog.jsx";
 import ShareModal from "./components/ShareModal.jsx";
 import StorageDashboard from "./components/StorageDashboard.jsx";
+import ImageEditorModal from "./components/ImageEditorModal.jsx";
 import AdminPanel from "./components/AdminPanel.jsx";
 import FileActionsMenu from "./components/FileActionsMenu.jsx";
 import { FileListSkeleton } from "./components/Skeleton.jsx";
@@ -201,7 +202,7 @@ function QuickAction({ label, onClick, tone = "neutral", disabled = false }) {
   );
 }
 
-function FileCardList({ file, onDelete, onShare, onPreview, onRename, onDownload, onMove, onCopy, onTags }) {
+function FileCardList({ file, onDelete, onShare, onPreview, onRename, onDownload, onMove, onCopy, onTags, onEdit }) {
   return (
     <div className="file-list-card">
       <div style={{ fontSize: 34, flexShrink: 0, width: 48, height: 48, borderRadius: 14, background: "rgba(56,189,248,.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>{fileIcon(file.mimeType)}</div>
@@ -215,14 +216,14 @@ function FileCardList({ file, onDelete, onShare, onPreview, onRename, onDownload
         <QuickAction label="Download" onClick={() => onDownload(file)} />
         <QuickAction label="Share" onClick={() => onShare(file)} tone="accent" />
         <QuickAction label="Rename" onClick={() => onRename(file)} />
-        <FileActionsMenu file={file} onMove={onMove} onCopy={onCopy} onTags={onTags} onDelete={onDelete} />
+        <FileActionsMenu file={file} onMove={onMove} onCopy={onCopy} onTags={onTags} onEdit={onEdit} onDelete={onDelete} />
       </div>
     </div>
   );
 }
 
 // ── File Card (Grid View) ─────────────────────────────────────────────────────
-function FileCardGrid({ file, token, onDelete, onShare, onPreview, onRename, onDownload, onMove, onCopy, onTags }) {
+function FileCardGrid({ file, token, onDelete, onShare, onPreview, onRename, onDownload, onMove, onCopy, onTags, onEdit }) {
   const isImage = file.mimeType?.startsWith("image/");
 
   return (
@@ -251,7 +252,7 @@ function FileCardGrid({ file, token, onDelete, onShare, onPreview, onRename, onD
           {fmt(file.size)}
         </div>
         <div style={{ position: "absolute", right: 10, top: 10 }}>
-          <FileActionsMenu file={file} onMove={onMove} onCopy={onCopy} onTags={onTags} onDelete={onDelete} />
+          <FileActionsMenu file={file} onMove={onMove} onCopy={onCopy} onTags={onTags} onEdit={onEdit} onDelete={onDelete} />
         </div>
       </div>
       {/* Info */}
@@ -453,6 +454,7 @@ export default function CloudVault() {
   const [moveCopy, setMoveCopy] = useState(null);
   const [sharingFile, setSharingFile] = useState(null);
   const [tagsEditor, setTagsEditor] = useState(null);
+  const [editingImage, setEditingImage] = useState(null);
   const [userRole, setUserRole] = useState("user");
   const [adminUsers, setAdminUsers] = useState([]);
   const [systemHealth, setSystemHealth] = useState(null);
@@ -1401,6 +1403,7 @@ export default function CloudVault() {
                   onMove={(file) => setMoveCopy({ file, mode: "move" })}
                   onCopy={(file) => setMoveCopy({ file, mode: "copy" })}
                   onTags={setTagsEditor}
+                  onEdit={setEditingImage}
                 />
               ))}
             </div>
@@ -1441,6 +1444,14 @@ export default function CloudVault() {
           file={sharingFile}
           onCancel={() => setSharingFile(null)}
           onShare={(payload) => handleShare(sharingFile, payload)}
+        />
+      )}
+      {editingImage && (
+        <ImageEditorModal
+          file={editingImage}
+          token={token}
+          onClose={() => setEditingImage(null)}
+          onUploadComplete={() => refresh(1, false)}
         />
       )}
       {confirm && <ConfirmDialog title={confirm.title} message={confirm.message} danger={confirm.danger} onConfirm={confirm.onConfirm} onCancel={() => setConfirm(null)} />}
