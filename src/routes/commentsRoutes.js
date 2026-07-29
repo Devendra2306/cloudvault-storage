@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const commentsController = require('../controllers/commentsController');
-const { protect } = require('../middleware/auth');
+const { authenticate } = require('../middleware/auth');
 
-router.use(protect);
+router.use(authenticate);
 
 router.get('/:fileId', commentsController.getComments);
 router.post('/:fileId', commentsController.addComment);
