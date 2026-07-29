@@ -49,6 +49,7 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
       'https://www.cloudvault.co.in',
       'https://cloudvault.co.in',
       'https://cloudvault-storage-2jsb.vercel.app',
+      'https://cloudvault-storage-print.vercel.app',
       'https://print.cloudvault.co.in',
       'http://localhost:5174', // local print frontend
     ];
