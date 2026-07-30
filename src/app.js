@@ -124,7 +124,6 @@ app.use('/api/v1/public', publicRoutes);
 app.use('/api/v1/account', accountRoutes);
 app.use('/api/v1/billing', billingRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
-app.use('/api/v1/print', printRoutes);
 app.use('/api/v1', shareRoutes);
 console.log('All API routes registered successfully');
 
