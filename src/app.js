@@ -40,19 +40,24 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 // CORS configuration
-const allowedOrigins = process.env.ALLOWED_ORIGINS
+const envOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',').map((origin) => origin.trim()).filter(Boolean)
-  : [
-      'http://localhost:3000',
-      'http://localhost:3001',
-      'http://localhost:5173',
-      'https://www.cloudvault.co.in',
-      'https://cloudvault.co.in',
-      'https://cloudvault-storage-2jsb.vercel.app',
-      'https://cloudvault-storage-print.vercel.app',
-      'https://print.cloudvault.co.in',
-      'http://localhost:5174', // local print frontend
-    ];
+  : [];
+
+const defaultOrigins = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'http://localhost:5173',
+  'https://www.cloudvault.co.in',
+  'https://cloudvault.co.in',
+  'https://cloudvault-storage-2jsb.vercel.app',
+  'https://cloudvault-storage-print.vercel.app',
+  'https://print.cloudvault.co.in',
+  'http://localhost:5174', // local print frontend
+];
+
+// Always ensure our core domains are allowed, even if user overrides ALLOWED_ORIGINS
+const allowedOrigins = [...new Set([...envOrigins, ...defaultOrigins])];
 
 console.log('CORS allowed origins:', allowedOrigins);
 
