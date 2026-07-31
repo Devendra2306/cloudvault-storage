@@ -97,7 +97,7 @@ const register = async (req, res, next) => {
         authProvider: 'email',
         isVerified: !isEmailVerificationEnforced(),
         ...newUserTrialData(),
-        storageQuota: BigInt(parseInt(process.env.DEFAULT_STORAGE_QUOTA, 10) || 5368709120),
+        storageQuota: BigInt(parseInt(process.env.DEFAULT_STORAGE_QUOTA, 10) || 26843545600),
       },
       select: {
         id: true,
@@ -588,7 +588,7 @@ const firebaseAuth = async (req, res, next) => {
           authProvider,
           isVerified: decoded.email_verified === true,
           ...newUserTrialData(),
-          storageQuota: BigInt(parseInt(process.env.DEFAULT_STORAGE_QUOTA, 10) || 5368709120),
+          storageQuota: BigInt(parseInt(process.env.DEFAULT_STORAGE_QUOTA, 10) || 26843545600),
         },
       });
     } else if (!user.isActive) {

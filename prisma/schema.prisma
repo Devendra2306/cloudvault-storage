@@ -17,7 +17,7 @@ model User {
   fullName           String?
   avatarUrl          String?
   storageUsed        BigInt    @default(0)
-  storageQuota       BigInt    @default(5368709120)
+  storageQuota       BigInt    @default(26843545600)
   extraStorageBytes  BigInt    @default(0)
   plan               String    @default("free")
   trialEndsAt        DateTime?

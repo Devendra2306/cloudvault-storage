@@ -24,51 +24,15 @@ const sanitize = require('sanitize-filename');
 const { s3, BUCKET } = require('../config/s3');
 const { QuotaExceededError, ValidationError } = require('./errorHandler');
 
-// File size limit (from env or default 100MB)
-const MAX_FILE_SIZE = parseInt(process.env.MAX_FILE_SIZE) || 100 * 1024 * 1024;
-
-// Allowed MIME types
-const ALLOWED_MIMES = [
-  'image/jpeg',
-  'image/jpg',
-  'image/png',
-  'image/gif',
-  'image/webp',
-  'application/pdf',
-  'application/msword',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  'text/plain',
-  'application/vnd.ms-excel',
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  'application/vnd.ms-powerpoint',
-  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-  'video/mp4',
-  'video/mpeg',
-  'audio/mpeg',
-  'audio/mp3',
-  'audio/wav',
-  'audio/x-wav',
-];
-
-const ALLOWED_EXTS = /\.(jpeg|jpg|png|gif|webp|pdf|doc|docx|txt|xls|xlsx|ppt|pptx|mp4|mpeg|mp3|wav)$/i;
+// No per-file size limit — only the user's total 25GB storage quota matters
+// 2GB is the practical Node.js memory limit for multer memoryStorage
+const MAX_FILE_SIZE = parseInt(process.env.MAX_FILE_SIZE) || 2 * 1024 * 1024 * 1024;
 
 // ─── Step 1: multer stores the file in memory ────────────────────────────────
 const _multerMemory = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: MAX_FILE_SIZE },
-  fileFilter: (req, file, cb) => {
-    console.log('=== FILE FILTER ===');
-    console.log('File:', { originalname: file.originalname, mimetype: file.mimetype });
-
-    const extOk = ALLOWED_EXTS.test(path.extname(file.originalname));
-    const mimeOk = ALLOWED_MIMES.includes(file.mimetype);
-    const genericMime = !file.mimetype || file.mimetype === 'application/octet-stream';
-    console.log('File type check:', { extOk, mimeOk, genericMime });
-
-    if (extOk && (mimeOk || genericMime)) return cb(null, true);
-    if (mimeOk) return cb(null, true);
-    cb(new ValidationError(`File type not allowed (${file.mimetype || 'unknown'})`));
-  },
+  // No file filter — accept ALL file types (videos, zips, anything)
 });
 
 // ─── Step 2: custom S3 uploader middleware ────────────────────────────────────

@@ -16,7 +16,7 @@ async function main() {
       isVerified: true,
       authProvider: 'email',
       plan: 'free',
-      storageQuota: BigInt(5368709120),
+      storageQuota: BigInt(26843545600),
     },
   });
 
