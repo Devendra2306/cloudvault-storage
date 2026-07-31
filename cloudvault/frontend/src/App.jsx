@@ -323,7 +323,7 @@ function AccountChrome({ children, onNavigate, onSignOut, onUpgrade }) {
       <header className="account-header mega-top-bar" style={{
         position: "sticky", top: 0, zIndex: 90,
         borderBottom: "1px solid var(--border)",
-        background: "rgba(0,0,0,.92)",
+        background: "var(--bg-sidebar)",
         backdropFilter: "blur(16px)", display: "flex", alignItems: "center",
         justifyContent: "space-between", gap: 16, padding: "0 24px 0 280px",
       }}>

@@ -112,31 +112,47 @@ const register = async (req, res, next) => {
       },
     });
 
-    // Create verification link token
-    const verificationToken = uuidv4();
+    if (isEmailVerificationEnforced()) {
+      // Create verification link token
+      const verificationToken = uuidv4();
 
-    await prisma.verificationToken.create({
-      data: {
-        userId: user.id,
-        token: verificationToken,
-        tokenType: 'email_verification',
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-      },
-    });
+      await prisma.verificationToken.create({
+        data: {
+          userId: user.id,
+          token: verificationToken,
+          tokenType: 'email_verification',
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        },
+      });
 
-    // Send verification email with one-time link
-    try {
-      const emailResult = await sendVerificationEmail(email, verificationToken);
-      logEmailResult('Verification email', emailResult);
-    } catch (emailError) {
-      console.error('Verification email send failure:', emailError.message);
+      // Send verification email with one-time link
+      try {
+        const emailResult = await sendVerificationEmail(email, verificationToken);
+        logEmailResult('Verification email', emailResult);
+      } catch (emailError) {
+        console.error('Verification email send failure:', emailError.message);
+      }
+
+      res.status(201).json({
+        success: true,
+        message: 'Registration successful. Please check your email to verify your account.',
+        data: { email, fullName },
+      });
+    } else {
+      // Send welcome email immediately since verification is bypassed
+      try {
+        const emailResult = await sendWelcomeEmail(email, fullName);
+        logEmailResult('Welcome email', emailResult);
+      } catch (emailError) {
+        console.error('Welcome email send failure:', emailError.message);
+      }
+
+      res.status(201).json({
+        success: true,
+        message: 'Registration successful. You can now log in.',
+        data: { email, fullName },
+      });
     }
-
-    res.status(201).json({
-      success: true,
-      message: 'Registration successful. Please check your email to verify your account.',
-      data: { email, fullName },
-    });
   } catch (error) {
     next(error);
   }

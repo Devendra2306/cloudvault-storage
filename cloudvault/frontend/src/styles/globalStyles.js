@@ -53,6 +53,7 @@ export const GLOBAL_STYLES = `
     --bg-card: #ffffff;
     --bg-card-hover: #f8fafc;
     --bg-sidebar: rgba(255, 255, 255, 0.96);
+    --surface-raised: #ffffff;
     --border: rgba(15, 23, 42, 0.1);
     --border-hover: rgba(15, 23, 42, 0.22);
     --text: #0f172a;
@@ -66,6 +67,7 @@ export const GLOBAL_STYLES = `
     --bg-card: rgba(15, 30, 52, 0.9);
     --bg-card-hover: rgba(24, 45, 76, 0.95);
     --bg-sidebar: rgba(6, 17, 32, 0.96);
+    --surface-raised: rgba(15, 30, 52, 0.9);
     --border: rgba(125, 169, 217, 0.16);
     --border-hover: rgba(96, 165, 250, 0.5);
     --text: #f8fbff;
@@ -84,6 +86,7 @@ export const GLOBAL_STYLES = `
     --bg-card: rgba(30, 25, 46, 0.9);
     --bg-card-hover: rgba(43, 35, 65, 0.96);
     --bg-sidebar: rgba(18, 15, 28, 0.96);
+    --surface-raised: rgba(30, 25, 46, 0.9);
     --border: rgba(196, 181, 253, 0.16);
     --border-hover: rgba(167, 139, 250, 0.5);
     --text: #fbfaff;
@@ -1298,8 +1301,8 @@ export const GLOBAL_STYLES = `
 
   .mega-folder-btn {
     background: transparent !important;
-    color: #ffffff !important;
-    border: 1px solid rgba(255,255,255,.2) !important;
+    color: var(--text) !important;
+    border: 1px solid var(--border) !important;
     border-radius: 999px !important;
     padding: 12px 24px !important;
   }
