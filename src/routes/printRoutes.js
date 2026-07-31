@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const printController = require('../controllers/printController');
+const { authenticate } = require('../middleware/auth');
 
 // Configure multer for memory storage (up to 50MB)
 const upload = multer({
@@ -15,6 +16,13 @@ const upload = multer({
  * @access  Public
  */
 router.post('/upload', upload.array('files', 10), printController.uploadPrintJob);
+
+/**
+ * @route   POST /api/v1/print/from-drive
+ * @desc    Create a print job from an existing Drive file
+ * @access  Private (requires auth)
+ */
+router.post('/from-drive', authenticate, printController.createPrintJobFromDrive);
 
 /**
  * @route   GET /api/v1/print/:code
@@ -48,3 +56,4 @@ router.get('/:code/preview', (req, res, next) => {
 router.delete('/:code', printController.deletePrintJob);
 
 module.exports = router;
+

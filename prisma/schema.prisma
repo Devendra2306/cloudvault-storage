@@ -290,6 +290,7 @@ model PrintFile {
   mimeType    String?
   s3Key       String    @unique
   downloads   Int       @default(0)
+  isDriveRef  Boolean   @default(false)
   
   job         PrintJob  @relation(fields: [jobId], references: [id], onDelete: Cascade)
 

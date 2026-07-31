@@ -92,6 +92,64 @@ const uploadPrintJob = async (req, res, next) => {
   }
 };
 
+// Create a print job from an existing Drive file (no re-upload needed)
+const createPrintJobFromDrive = async (req, res, next) => {
+  try {
+    const { fileId } = req.body;
+    if (!fileId) {
+      return res.status(400).json({ success: false, error: 'fileId is required' });
+    }
+
+    // Verify the file belongs to the user
+    const file = await prisma.file.findFirst({
+      where: { id: fileId, userId: req.user.id, deletedAt: null },
+    });
+
+    if (!file) {
+      return res.status(404).json({ success: false, error: 'File not found' });
+    }
+
+    const code = await generateCode();
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 24);
+
+    const printJob = await prisma.printJob.create({
+      data: {
+        code,
+        expiresAt,
+      },
+    });
+
+    const printFile = await prisma.printFile.create({
+      data: {
+        jobId: printJob.id,
+        fileName: file.name,
+        fileSize: file.size,
+        mimeType: file.mimeType,
+        s3Key: file.s3Key,
+        isDriveRef: true, // Mark as Drive reference so we don't delete the original
+      },
+    });
+
+    res.status(201).json({
+      success: true,
+      data: {
+        code: printJob.code,
+        expiresAt: printJob.expiresAt,
+        files: [{
+          id: printFile.id,
+          fileName: printFile.fileName,
+          fileSize: printFile.fileSize.toString(),
+          mimeType: printFile.mimeType,
+        }]
+      }
+    });
+  } catch (error) {
+    console.error('Print from drive error:', error);
+    next(error);
+  }
+};
+
 // Get job details by code
 const getPrintJob = async (req, res, next) => {
   try {
@@ -193,7 +251,10 @@ const deletePrintJob = async (req, res, next) => {
       if (!printFile || printFile.job.code !== code) {
         return res.status(404).json({ success: false, error: 'File not found' });
       }
-      await s3.send(new DeleteObjectCommand({ Bucket: BUCKET, Key: printFile.s3Key }));
+      // Only delete from S3 if it's NOT a Drive reference
+      if (!printFile.isDriveRef) {
+        await s3.send(new DeleteObjectCommand({ Bucket: BUCKET, Key: printFile.s3Key }));
+      }
       await prisma.printFile.delete({ where: { id: fileId } });
       return res.json({ success: true, message: 'File deleted successfully' });
     }
@@ -203,7 +264,10 @@ const deletePrintJob = async (req, res, next) => {
     if (!printJob) return res.status(404).json({ success: false, error: 'Code not found' });
 
     for (const f of printJob.files) {
-      await s3.send(new DeleteObjectCommand({ Bucket: BUCKET, Key: f.s3Key }));
+      // Only delete from S3 if it's NOT a Drive reference
+      if (!f.isDriveRef) {
+        await s3.send(new DeleteObjectCommand({ Bucket: BUCKET, Key: f.s3Key }));
+      }
     }
     await prisma.printJob.delete({ where: { id: printJob.id } });
 
@@ -224,7 +288,10 @@ const cleanupExpiredJobs = async () => {
     for (const job of expiredJobs) {
       try {
         for (const f of job.files) {
-          await s3.send(new DeleteObjectCommand({ Bucket: BUCKET, Key: f.s3Key }));
+          // Only delete from S3 if it's NOT a Drive reference
+          if (!f.isDriveRef) {
+            await s3.send(new DeleteObjectCommand({ Bucket: BUCKET, Key: f.s3Key }));
+          }
         }
         await prisma.printJob.delete({ where: { id: job.id } });
       } catch (err) {
@@ -238,8 +305,10 @@ const cleanupExpiredJobs = async () => {
 
 module.exports = {
   uploadPrintJob,
+  createPrintJobFromDrive,
   getPrintJob,
   downloadPrintJob,
   deletePrintJob,
   cleanupExpiredJobs
 };
+

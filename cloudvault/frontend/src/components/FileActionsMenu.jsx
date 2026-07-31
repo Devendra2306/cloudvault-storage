@@ -7,6 +7,8 @@ export default function FileActionsMenu({
   onTags,
   onEdit,
   onDelete,
+  onPrint,
+  onAnnotate,
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -22,11 +24,13 @@ export default function FileActionsMenu({
   const isImage = file?.mimeType?.startsWith('image/');
   
   const items = [
-    ...(isImage ? [{ cue: "Edit", label: "Edit image", onClick: () => onEdit && onEdit(file) }] : []),
+    ...(isImage ? [{ cue: "✂️", label: "Edit image", onClick: () => onEdit && onEdit(file) }] : []),
+    { cue: "🖨️", label: "Send to Print", onClick: () => onPrint && onPrint(file) },
+    { cue: "💬", label: "Annotate", onClick: () => onAnnotate && onAnnotate(file) },
     { cue: "#", label: "Tags", onClick: () => onTags(file) },
-    { cue: "Move", label: "Move", onClick: () => onMove(file) },
-    { cue: "Copy", label: "Copy file", onClick: () => onCopy(file) },
-    { cue: "Del", label: "Delete", onClick: () => onDelete(file), danger: true },
+    { cue: "📁", label: "Move", onClick: () => onMove(file) },
+    { cue: "📋", label: "Copy file", onClick: () => onCopy(file) },
+    { cue: "🗑️", label: "Delete", onClick: () => onDelete(file), danger: true },
   ];
 
   return (
