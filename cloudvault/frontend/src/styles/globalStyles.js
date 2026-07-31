@@ -59,6 +59,8 @@ export const GLOBAL_STYLES = `
     --text: #0f172a;
     --text-secondary: #334155;
     --text-muted: #64748b;
+    --shadow-color: rgba(0,0,0,.15);
+    --shadow-color-hover: rgba(0,0,0,.25);
   }
 
   [data-theme="midnight"] {
@@ -136,19 +138,19 @@ export const GLOBAL_STYLES = `
     padding: 12px 22px;
     border-radius: 999px;
     border: none;
-    background: #ffffff;
-    color: #000000;
+    background: var(--text);
+    color: var(--bg-primary);
     font-family: var(--font);
     font-weight: 700;
     font-size: 14px;
     cursor: pointer;
-    box-shadow: 0 8px 24px rgba(255,255,255,.12);
+    box-shadow: 0 8px 24px var(--shadow-color, rgba(255,255,255,.12));
     transition: var(--transition);
   }
 
   .btn-primary:hover {
     transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 12px 32px rgba(255,255,255,.18);
+    box-shadow: 0 12px 32px var(--shadow-color-hover, rgba(255,255,255,.18));
   }
 
   .btn-mega-red {
