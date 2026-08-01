@@ -1,0 +1,45 @@
+name: CloudVault CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-frontend:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js 20.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        cache-dependency-path: 'cloudvault/frontend/package-lock.json'
+        
+    - name: Install Frontend Dependencies
+      working-directory: ./cloudvault/frontend
+      run: npm ci || npm install
+      
+    - name: Build Frontend
+      working-directory: ./cloudvault/frontend
+      run: npm run build
+
+  build-backend:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js 20.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        
+    - name: Install Backend Dependencies
+      run: npm ci || npm install
+      
+    - name: Generate Prisma Client
+      run: npx prisma generate
