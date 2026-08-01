@@ -1,20 +1,3 @@
-/**
- * upload.js — Fixed middleware
- *
- * ROOT CAUSE OF UPLOAD FAILURES:
- *   multer-s3@3.0.1 (installed) requires multer@2.x
- *   multer@1.4.5-lts.2 (installed) is incompatible — files silently never reach S3
- *
- * FIX STRATEGY:
- *   Use multer with memoryStorage (stores file in req.file.buffer),
- *   then upload to S3 ourselves using @aws-sdk/lib-storage (Upload).
- *   This removes the multer-s3 dependency entirely and is more reliable.
- *
- * SETUP:
- *   npm install @aws-sdk/lib-storage
- *   npm uninstall multer-s3   (optional, but cleans up)
- *   Keep multer@1.4.5-lts in package.json (no change needed)
- */
 
 const multer = require('multer');
 const { Upload } = require('@aws-sdk/lib-storage');
@@ -28,7 +11,7 @@ const { QuotaExceededError, ValidationError } = require('./errorHandler');
 
 const MAX_FILE_SIZE = parseInt(process.env.MAX_FILE_SIZE) || 2 * 1024 * 1024 * 1024;
 
-// ─── Step 1: Pre-check quota using Content-Length ────────────────────────────
+// Pre-check quota using Content-Length
 const preCheckQuota = async (req, res, next) => {
   try {
     const contentLength = parseInt(req.headers['content-length'] || '0', 10);
@@ -53,7 +36,7 @@ const preCheckQuota = async (req, res, next) => {
   }
 };
 
-// ─── Step 2: multer stores the file in OS temp directory ─────────────────────
+// Store files in OS temp directory
 const _multerDisk = multer({
   storage: multer.diskStorage({
     destination: os.tmpdir(),
@@ -62,7 +45,7 @@ const _multerDisk = multer({
   limits: { fileSize: MAX_FILE_SIZE },
 });
 
-// ─── Step 3: Quota check (verifies actual file size) ─────────────────────────
+// Quota check (verifies actual file size)
 const checkQuota = async (req, res, next) => {
   try {
     const prisma = require('../config/database');
@@ -89,7 +72,7 @@ const checkQuota = async (req, res, next) => {
   }
 };
 
-// ─── Step 4: custom S3 uploader middleware ────────────────────────────────────
+// S3 uploader middleware
 const _uploadToS3 = async (req, res, next) => {
   if (!req.file) return next();
 
@@ -133,7 +116,7 @@ const _uploadToS3 = async (req, res, next) => {
   }
 };
 
-// Combined middleware: pre-check → multer disk parse → quota check → S3 upload
+// Combined upload middlewares
 const upload = {
   single: (fieldName) => [preCheckQuota, _multerDisk.single(fieldName), checkQuota, _uploadToS3],
   array: (fieldName, max) => [preCheckQuota, _multerDisk.array(fieldName, max), checkQuota, _uploadToS3],
