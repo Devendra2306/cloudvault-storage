@@ -173,6 +173,19 @@ const uploadFile = async (req, res, next) => {
     });
   } catch (error) {
     console.error('UPLOAD ERROR:', error.name, '-', error.message);
+    
+    // Cleanup orphaned S3 object if it was uploaded but DB failed
+    if (req.file && req.file.key) {
+      try {
+        const { s3, BUCKET } = require('../config/s3');
+        const { DeleteObjectCommand } = require('@aws-sdk/client-s3');
+        await s3.send(new DeleteObjectCommand({ Bucket: BUCKET, Key: req.file.key }));
+        console.log('Cleaned up orphaned S3 file:', req.file.key);
+      } catch (s3Error) {
+        console.error('Failed to cleanup orphaned S3 file:', req.file.key, s3Error);
+      }
+    }
+
     console.error('Error details:', {
       name: error.name,
       message: error.message,

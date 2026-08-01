@@ -4,6 +4,7 @@ const { Upload } = require('@aws-sdk/lib-storage');
 const { GetObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
+const fs = require('fs');
 const sanitize = require('sanitize-filename');
 
 // Helper to generate a 4-digit code
@@ -20,6 +21,7 @@ const generateCode = async () => {
 
 // Upload files to S3 and create PrintJob + PrintFiles
 const uploadPrintJob = async (req, res, next) => {
+  const uploadedS3Keys = [];
   try {
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ success: false, error: 'No files uploaded' });
@@ -49,7 +51,7 @@ const uploadPrintJob = async (req, res, next) => {
         params: {
           Bucket: BUCKET,
           Key: s3Key,
-          Body: file.buffer,
+          Body: fs.createReadStream(file.path),
           ContentType: file.mimetype,
           Metadata: {
             originalName: sanitizedName,
@@ -59,6 +61,7 @@ const uploadPrintJob = async (req, res, next) => {
       });
 
       await uploader.done();
+      uploadedS3Keys.push(s3Key);
 
       return prisma.printFile.create({
         data: {
@@ -88,7 +91,26 @@ const uploadPrintJob = async (req, res, next) => {
     });
   } catch (error) {
     console.error('Print upload error:', error);
+    // Cleanup orphaned S3 objects
+    for (const key of uploadedS3Keys) {
+      try {
+        await s3.send(new DeleteObjectCommand({ Bucket: BUCKET, Key: key }));
+      } catch (err) {
+        console.error('Failed to cleanup orphaned S3 print file:', key, err);
+      }
+    }
     next(error);
+  } finally {
+    // Cleanup temporary multer files
+    if (req.files) {
+      for (const file of req.files) {
+        if (file.path) {
+          fs.unlink(file.path, (err) => {
+            if (err) console.error('Failed to cleanup temp print file:', err);
+          });
+        }
+      }
+    }
   }
 };
 

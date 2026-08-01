@@ -20,41 +20,90 @@ const multer = require('multer');
 const { Upload } = require('@aws-sdk/lib-storage');
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
+const os = require('os');
+const fs = require('fs');
 const sanitize = require('sanitize-filename');
 const { s3, BUCKET } = require('../config/s3');
 const { QuotaExceededError, ValidationError } = require('./errorHandler');
 
-// No per-file size limit — only the user's total 25GB storage quota matters
-// 2GB is the practical Node.js memory limit for multer memoryStorage
 const MAX_FILE_SIZE = parseInt(process.env.MAX_FILE_SIZE) || 2 * 1024 * 1024 * 1024;
 
-// ─── Step 1: multer stores the file in memory ────────────────────────────────
-const _multerMemory = multer({
-  storage: multer.memoryStorage(),
+// ─── Step 1: Pre-check quota using Content-Length ────────────────────────────
+const preCheckQuota = async (req, res, next) => {
+  try {
+    const contentLength = parseInt(req.headers['content-length'] || '0', 10);
+    if (!contentLength) return next();
+
+    const prisma = require('../config/database');
+    const { getStorageQuotaBytes, syncExpiredTrial } = require('../services/userAccount');
+    
+    let user = await prisma.user.findUnique({ where: { id: req.user.id } });
+    if (!user) throw new ValidationError('User not found');
+    user = await syncExpiredTrial(user.id);
+
+    const quota = getStorageQuotaBytes(user);
+    if (user.storageUsed + BigInt(contentLength) > quota) {
+      console.error('ERROR: Storage quota exceeded (pre-check)');
+      throw new QuotaExceededError('Storage quota exceeded');
+    }
+    
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ─── Step 2: multer stores the file in OS temp directory ─────────────────────
+const _multerDisk = multer({
+  storage: multer.diskStorage({
+    destination: os.tmpdir(),
+    filename: (req, file, cb) => cb(null, uuidv4() + path.extname(file.originalname))
+  }),
   limits: { fileSize: MAX_FILE_SIZE },
-  // No file filter — accept ALL file types (videos, zips, anything)
 });
 
-// ─── Step 2: custom S3 uploader middleware ────────────────────────────────────
+// ─── Step 3: Quota check (verifies actual file size) ─────────────────────────
+const checkQuota = async (req, res, next) => {
+  try {
+    const prisma = require('../config/database');
+    const { getStorageQuotaBytes, syncExpiredTrial } = require('../services/userAccount');
+    let user = await prisma.user.findUnique({ where: { id: req.user.id } });
+    if (!user) throw new ValidationError('User not found');
+    user = await syncExpiredTrial(user.id);
+
+    let totalSize = 0;
+    if (req.file) totalSize = req.file.size;
+    else if (req.files?.length) totalSize = req.files.reduce((sum, f) => sum + f.size, 0);
+
+    const quota = getStorageQuotaBytes(user);
+    if (user.storageUsed + BigInt(totalSize) > quota) {
+      throw new QuotaExceededError('Storage quota exceeded');
+    }
+
+    next();
+  } catch (error) {
+    // Clean up temp files if quota fails
+    if (req.file && req.file.path) fs.unlink(req.file.path, () => {});
+    if (req.files?.length) req.files.forEach(f => fs.unlink(f.path, () => {}));
+    next(error);
+  }
+};
+
+// ─── Step 4: custom S3 uploader middleware ────────────────────────────────────
 const _uploadToS3 = async (req, res, next) => {
-  if (!req.file) return next(); // no file attached — let controller handle it
+  if (!req.file) return next();
 
   try {
-    console.log('=== S3 UPLOAD START ===');
-    console.log('S3_BUCKET:', BUCKET);
-    console.log('AWS_REGION:', process.env.AWS_REGION);
-
     const sanitizedName = sanitize(req.file.originalname);
     const ext = path.extname(sanitizedName);
     const s3Key = `uploads/${req.user.id}/${uuidv4()}${ext}`;
-    console.log('Generated S3 key:', s3Key);
 
     const uploader = new Upload({
       client: s3,
       params: {
         Bucket: BUCKET,
         Key: s3Key,
-        Body: req.file.buffer,
+        Body: fs.createReadStream(req.file.path),
         ContentType: req.file.mimetype,
         Metadata: {
           originalName: sanitizedName,
@@ -65,64 +114,35 @@ const _uploadToS3 = async (req, res, next) => {
     });
 
     const result = await uploader.done();
-    console.log('S3 upload result:', result);
 
-    // Attach fields that fileController.js expects (mirrors what multer-s3 used to provide)
     req.file.key = s3Key;
     req.file.bucket = BUCKET;
     req.file.location = result.Location || `https://${BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`;
 
-    console.log('=== S3 UPLOAD SUCCESS ===', { key: req.file.key, location: req.file.location });
     next();
   } catch (err) {
     console.error('=== S3 UPLOAD FAILED ===', err);
     next(err);
-  }
-};
-
-// ─── Quota check (runs after multer parses req.file) ─────────────────────────
-const checkQuota = async (req, res, next) => {
-  try {
-    console.log('=== CHECK QUOTA MIDDLEWARE ===');
-    console.log('REQ.USER:', req.user);
-
-    const prisma = require('../config/database');
-    const { getStorageQuotaBytes, syncExpiredTrial } = require('../services/userAccount');
-    let user = await prisma.user.findUnique({ where: { id: req.user.id } });
-    if (!user) throw new ValidationError('User not found');
-    user = await syncExpiredTrial(user.id);
-
-    console.log('USER STORAGE:', { storageUsed: user.storageUsed, storageQuota: user.storageQuota });
-
-    let totalSize = 0;
-    if (req.file) totalSize = req.file.size;
-    else if (req.files?.length) totalSize = req.files.reduce((sum, f) => sum + f.size, 0);
-
-    console.log('UPLOAD SIZE:', totalSize);
-
-    const quota = getStorageQuotaBytes(user);
-    if (user.storageUsed + BigInt(totalSize) > quota) {
-      console.error('ERROR: Storage quota exceeded');
-      throw new QuotaExceededError('Storage quota exceeded');
+  } finally {
+    // Always clean up the temp file
+    if (req.file && req.file.path) {
+      fs.unlink(req.file.path, (err) => {
+        if (err) console.error('Failed to cleanup temp file:', err);
+      });
     }
-
-    console.log('QUOTA CHECK PASSED');
-    next();
-  } catch (error) {
-    console.error('QUOTA CHECK ERROR:', error);
-    next(error);
   }
 };
 
-// Combined middleware: multer memory parse → quota check → S3 upload
+// Combined middleware: pre-check → multer disk parse → quota check → S3 upload
 const upload = {
-  single: (fieldName) => [_multerMemory.single(fieldName), checkQuota, _uploadToS3],
-  array: (fieldName, max) => [_multerMemory.array(fieldName, max), checkQuota, _uploadToS3],
-  fields: (fields) => [_multerMemory.fields(fields), checkQuota, _uploadToS3],
+  single: (fieldName) => [preCheckQuota, _multerDisk.single(fieldName), checkQuota, _uploadToS3],
+  array: (fieldName, max) => [preCheckQuota, _multerDisk.array(fieldName, max), checkQuota, _uploadToS3],
+  fields: (fields) => [preCheckQuota, _multerDisk.fields(fields), checkQuota, _uploadToS3],
 };
 
 module.exports = {
   upload,
   checkQuota,
+  preCheckQuota,
   MAX_FILE_SIZE,
 };

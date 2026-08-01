@@ -4,9 +4,16 @@ const multer = require('multer');
 const printController = require('../controllers/printController');
 const { authenticate } = require('../middleware/auth');
 
-// Configure multer for memory storage (up to 50MB)
+const os = require('os');
+const path = require('path');
+const { v4: uuidv4 } = require('uuid');
+
+// Configure multer for disk storage (prevent OOM)
 const upload = multer({
-  storage: multer.memoryStorage(),
+  storage: multer.diskStorage({
+    destination: os.tmpdir(),
+    filename: (req, file, cb) => cb(null, uuidv4() + path.extname(file.originalname))
+  }),
   limits: { fileSize: 50 * 1024 * 1024 }, // 50MB max file size
 });
 
