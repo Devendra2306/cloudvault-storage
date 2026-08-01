@@ -34,6 +34,7 @@ const s3 = new S3Client({
 });
 
 const BUCKET = process.env.AWS_S3_BUCKET_NAME;
+const PRINT_BUCKET = process.env.AWS_S3_PRINT_BUCKET_NAME || BUCKET;
 
 /**
  * Generate a pre-signed URL for S3 object
@@ -98,6 +99,7 @@ const listFiles = async (prefix = 'uploads/', maxKeys = 1000, continuationToken 
 module.exports = {
   s3,
   BUCKET,
+  PRINT_BUCKET,
   getSignedFileUrl,
   getObjectStream,
   deleteFile,

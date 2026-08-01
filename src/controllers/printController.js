@@ -1,5 +1,5 @@
 const prisma = require('../config/database');
-const { s3, BUCKET } = require('../config/s3');
+const { s3, BUCKET, PRINT_BUCKET } = require('../config/s3');
 const { Upload } = require('@aws-sdk/lib-storage');
 const { GetObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
 const { v4: uuidv4 } = require('uuid');
@@ -49,7 +49,7 @@ const uploadPrintJob = async (req, res, next) => {
       const uploader = new Upload({
         client: s3,
         params: {
-          Bucket: BUCKET,
+          Bucket: PRINT_BUCKET,
           Key: s3Key,
           Body: fs.createReadStream(file.path),
           ContentType: file.mimetype,
@@ -94,7 +94,7 @@ const uploadPrintJob = async (req, res, next) => {
     // Cleanup orphaned S3 objects
     for (const key of uploadedS3Keys) {
       try {
-        await s3.send(new DeleteObjectCommand({ Bucket: BUCKET, Key: key }));
+        await s3.send(new DeleteObjectCommand({ Bucket: PRINT_BUCKET, Key: key }));
       } catch (err) {
         console.error('Failed to cleanup orphaned S3 print file:', key, err);
       }
@@ -227,7 +227,7 @@ const downloadPrintJob = async (req, res, next) => {
     }
 
     const command = new GetObjectCommand({
-      Bucket: BUCKET,
+      Bucket: printFile.isDriveRef ? BUCKET : PRINT_BUCKET,
       Key: printFile.s3Key,
     });
 
@@ -275,7 +275,7 @@ const deletePrintJob = async (req, res, next) => {
       }
       // Only delete from S3 if it's NOT a Drive reference
       if (!printFile.isDriveRef) {
-        await s3.send(new DeleteObjectCommand({ Bucket: BUCKET, Key: printFile.s3Key }));
+        await s3.send(new DeleteObjectCommand({ Bucket: PRINT_BUCKET, Key: printFile.s3Key }));
       }
       await prisma.printFile.delete({ where: { id: fileId } });
       return res.json({ success: true, message: 'File deleted successfully' });
@@ -288,7 +288,7 @@ const deletePrintJob = async (req, res, next) => {
     for (const f of printJob.files) {
       // Only delete from S3 if it's NOT a Drive reference
       if (!f.isDriveRef) {
-        await s3.send(new DeleteObjectCommand({ Bucket: BUCKET, Key: f.s3Key }));
+        await s3.send(new DeleteObjectCommand({ Bucket: PRINT_BUCKET, Key: f.s3Key }));
       }
     }
     await prisma.printJob.delete({ where: { id: printJob.id } });
@@ -312,7 +312,7 @@ const cleanupExpiredJobs = async () => {
         for (const f of job.files) {
           // Only delete from S3 if it's NOT a Drive reference
           if (!f.isDriveRef) {
-            await s3.send(new DeleteObjectCommand({ Bucket: BUCKET, Key: f.s3Key }));
+            await s3.send(new DeleteObjectCommand({ Bucket: PRINT_BUCKET, Key: f.s3Key }));
           }
         }
         await prisma.printJob.delete({ where: { id: job.id } });

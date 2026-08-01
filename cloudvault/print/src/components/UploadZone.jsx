@@ -10,13 +10,7 @@ const UploadZone = ({ onUploadSuccess }) => {
   const onDrop = useCallback(async (acceptedFiles) => {
     if (!acceptedFiles || acceptedFiles.length === 0) return;
     
-    // Check sizes
-    for (const file of acceptedFiles) {
-      if (file.size > 50 * 1024 * 1024) {
-        setError(`File ${file.name} is too large. Max size is 50MB.`);
-        return;
-      }
-    }
+    // Removed 50MB limit to match infinite upload feature
 
     if (acceptedFiles.length > 10) {
       setError('You can only upload up to 10 files at once.');
@@ -63,16 +57,16 @@ const UploadZone = ({ onUploadSuccess }) => {
         <input {...getInputProps()} />
         
         {isUploading ? (
-          <div className="flex flex-col items-center">
+          <div className="dropzone-content">
             <Loader size={48} className="dropzone-icon animate-spin" style={{ animation: 'spin 1s linear infinite' }} />
             <p>Uploading securely...</p>
           </div>
         ) : (
-          <div className="flex flex-col items-center">
+          <div className="dropzone-content">
             <UploadCloud size={48} className="dropzone-icon" />
-            <p className="font-semibold">Drop your file here</p>
+            <p className="font-bold">Drop your file here</p>
             <p className="hint">or click to browse</p>
-            <p className="hint mt-2">PDF, Images, Docs (Max 50MB)</p>
+            <p className="hint mt-2">PDF, Images, Docs</p>
           </div>
         )}
       </div>
