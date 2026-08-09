@@ -8,11 +8,11 @@ import ReactMarkdown from "react-markdown";
 export default function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { role: "assistant", content: "Hello! I am your AI Procurement Assistant. I can help you find products, discover suppliers, or draft an RFQ instantly. What are you looking for today?" }
+    { role: "assistant", content: "Hello! I am your CloudVault AI Assistant. I can help you manage your files, understand storage limits, or answer any support questions you have." }
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
