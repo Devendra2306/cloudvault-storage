@@ -108,10 +108,11 @@ export default function ChatWidget() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-8 right-8 p-4 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-full shadow-[0_0_30px_rgba(37,99,235,0.3)] z-50 flex items-center justify-center border border-white/10"
+            className="w-10 h-10 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded-full flex items-center justify-center transition-colors relative"
+            title="Open Marketplace AI"
           >
-            <Sparkles className="w-6 h-6 absolute opacity-50 blur-[2px] animate-pulse" />
-            <MessageSquare className="w-7 h-7 relative z-10" />
+            <Bot className="w-5 h-5 relative z-10" />
+            <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-[#1A1A1A]"></span>
           </motion.button>
         )}
       </AnimatePresence>
@@ -128,7 +129,7 @@ export default function ChatWidget() {
             {/* Header */}
             <div className="bg-white/5 border-b border-white/10 p-4 text-white flex justify-between items-center">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center shadow-inner">
+                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-red-600 to-rose-500 flex items-center justify-center shadow-inner">
                   <Bot className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -157,18 +158,18 @@ export default function ChatWidget() {
                   className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   {msg.role === 'assistant' && (
-                    <div className="w-8 h-8 rounded-full bg-blue-500/20 border border-blue-500/30 flex items-center justify-center flex-shrink-0 mt-1">
-                      <Bot className="w-4 h-4 text-blue-400" />
+                    <div className="w-8 h-8 rounded-full bg-red-500/20 border border-red-500/30 flex items-center justify-center flex-shrink-0 mt-1">
+                      <Bot className="w-4 h-4 text-red-400" />
                     </div>
                   )}
                   
                   <div className={`max-w-[80%] rounded-2xl px-5 py-3.5 text-sm leading-relaxed shadow-sm
                     ${msg.role === 'user' 
-                      ? 'bg-blue-600 text-white rounded-tr-sm' 
+                      ? 'bg-red-600 text-white rounded-tr-sm' 
                       : 'bg-white/5 text-white/90 border border-white/10 rounded-tl-sm'}`}
                   >
                     {msg.content ? (
-                      <div className="prose prose-invert prose-sm max-w-none prose-p:leading-relaxed prose-a:text-blue-400 prose-strong:text-white">
+                      <div className="prose prose-invert prose-sm max-w-none prose-p:leading-relaxed prose-a:text-red-400 prose-strong:text-white">
                         <ReactMarkdown>
                           {msg.content}
                         </ReactMarkdown>
@@ -194,13 +195,13 @@ export default function ChatWidget() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Type your request here..."
-                  className="w-full bg-[#1A1A1A] text-white rounded-xl pl-4 pr-12 py-3.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500/50 border border-white/10 transition-all placeholder:text-white/30"
+                  className="w-full bg-[#1A1A1A] text-white rounded-xl pl-4 pr-12 py-3.5 text-sm focus:outline-none focus:ring-1 focus:ring-red-500/50 border border-white/10 transition-all placeholder:text-white/30"
                   disabled={isLoading}
                 />
                 <button 
                   type="submit" 
                   disabled={!input.trim() || isLoading}
-                  className="absolute right-2 p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-30 disabled:hover:bg-blue-600 transition-colors"
+                  className="absolute right-2 p-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-30 disabled:hover:bg-red-600 transition-colors"
                 >
                   <Send className="w-4 h-4 ml-0.5" />
                 </button>

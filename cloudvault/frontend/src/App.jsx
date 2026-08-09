@@ -23,6 +23,7 @@ import { buildFolderTree } from "./lib/folders.js";
 import { AccountProvider, useAccount } from "./context/AccountContext.jsx";
 import ProfileMenu from "./components/ProfileMenu.jsx";
 import TrialBanner from "./components/TrialBanner.jsx";
+import ChatWidget from "./components/ChatWidget.jsx";
 import VerifyEmailBanner from "./components/VerifyEmailBanner.jsx";
 import VerifyEmailPage from "./pages/VerifyEmailPage.jsx";
 import NotificationBell from "./components/NotificationBell.jsx";
@@ -327,8 +328,11 @@ function AccountChrome({ children, onNavigate, onSignOut, onUpgrade }) {
         backdropFilter: "blur(16px)", display: "flex", alignItems: "center",
         justifyContent: "space-between", gap: 16, padding: "0 24px 0 280px",
       }}>
-        <NotificationBell notifications={notifications} unreadCount={unreadCount} onMarkAllRead={markAllRead} />
-        <ProfileMenu account={account} onNavigate={onNavigate} onSignOut={onSignOut} />
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <ChatWidget />
+          <NotificationBell notifications={notifications} unreadCount={unreadCount} onMarkAllRead={markAllRead} />
+          <ProfileMenu account={account} onNavigate={onNavigate} onSignOut={onSignOut} />
+        </div>
       </header>
       {children}
     </>
