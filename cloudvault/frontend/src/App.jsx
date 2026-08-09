@@ -328,7 +328,7 @@ function AccountChrome({ children, onNavigate, onSignOut, onUpgrade }) {
         backdropFilter: "blur(16px)", display: "flex", alignItems: "center",
         justifyContent: "space-between", gap: 16, padding: "0 24px 0 280px",
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16, marginLeft: "auto" }}>
           <ChatWidget />
           <NotificationBell notifications={notifications} unreadCount={unreadCount} onMarkAllRead={markAllRead} />
           <ProfileMenu account={account} onNavigate={onNavigate} onSignOut={onSignOut} />
