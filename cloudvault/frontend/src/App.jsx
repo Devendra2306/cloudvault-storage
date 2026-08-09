@@ -23,7 +23,6 @@ import { buildFolderTree } from "./lib/folders.js";
 import { AccountProvider, useAccount } from "./context/AccountContext.jsx";
 import ProfileMenu from "./components/ProfileMenu.jsx";
 import TrialBanner from "./components/TrialBanner.jsx";
-import ChatWidget from "./components/ChatWidget.jsx";
 import VerifyEmailBanner from "./components/VerifyEmailBanner.jsx";
 import VerifyEmailPage from "./pages/VerifyEmailPage.jsx";
 import NotificationBell from "./components/NotificationBell.jsx";
@@ -1485,7 +1484,6 @@ export default function CloudVault() {
       {renaming && <RenameDialog file={renaming} onRename={(name) => renameFile(renaming, name)} onCancel={() => setRenaming(null)} />}
       <DownloadManager jobs={downloadJobs} history={downloadHistory} />
       {toast && <Toast msg={toast.msg} type={toast.type} onClose={() => setToast(null)} />}
-      <ChatWidget />
     </div>
     </AccountChrome>
     </AccountProvider>
