@@ -9,6 +9,6 @@ const { validate, schemas } = require('../middleware/validation');
  * @desc    Search files and folders
  * @access  Private
  */
-router.get('/', authenticate, validate(schemas.search), searchController.search);
+router.get('/', authenticate, validate(schemas.search, 'query'), searchController.search);
 
 module.exports = router;

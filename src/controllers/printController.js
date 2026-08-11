@@ -7,12 +7,14 @@ const path = require('path');
 const fs = require('fs');
 const sanitize = require('sanitize-filename');
 
-// Helper to generate a 4-digit code
+const crypto = require('crypto');
+
+// Helper to generate an 8-character alphanumeric code
 const generateCode = async () => {
   let code;
   let exists = true;
   while (exists) {
-    code = Math.floor(1000 + Math.random() * 9000).toString(); // 1000-9999
+    code = crypto.randomBytes(4).toString('hex').toUpperCase(); // 8 chars (e.g. 1A2B3C4D)
     const count = await prisma.printJob.count({ where: { code } });
     if (count === 0) exists = false;
   }

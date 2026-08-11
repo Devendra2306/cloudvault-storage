@@ -1,4 +1,7 @@
 const { v4: uuidv4 } = require('uuid');
+const { GetObjectCommand } = require('@aws-sdk/client-s3');
+const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
+const bcrypt = require('bcryptjs');
 const prisma = require('../config/database');
 const { NotFoundError, ForbiddenError, ValidationError } = require('../middleware/errorHandler');
 const { sendShareInvitationEmail } = require('../config/email');
@@ -45,19 +48,17 @@ const createFileShare = async (req, res, next) => {
     }
 
     // Generate unique share token
-    const shareToken = uuidv4();
+    const token = uuidv4();
 
     // Create share
     const share = await prisma.fileShare.create({
       data: {
         fileId: id,
-        sharedBy: userId,
-        sharedWith: sharedWithUser?.id || null,
-        sharedWithEmail: recipientEmail || null,
-        shareToken,
+        token,
         shareType,
         permission,
-        password: password || null,
+        password: password ? await bcrypt.hash(password, 10) : null,
+        passwordProtected: Boolean(password),
         expiresAt: expiresAt ? new Date(expiresAt) : null,
         maxViews: maxViews || null,
       },
@@ -69,7 +70,7 @@ const createFileShare = async (req, res, next) => {
       data: { isPublic: true },
     });
 
-    const shareUrl = shareUrlFor(shareToken);
+    const shareUrl = shareUrlFor(token);
     await logActivity(userId, shareType === 'email' ? 'share_email_created' : 'share_link_created', 'file', id, file.name, req);
     await createNotification(userId, 'share_created', 'Share created', `"${file.name}" is ready to share.`, { fileId: id, shareId: share.id });
 
@@ -288,13 +289,12 @@ const revokeFileShare = async (req, res, next) => {
 };
 
 /**
- * Access shared file (public endpoint)
+ * Access a shared file/folder (Public endpoint)
  */
 const accessSharedFile = async (req, res, next) => {
   try {
-
     const { token } = req.params;
-    const { password } = req.query;
+    const { password } = req.body;
 
     const share = await prisma.fileShare.findUnique({
       where: { shareToken: token },
@@ -348,18 +348,20 @@ const accessSharedFile = async (req, res, next) => {
     // Check password if set
     if (share.password) {
       if (!password) {
-        return res.status(403).json({
+        return res.status(401).json({
           success: false,
-          error: 'Forbidden',
+          error: 'Password required',
           message: 'Password required',
+          code: 'PASSWORD_REQUIRED'
         });
       }
-
-      if (share.password !== password) {
+      const isMatch = await bcrypt.compare(password, share.password);
+      if (!isMatch) {
         return res.status(403).json({
           success: false,
-          error: 'Forbidden',
+          error: 'Invalid password',
           message: 'Invalid password',
+          code: 'INVALID_PASSWORD'
         });
       }
     }
@@ -397,7 +399,7 @@ const accessSharedFile = async (req, res, next) => {
 const downloadSharedFile = async (req, res, next) => {
   try {
     const { token } = req.params;
-    const { password } = req.query;
+    const { password } = req.body;
 
     const share = await prisma.fileShare.findUnique({
       where: { shareToken: token },
@@ -411,7 +413,8 @@ const downloadSharedFile = async (req, res, next) => {
 
     if (share.password) {
       if (!password) return res.status(403).json({ success: false, error: 'Password required' });
-      if (share.password !== password) return res.status(403).json({ success: false, error: 'Invalid password' });
+      const isMatch = await bcrypt.compare(password, share.password);
+      if (!isMatch) return res.status(403).json({ success: false, error: 'Invalid password' });
     }
 
     // Check permission for download
@@ -446,7 +449,7 @@ const downloadSharedFile = async (req, res, next) => {
 const previewSharedFile = async (req, res, next) => {
   try {
     const { token } = req.params;
-    const { password } = req.query;
+    const { password } = req.body;
 
     const share = await prisma.fileShare.findUnique({
       where: { shareToken: token },
@@ -459,7 +462,8 @@ const previewSharedFile = async (req, res, next) => {
 
     if (share.password) {
       if (!password) return res.status(403).json({ success: false, error: 'Password required' });
-      if (share.password !== password) return res.status(403).json({ success: false, error: 'Invalid password' });
+      const isMatch = await bcrypt.compare(password, share.password);
+      if (!isMatch) return res.status(403).json({ success: false, error: 'Invalid password' });
     }
 
     const s3Object = await getObjectStream(share.file.s3Key);

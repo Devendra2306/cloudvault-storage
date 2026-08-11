@@ -6,7 +6,7 @@ const {
   createNotification,
   getStorageQuotaBytes,
 } = require('../services/userAccount');
-const { ValidationError } = require('../middleware/errorHandler');
+const { ValidationError, ForbiddenError } = require('../middleware/errorHandler');
 
 const listPlans = async (req, res, next) => {
   try {
@@ -24,6 +24,9 @@ const listPlans = async (req, res, next) => {
 
 const changePlan = async (req, res, next) => {
   try {
+    if (req.user.role !== 'admin') {
+      throw new ForbiddenError('Payment integration required for self-service upgrades');
+    }
     const { planId } = req.body;
     if (!PLANS[planId] || planId === 'free') {
       throw new ValidationError('Invalid plan');
@@ -54,6 +57,9 @@ const changePlan = async (req, res, next) => {
 
 const purchaseStorage = async (req, res, next) => {
   try {
+    if (req.user.role !== 'admin') {
+      throw new ForbiddenError('Payment integration required for self-service storage purchases');
+    }
     const { addonId } = req.body;
     const addon = STORAGE_ADDONS.find((a) => a.id === addonId);
     if (!addon) throw new ValidationError('Invalid storage add-on');

@@ -33,25 +33,25 @@ router.get('/files/:id/shares', authenticate, shareController.listFileShares);
 router.delete('/files/:id/shares/:shareId', authenticate, shareController.revokeFileShare);
 
 /**
- * @route   GET /api/v1/share/:token
+ * @route   POST /api/v1/share/:token
  * @desc    Access shared file (public endpoint)
  * @access  Public
  */
-router.get('/share/:token', optionalAuthenticate, shareController.accessSharedFile);
+router.post('/share/:token', optionalAuthenticate, shareController.accessSharedFile);
 
 /**
- * @route   GET /api/v1/share/:token/download
+ * @route   POST /api/v1/share/:token/download
  * @desc    Download shared file (public endpoint - streams from S3)
  * @access  Public
  */
-router.get('/share/:token/download', shareController.downloadSharedFile);
+router.post('/share/:token/download', shareController.downloadSharedFile);
 
 /**
- * @route   GET /api/v1/share/:token/preview
+ * @route   POST /api/v1/share/:token/preview
  * @desc    Preview/stream shared file inline (public endpoint)
  * @access  Public
  */
-router.get('/share/:token/preview', shareController.previewSharedFile);
+router.post('/share/:token/preview', shareController.previewSharedFile);
 
 /**
  * @route   POST /api/v1/folders/:id/share

@@ -2,13 +2,32 @@ const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
 const { validate, schemas } = require('../middleware/validation');
+const rateLimit = require('express-rate-limit');
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5,
+  message: { success: false, error: 'Too many login attempts, please try again after 15 minutes' }
+});
+
+const registerLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 3,
+  message: { success: false, error: 'Too many registration attempts, please try again after an hour' }
+});
+
+const forgotPasswordLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 3,
+  message: { success: false, error: 'Too many password reset requests, please try again after an hour' }
+});
 
 /**
  * @route   POST /api/v1/auth/register
  * @desc    Register a new user
  * @access  Public
  */
-router.post('/register', validate(schemas.register), authController.register);
+router.post('/register', registerLimiter, validate(schemas.register), authController.register);
 
 /**
  * @route   POST /api/v1/auth/resend-verification
@@ -22,7 +41,7 @@ router.post('/resend-verification', authController.resendVerification);
  * @desc    Login user
  * @access  Public
  */
-router.post('/login', validate(schemas.login), authController.login);
+router.post('/login', loginLimiter, validate(schemas.login), authController.login);
 
 /**
  * @route   POST /api/v1/auth/logout
@@ -50,7 +69,7 @@ router.post('/verify-email', authController.verifyEmail);
  * @desc    Request password reset
  * @access  Public
  */
-router.post('/forgot-password', validate(schemas.forgotPassword), authController.forgotPassword);
+router.post('/forgot-password', forgotPasswordLimiter, validate(schemas.forgotPassword), authController.forgotPassword);
 
 /**
  * @route   POST /api/v1/auth/verify-otp

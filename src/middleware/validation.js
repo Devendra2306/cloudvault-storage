@@ -4,9 +4,11 @@ const Joi = require('joi');
  * Validation middleware factory
  * Creates middleware that validates request body against a Joi schema
  */
-const validate = (schema) => {
+const validate = (schema, source = 'body') => {
   return (req, res, next) => {
-    const { error } = schema.validate(req.body, {
+    const dataToValidate = req[source];
+    
+    const { error, value } = schema.validate(dataToValidate, {
       abortEarly: false,
       stripUnknown: true,
     });
@@ -25,6 +27,8 @@ const validate = (schema) => {
       });
     }
 
+    // Replace the original data with the validated and coerced data
+    req[source] = value;
     next();
   };
 };
@@ -222,6 +226,15 @@ const schemas = {
   updateUserStatus: Joi.object({
     isActive: Joi.boolean().required().messages({
       'any.required': 'Active status is required',
+    }),
+  }),
+
+  // Comment schemas
+  createComment: Joi.object({
+    content: Joi.string().trim().max(1000).required().messages({
+      'string.empty': 'Comment content cannot be empty',
+      'string.max': 'Comment cannot exceed 1000 characters',
+      'any.required': 'Comment content is required',
     }),
   }),
 };

@@ -29,31 +29,15 @@ const assertFileAccess = async (file, userId) => {
  */
 const uploadFile = async (req, res, next) => {
   try {
-    console.log("UPLOAD REQUEST RECEIVED");
-    console.log("User:", req.user);
-    console.log("File:", req.file);
-    console.log("REQ.BODY:", req.body);
-
     const { folderId, isPublic } = req.body;
     const userId = req.user.id;
     const file = req.file;
 
     if (!file) {
-      console.error('ERROR: No file provided');
       throw new ValidationError('No file provided');
     }
 
-    console.log('File details:', {
-      originalname: file.originalname,
-      mimetype: file.mimetype,
-      size: file.size,
-      key: file.key,
-      bucket: file.bucket,
-      location: file.location,
-    });
-
     // Check storage quota
-    console.log('Checking storage quota...');
     let user = await syncExpiredTrial(userId);
     const quota = getStorageQuotaBytes(user);
     if (user.storageUsed + BigInt(file.size) > quota) {
@@ -62,18 +46,15 @@ const uploadFile = async (req, res, next) => {
 
     // If folderId is provided, check if it exists and belongs to user
     if (folderId) {
-      console.log('Checking folder:', folderId);
       const folder = await prisma.folder.findUnique({
         where: { id: folderId },
       });
 
       if (!folder) {
-        console.error('ERROR: Folder not found');
         throw new NotFoundError('Folder not found');
       }
 
       if (folder.userId !== userId) {
-        console.error('ERROR: Folder permission denied');
         throw new ForbiddenError('You do not have permission to upload to this folder');
       }
     }
@@ -81,7 +62,6 @@ const uploadFile = async (req, res, next) => {
     const resolvedMime = resolveMimeType(file.mimetype, file.originalname);
 
     // Create file record
-    console.log('Creating file record in database...');
     const newFile = await prisma.file.create({
       data: {
         userId,
@@ -97,10 +77,7 @@ const uploadFile = async (req, res, next) => {
       },
     });
 
-    console.log('File record created:', newFile.id);
-
     // Update user storage used
-    console.log('Updating user storage used...');
     await prisma.user.update({
       where: { id: userId },
       data: {
@@ -138,22 +115,11 @@ const uploadFile = async (req, res, next) => {
     }
 
     // Generate signed URL
-    console.log('Generating signed URL for S3 key:', newFile.s3Key);
     const signedUrl = await getSignedFileUrl(newFile.s3Key);
-    console.log('Signed URL generated:', signedUrl ? 'SUCCESS' : 'FAILED');
-    console.log('S3 upload result:', {
-      s3Key: newFile.s3Key,
-      s3Bucket: newFile.s3Bucket,
-      s3Location: newFile.s3Location,
-      signedUrl: signedUrl ? 'generated' : 'failed',
-    });
 
     if (!signedUrl) {
-      console.error('ERROR: Failed to generate signed URL');
       throw new Error('Failed to generate signed URL for file access');
     }
-
-    console.log('UPLOAD SUCCESS: File ID', newFile.id, 'uploaded successfully');
 
     res.status(201).json({
       success: true,

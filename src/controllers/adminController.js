@@ -1,5 +1,5 @@
 const prisma = require('../config/database');
-const { NotFoundError, ForbiddenError } = require('../middleware/errorHandler');
+const { NotFoundError, ForbiddenError, ValidationError } = require('../middleware/errorHandler');
 
 /**
  * List all users (admin only)

@@ -64,6 +64,11 @@ console.log('CORS allowed origins:', allowedOrigins);
 
 app.use(cors({
   origin: (origin, callback) => {
+    // In production, reject requests without an Origin header
+    if (!origin && process.env.NODE_ENV === 'production') {
+      return callback(new Error('Origin required in production'));
+    }
+    
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -101,6 +106,7 @@ const uploadLimiter = rateLimit({
   skip: (req) => req.method === 'OPTIONS',
 });
 
+app.use('/api/v1/files/upload', uploadLimiter);
 app.use('/api/v1', apiLimiter);
 
 // Health check endpoint

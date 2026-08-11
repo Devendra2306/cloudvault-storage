@@ -3,6 +3,13 @@ const router = express.Router();
 const multer = require('multer');
 const printController = require('../controllers/printController');
 const { authenticate } = require('../middleware/auth');
+const rateLimit = require('express-rate-limit');
+
+const printLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 10, // Limit each IP to 10 print jobs per windowMs
+  message: { success: false, error: 'Too many print jobs created from this IP, please try again after an hour.' }
+});
 
 const os = require('os');
 const path = require('path');
@@ -22,7 +29,7 @@ const upload = multer({
  * @desc    Upload multiple files and get a print code
  * @access  Public
  */
-router.post('/upload', upload.array('files', 10), printController.uploadPrintJob);
+router.post('/upload', printLimiter, upload.array('files', 10), printController.uploadPrintJob);
 
 /**
  * @route   POST /api/v1/print/from-drive
