@@ -1,15 +1,15 @@
 
 const multer = require('multer');
-const { Upload } = require('@aws-sdk/lib-storage');
+const multerS3 = require('multer-s3');
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
-const os = require('os');
 const fs = require('fs');
 const sanitize = require('sanitize-filename');
 const { s3, BUCKET } = require('../config/s3');
 const { QuotaExceededError, ValidationError } = require('./errorHandler');
 
-const MAX_FILE_SIZE = parseInt(process.env.MAX_FILE_SIZE) || 2 * 1024 * 1024 * 1024;
+// Lower max upload size to 500MB to prevent server OOM/Disk exhaustion
+const MAX_FILE_SIZE = parseInt(process.env.MAX_FILE_SIZE) || 500 * 1024 * 1024;
 
 // Pre-check quota using Content-Length
 const preCheckQuota = async (req, res, next) => {
@@ -36,11 +36,23 @@ const preCheckQuota = async (req, res, next) => {
   }
 };
 
-// Store files in OS temp directory
-const _multerDisk = multer({
-  storage: multer.diskStorage({
-    destination: os.tmpdir(),
-    filename: (req, file, cb) => cb(null, uuidv4() + path.extname(file.originalname))
+// Stream files directly to S3
+const _multerS3 = multer({
+  storage: multerS3({
+    s3: s3,
+    bucket: BUCKET,
+    contentType: multerS3.AUTO_CONTENT_TYPE,
+    metadata: function (req, file, cb) {
+      cb(null, {
+        originalName: sanitize(file.originalname),
+        userId: req.user.id,
+      });
+    },
+    key: function (req, file, cb) {
+      const sanitizedName = sanitize(file.originalname);
+      const ext = path.extname(sanitizedName);
+      cb(null, `uploads/${req.user.id}/${uuidv4()}${ext}`);
+    }
   }),
   limits: { fileSize: MAX_FILE_SIZE },
 });
@@ -65,62 +77,26 @@ const checkQuota = async (req, res, next) => {
 
     next();
   } catch (error) {
-    // Clean up temp files if quota fails
-    if (req.file && req.file.path) fs.unlink(req.file.path, () => {});
-    if (req.files?.length) req.files.forEach(f => fs.unlink(f.path, () => {}));
-    next(error);
-  }
-};
-
-// S3 uploader middleware
-const _uploadToS3 = async (req, res, next) => {
-  if (!req.file) return next();
-
-  try {
-    const sanitizedName = sanitize(req.file.originalname);
-    const ext = path.extname(sanitizedName);
-    const s3Key = `uploads/${req.user.id}/${uuidv4()}${ext}`;
-
-    const uploader = new Upload({
-      client: s3,
-      params: {
-        Bucket: BUCKET,
-        Key: s3Key,
-        Body: fs.createReadStream(req.file.path),
-        ContentType: req.file.mimetype,
-        Metadata: {
-          originalName: sanitizedName,
-          userId: req.user.id,
-          uploadedAt: new Date().toISOString(),
-        },
-      },
-    });
-
-    const result = await uploader.done();
-
-    req.file.key = s3Key;
-    req.file.bucket = BUCKET;
-    req.file.location = result.Location || `https://${BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`;
-
-    next();
-  } catch (err) {
-    console.error('=== S3 UPLOAD FAILED ===', err);
-    next(err);
-  } finally {
-    // Always clean up the temp file
-    if (req.file && req.file.path) {
-      fs.unlink(req.file.path, (err) => {
-        if (err) console.error('Failed to cleanup temp file:', err);
+    // Clean up S3 files if quota fails
+    const { DeleteObjectCommand } = require('@aws-sdk/client-s3');
+    
+    if (req.file && req.file.key) {
+      s3.send(new DeleteObjectCommand({ Bucket: BUCKET, Key: req.file.key })).catch(console.error);
+    }
+    if (req.files?.length) {
+      req.files.forEach(f => {
+        if (f.key) s3.send(new DeleteObjectCommand({ Bucket: BUCKET, Key: f.key })).catch(console.error);
       });
     }
+    next(error);
   }
 };
 
 // Combined upload middlewares
 const upload = {
-  single: (fieldName) => [preCheckQuota, _multerDisk.single(fieldName), checkQuota, _uploadToS3],
-  array: (fieldName, max) => [preCheckQuota, _multerDisk.array(fieldName, max), checkQuota, _uploadToS3],
-  fields: (fields) => [preCheckQuota, _multerDisk.fields(fields), checkQuota, _uploadToS3],
+  single: (fieldName) => [preCheckQuota, _multerS3.single(fieldName), checkQuota],
+  array: (fieldName, max) => [preCheckQuota, _multerS3.array(fieldName, max), checkQuota],
+  fields: (fields) => [preCheckQuota, _multerS3.fields(fields), checkQuota],
 };
 
 module.exports = {

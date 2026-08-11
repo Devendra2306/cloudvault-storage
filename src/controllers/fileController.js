@@ -529,13 +529,14 @@ const updateFile = async (req, res, next) => {
 const listFileTags = async (req, res, next) => {
   try {
     const userId = req.user.id;
-    const files = await prisma.file.findMany({
-      where: { userId, deletedAt: null },
-      select: { tags: true },
+    // Optimize: fetch unique tag strings instead of all files
+    const tagGroups = await prisma.file.groupBy({
+      by: ['tags'],
+      where: { userId, deletedAt: null, tags: { not: null } },
     });
     const tagSet = new Set();
-    files.forEach((file) => {
-      parseTagsField(file.tags).forEach((t) => tagSet.add(t));
+    tagGroups.forEach((group) => {
+      parseTagsField(group.tags).forEach((t) => tagSet.add(t));
     });
     res.json({
       success: true,

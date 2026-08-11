@@ -14,29 +14,42 @@ const listTrash = async (req, res, next) => {
     let files = [];
     let folders = [];
 
+    let totalFiles = 0;
+    let totalFolders = 0;
+
     if (type === 'all' || type === 'files') {
-      files = await prisma.file.findMany({
-        where: {
-          userId,
-          trashedAt: { not: null },
-          deletedAt: { not: null },
-        },
-        skip,
-        take: parseInt(limit),
-        orderBy: { trashedAt: 'desc' },
-      });
+      const whereFiles = {
+        userId,
+        trashedAt: { not: null },
+        deletedAt: { not: null },
+      };
+      
+      [files, totalFiles] = await Promise.all([
+        prisma.file.findMany({
+          where: whereFiles,
+          skip,
+          take: parseInt(limit),
+          orderBy: { trashedAt: 'desc' },
+        }),
+        prisma.file.count({ where: whereFiles })
+      ]);
     }
 
     if (type === 'all' || type === 'folders') {
-      folders = await prisma.folder.findMany({
-        where: {
-          userId,
-          deletedAt: { not: null },
-        },
-        skip,
-        take: parseInt(limit),
-        orderBy: { deletedAt: 'desc' },
-      });
+      const whereFolders = {
+        userId,
+        deletedAt: { not: null },
+      };
+      
+      [folders, totalFolders] = await Promise.all([
+        prisma.folder.findMany({
+          where: whereFolders,
+          skip,
+          take: parseInt(limit),
+          orderBy: { deletedAt: 'desc' },
+        }),
+        prisma.folder.count({ where: whereFolders })
+      ]);
     }
 
     res.json({
@@ -48,7 +61,7 @@ const listTrash = async (req, res, next) => {
         })),
         folders,
         pagination: {
-          total: files.length + folders.length,
+          total: totalFiles + totalFolders,
           page: parseInt(page),
           limit: parseInt(limit),
         },
@@ -86,12 +99,18 @@ const emptyTrash = async (req, res, next) => {
 
     // Delete files from S3 and database
     const { deleteFile: deleteS3File } = require('../config/s3');
-    for (const file of trashedFiles) {
-      try {
-        await deleteS3File(file.s3Key);
-      } catch (s3Error) {
-        console.error(`Failed to delete file from S3: ${file.s3Key}`, s3Error);
-      }
+    
+    // Batch S3 deletes to prevent overwhelming the connection pool
+    const batchSize = 10;
+    for (let i = 0; i < trashedFiles.length; i += batchSize) {
+      const batch = trashedFiles.slice(i, i + batchSize);
+      await Promise.all(
+        batch.map((file) => 
+          deleteS3File(file.s3Key).catch((s3Error) => {
+            console.error(`Failed to delete file from S3: ${file.s3Key}`, s3Error);
+          })
+        )
+      );
     }
 
     // Delete from database

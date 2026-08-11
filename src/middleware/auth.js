@@ -1,5 +1,6 @@
 const { verifyAccessToken } = require('../config/jwt');
 const prisma = require('../config/database');
+const { getCache, setCache } = require('../config/redis');
 
 const isDev = process.env.NODE_ENV !== 'production';
 
@@ -22,21 +23,40 @@ const authenticate = async (req, res, next) => {
 
     try {
       const decoded = verifyAccessToken(token);
+      const cacheKey = `user_auth_${decoded.userId}`;
+      let user = await getCache(cacheKey);
 
-      const user = await prisma.user.findUnique({
-        where: { id: decoded.userId },
-        select: {
-          id: true,
-          email: true,
-          fullName: true,
-          avatarUrl: true,
-          storageUsed: true,
-          storageQuota: true,
-          role: true,
-          isVerified: true,
-          isActive: true,
-        },
-      });
+      if (!user) {
+        user = await prisma.user.findUnique({
+          where: { id: decoded.userId },
+          select: {
+            id: true,
+            email: true,
+            fullName: true,
+            avatarUrl: true,
+            storageUsed: true,
+            storageQuota: true,
+            role: true,
+            isVerified: true,
+            isActive: true,
+          },
+        });
+        
+        if (user) {
+          // Cache for 60 seconds
+          // Convert BigInt to String for Redis JSON serialization
+          const userForCache = {
+            ...user,
+            storageUsed: user.storageUsed.toString(),
+            storageQuota: user.storageQuota.toString(),
+          };
+          await setCache(cacheKey, userForCache, 60);
+        }
+      } else {
+        // Convert strings back to BigInt
+        user.storageUsed = BigInt(user.storageUsed);
+        user.storageQuota = BigInt(user.storageQuota);
+      }
 
       if (!user) {
         return res.status(401).json({
@@ -89,20 +109,37 @@ const optionalAuthenticate = async (req, res, next) => {
 
     try {
       const decoded = verifyAccessToken(token);
-      const user = await prisma.user.findUnique({
-        where: { id: decoded.userId },
-        select: {
-          id: true,
-          email: true,
-          fullName: true,
-          avatarUrl: true,
-          storageUsed: true,
-          storageQuota: true,
-          role: true,
-          isVerified: true,
-          isActive: true,
-        },
-      });
+      const cacheKey = `user_auth_${decoded.userId}`;
+      let user = await getCache(cacheKey);
+
+      if (!user) {
+        user = await prisma.user.findUnique({
+          where: { id: decoded.userId },
+          select: {
+            id: true,
+            email: true,
+            fullName: true,
+            avatarUrl: true,
+            storageUsed: true,
+            storageQuota: true,
+            role: true,
+            isVerified: true,
+            isActive: true,
+          },
+        });
+        
+        if (user) {
+          const userForCache = {
+            ...user,
+            storageUsed: user.storageUsed.toString(),
+            storageQuota: user.storageQuota.toString(),
+          };
+          await setCache(cacheKey, userForCache, 60);
+        }
+      } else {
+        user.storageUsed = BigInt(user.storageUsed);
+        user.storageQuota = BigInt(user.storageQuota);
+      }
 
       if (user && user.isActive) {
         req.user = user;

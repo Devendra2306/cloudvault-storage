@@ -7,15 +7,22 @@ const {
   getStorageQuotaBytes,
 } = require('../services/userAccount');
 const { ValidationError, ForbiddenError } = require('../middleware/errorHandler');
+const { getCache, setCache, deleteCache } = require('../config/redis');
 
 const listPlans = async (req, res, next) => {
   try {
-    res.json({
-      success: true,
-      data: {
+    const cacheKey = 'billing_plans';
+    let data = await getCache(cacheKey);
+    if (!data) {
+      data = {
         plans: Object.values(PLANS),
         addons: STORAGE_ADDONS,
-      },
+      };
+      await setCache(cacheKey, data, 3600); // 1 hour TTL
+    }
+    res.json({
+      success: true,
+      data,
     });
   } catch (e) {
     next(e);
@@ -48,6 +55,10 @@ const changePlan = async (req, res, next) => {
       `You are now on the ${PLANS[planId].name} plan.`,
       { planId }
     );
+    
+    await deleteCache(`user_profile_${req.user.id}`);
+    await deleteCache(`user_auth_${req.user.id}`);
+    await deleteCache(`billing_summary_${req.user.id}`);
 
     res.json({ success: true, data: formatAccountUser(user) });
   } catch (e) {
@@ -81,6 +92,11 @@ const purchaseStorage = async (req, res, next) => {
     );
 
     const synced = await syncExpiredTrial(updated.id);
+    
+    await deleteCache(`user_profile_${req.user.id}`);
+    await deleteCache(`user_auth_${req.user.id}`);
+    await deleteCache(`billing_summary_${req.user.id}`);
+    
     res.json({
       success: true,
       data: formatAccountUser(synced),
@@ -93,17 +109,40 @@ const purchaseStorage = async (req, res, next) => {
 
 const getBillingSummary = async (req, res, next) => {
   try {
+    const cacheKey = `billing_summary_${req.user.id}`;
+    let data = await getCache(cacheKey);
+    
+    if (data) {
+      data.account.storageUsed = BigInt(data.account.storageUsed);
+      data.account.storageQuota = BigInt(data.account.storageQuota);
+      if (data.account.extraStorageBytes) data.account.extraStorageBytes = BigInt(data.account.extraStorageBytes);
+      return res.json({ success: true, data });
+    }
+
     const user = await syncExpiredTrial(req.user.id);
     const full = await prisma.user.findUnique({ where: { id: user.id } });
     const account = formatAccountUser(full);
 
+    data = {
+      account,
+      plans: Object.values(PLANS),
+      addons: STORAGE_ADDONS,
+    };
+    
+    const dataForCache = {
+      ...data,
+      account: {
+        ...account,
+        storageUsed: account.storageUsed.toString(),
+        storageQuota: account.storageQuota.toString(),
+        extraStorageBytes: account.extraStorageBytes ? account.extraStorageBytes.toString() : null,
+      }
+    };
+    await setCache(cacheKey, dataForCache, 60);
+
     res.json({
       success: true,
-      data: {
-        account,
-        plans: Object.values(PLANS),
-        addons: STORAGE_ADDONS,
-      },
+      data,
     });
   } catch (e) {
     next(e);

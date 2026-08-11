@@ -411,24 +411,26 @@ const moveFolder = async (req, res, next) => {
       },
     });
 
-    // Update paths of all subfolders (recursive)
-    // This is simplified - in production, you'd want a more efficient approach
-    const updateSubfolderPaths = async (parentId, basePath) => {
-      const subfolders = await prisma.folder.findMany({
-        where: { parentId },
+    // Update paths of all subfolders (descendants) efficiently
+    const descendants = await prisma.folder.findMany({
+      where: {
+        userId,
+        path: { startsWith: folder.path },
+        id: { not: id },
+      },
+    });
+
+    const updates = descendants.map((descendant) => {
+      const newSubPath = newPath + descendant.path.substring(folder.path.length);
+      return prisma.folder.update({
+        where: { id: descendant.id },
+        data: { path: newSubPath },
       });
+    });
 
-      for (const subfolder of subfolders) {
-        const newSubPath = `${basePath}${subfolder.name}/`;
-        await prisma.folder.update({
-          where: { id: subfolder.id },
-          data: { path: newSubPath },
-        });
-        await updateSubfolderPaths(subfolder.id, newSubPath);
-      }
-    };
-
-    await updateSubfolderPaths(id, newPath);
+    if (updates.length > 0) {
+      await prisma.$transaction(updates);
+    }
 
     res.json({
       success: true,

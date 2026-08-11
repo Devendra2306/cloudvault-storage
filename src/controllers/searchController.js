@@ -19,6 +19,8 @@ const search = async (req, res, next) => {
     const skip = (parseInt(page) - 1) * parseInt(limit);
     const searchQuery = q.trim();
 
+    let totalFiles = 0;
+    let totalFolders = 0;
     let files = [];
     let folders = [];
 
@@ -28,18 +30,19 @@ const search = async (req, res, next) => {
         userId,
         deletedAt: null,
         OR: [
-          { name: { contains: searchQuery, mode: 'insensitive' } },
-          { originalName: { contains: searchQuery, mode: 'insensitive' } },
+          { name: { contains: searchQuery } },
+          { originalName: { contains: searchQuery } },
         ],
         ...(mimeType && { mimeType }),
         ...(folderId && { folderId }),
       };
 
-      files = await prisma.file.findMany({
-        where: fileWhere,
-        skip,
-        take: parseInt(limit),
-        orderBy: { createdAt: 'desc' },
+      [files, totalFiles] = await Promise.all([
+        prisma.file.findMany({
+          where: fileWhere,
+          skip,
+          take: parseInt(limit),
+          orderBy: { createdAt: 'desc' },
         include: {
           folder: {
             select: {
@@ -48,7 +51,9 @@ const search = async (req, res, next) => {
             },
           },
         },
-      });
+        }),
+        prisma.file.count({ where: fileWhere }),
+      ]);
     }
 
     // Search folders
@@ -56,15 +61,18 @@ const search = async (req, res, next) => {
       const folderWhere = {
         userId,
         deletedAt: null,
-        name: { contains: searchQuery, mode: 'insensitive' },
+        name: { contains: searchQuery },
       };
 
-      folders = await prisma.folder.findMany({
-        where: folderWhere,
-        skip,
-        take: parseInt(limit),
-        orderBy: { createdAt: 'desc' },
-      });
+      [folders, totalFolders] = await Promise.all([
+        prisma.folder.findMany({
+          where: folderWhere,
+          skip,
+          take: parseInt(limit),
+          orderBy: { createdAt: 'desc' },
+        }),
+        prisma.folder.count({ where: folderWhere }),
+      ]);
     }
 
     // Add highlight to results
@@ -81,7 +89,7 @@ const search = async (req, res, next) => {
       highlight: highlightMatch(folder.name, searchQuery),
     }));
 
-    const total = filesWithHighlight.length + foldersWithHighlight.length;
+    const total = totalFiles + totalFolders;
 
     res.json({
       success: true,

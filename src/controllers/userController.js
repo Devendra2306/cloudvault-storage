@@ -2,12 +2,23 @@ const bcrypt = require('bcryptjs');
 const prisma = require('../config/database');
 const { formatAccountUser, syncExpiredTrial } = require('../services/userAccount');
 const { NotFoundError, ValidationError } = require('../middleware/errorHandler');
+const { getCache, setCache, deleteCache } = require('../config/redis');
 
 /**
  * Get current user profile
  */
 const getProfile = async (req, res, next) => {
   try {
+    const cacheKey = `user_profile_${req.user.id}`;
+    const cachedProfile = await getCache(cacheKey);
+    if (cachedProfile) {
+      // Restore BigInts
+      cachedProfile.storageUsed = BigInt(cachedProfile.storageUsed);
+      cachedProfile.storageQuota = BigInt(cachedProfile.storageQuota);
+      if (cachedProfile.extraStorageBytes) cachedProfile.extraStorageBytes = BigInt(cachedProfile.extraStorageBytes);
+      return res.json({ success: true, data: cachedProfile });
+    }
+
     const user = await prisma.user.findUnique({
       where: { id: req.user.id },
       select: {
@@ -32,9 +43,20 @@ const getProfile = async (req, res, next) => {
     const synced = await syncExpiredTrial(user.id);
     const full = await prisma.user.findUnique({ where: { id: synced.id } });
 
+    const accountUser = formatAccountUser(full);
+    
+    // Cache for 60 seconds
+    const profileToCache = {
+      ...accountUser,
+      storageUsed: accountUser.storageUsed.toString(),
+      storageQuota: accountUser.storageQuota.toString(),
+      extraStorageBytes: accountUser.extraStorageBytes ? accountUser.extraStorageBytes.toString() : null,
+    };
+    await setCache(cacheKey, profileToCache, 60);
+
     res.json({
       success: true,
-      data: formatAccountUser(full),
+      data: accountUser,
     });
   } catch (error) {
     next(error);
@@ -66,6 +88,9 @@ const updateProfile = async (req, res, next) => {
         updatedAt: true,
       },
     });
+
+    await deleteCache(`user_profile_${req.user.id}`);
+    await deleteCache(`user_auth_${req.user.id}`);
 
     res.json({
       success: true,
@@ -110,6 +135,9 @@ const changePassword = async (req, res, next) => {
 
     // Revoke all sessions except current
     // (Optional - you might want to keep the current session)
+
+    await deleteCache(`user_profile_${req.user.id}`);
+    await deleteCache(`user_auth_${req.user.id}`);
 
     res.json({
       success: true,

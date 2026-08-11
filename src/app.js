@@ -3,7 +3,8 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-// const { createRedisClient } = require('./config/redis'); // Disabled for testing
+const compression = require('compression');
+const { createRedisClient } = require('./config/redis');
 const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
 
 // Import routes
@@ -83,6 +84,9 @@ app.use(cors({
 // Global OPTIONS handler for CORS preflight (must be before rate limiter)
 app.options('*', cors());
 
+// Compression
+app.use(compression());
+
 // Request size limits
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ limit: '1mb', extended: true }));
@@ -146,10 +150,10 @@ app.use(notFoundHandler);
 // Global error handler
 app.use(errorHandler);
 
-// Initialize Redis (optional, app can work without it) - Disabled for testing
-// createRedisClient().catch((err) => {
-//   console.warn('Redis initialization failed, app will work without caching:', err.message);
-// });
+// Initialize Redis
+createRedisClient().catch((err) => {
+  console.warn('Redis initialization failed, app will work without caching:', err.message);
+});
 
 // Start background job for expired print jobs cleanup (runs every hour)
 const { cleanupExpiredJobs } = require('./controllers/printController');
