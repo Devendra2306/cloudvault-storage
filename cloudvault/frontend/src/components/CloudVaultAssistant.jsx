@@ -5,7 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import './CloudVaultAssistant.css';
 import { apiFetch } from '../lib/api';
 
-export default function CloudVaultAssistant() {
+export default function CloudVaultAssistant({ elevated = false }) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
     { role: 'assistant', content: 'Hi there! I am CloudVault AI. How can I assist you with your storage today?' }
@@ -57,31 +57,15 @@ export default function CloudVaultAssistant() {
   };
 
   return (
-    <div className="cva-widget-container">
-      <AnimatePresence>
-        {!isOpen && (
-          <motion.button
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            exit={{ scale: 0 }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setIsOpen(true)}
-            className="cva-toggle-btn"
-          >
-            <Bot size={28} />
-            <span className="cva-status-dot"></span>
-          </motion.button>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {isOpen && (
+    <div className={`cva-widget-container${elevated ? ' cva-widget-container--elevated' : ''}`}>
+      <AnimatePresence mode="wait">
+        {isOpen ? (
           <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            key="window"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 12 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
             className="cva-window"
           >
             {/* Header */}
@@ -97,7 +81,7 @@ export default function CloudVaultAssistant() {
                   </div>
                 </div>
               </div>
-              <button className="cva-close-btn" onClick={() => setIsOpen(false)}>
+              <button type="button" className="cva-close-btn" onClick={() => setIsOpen(false)} aria-label="Close assistant">
                 <X size={18} />
               </button>
             </div>
@@ -163,6 +147,21 @@ export default function CloudVaultAssistant() {
               </form>
             </div>
           </motion.div>
+        ) : (
+          <motion.button
+            key="toggle"
+            type="button"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 8 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            onClick={() => setIsOpen(true)}
+            className="cva-toggle-btn"
+            aria-label="Open CloudVault AI"
+          >
+            <Bot size={24} />
+            <span className="cva-status-dot" aria-hidden="true" />
+          </motion.button>
         )}
       </AnimatePresence>
     </div>

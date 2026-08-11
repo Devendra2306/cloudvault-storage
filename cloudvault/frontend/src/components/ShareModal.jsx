@@ -182,7 +182,7 @@ export default function ShareModal({ file, onShare, onCancel }) {
   };
 
   return (
-    <div className="share-modal-backdrop" onClick={onCancel} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', zIndex: 1000 }}>
+    <div className="share-modal-backdrop" onClick={onCancel}>
       <div onClick={(e) => e.stopPropagation()} style={{ background: 'var(--surface)', borderRadius: 24, width: '100%', maxWidth: 500, overflow: 'hidden', boxShadow: '0 24px 80px rgba(0,0,0,0.4)', border: '1px solid var(--border)' }}>
         
         {/* Header */}

@@ -314,26 +314,20 @@ function DriveHero({ username, stats, storagePercent, onUpload, onNewFolder }) {
   );
 }
 
-function AccountChrome({ children, onNavigate, onSignOut, onUpgrade }) {
+function AccountChrome({ children, onNavigate, onSignOut, onUpgrade, transferActive = false }) {
   const { account, notifications, unreadCount, markAllRead } = useAccount();
   return (
     <>
       <VerifyEmailBanner account={account} onOpenSettings={() => onNavigate("settings")} />
       <TrialBanner account={account} onUpgrade={onUpgrade} />
       <StorageWarning account={account} onManage={() => onNavigate("billing")} />
-      <header className="account-header mega-top-bar" style={{
-        position: "sticky", top: 0, zIndex: 90,
-        borderBottom: "1px solid var(--border)",
-        background: "var(--bg-sidebar)",
-        backdropFilter: "blur(16px)", display: "flex", alignItems: "center",
-        justifyContent: "space-between", gap: 16, padding: "0 24px 0 280px",
-      }}>
+      <header className="account-header mega-top-bar">
         <NotificationBell notifications={notifications} unreadCount={unreadCount} onMarkAllRead={markAllRead} />
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <CloudVaultAssistant />
           <ProfileMenu account={account} onNavigate={onNavigate} onSignOut={onSignOut} />
         </div>
       </header>
+      <CloudVaultAssistant elevated={transferActive} />
       {children}
     </>
   );
@@ -387,10 +381,10 @@ function CustomSelect({ value, onChange, options, style }) {
       </button>
       {open && (
         <>
-          <div onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 90 }} />
-          <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, minWidth: "100%", background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 12, boxShadow: "0 12px 40px rgba(0,0,0,0.35)", zIndex: 91, overflow: "hidden", animation: "fadeIn 0.15s ease" }}>
+          <div onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 150 }} />
+          <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, minWidth: "100%", background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 12, boxShadow: "0 12px 40px rgba(0,0,0,0.35)", zIndex: 151, overflow: "hidden", animation: "fadeIn 0.15s ease" }}>
             {options.map(o => (
-              <button key={o.value} onClick={() => { onChange(o.value); setOpen(false); }} style={{ display: "block", width: "100%", padding: "10px 14px", border: "none", background: o.value === value ? "rgba(59,130,246,0.12)" : "transparent", color: "var(--text)", fontFamily: "var(--font)", fontSize: 13, fontWeight: o.value === value ? 600 : 500, cursor: "pointer", textAlign: "left", transition: "background 0.15s", whiteSpace: "nowrap" }} onMouseEnter={e => { if (o.value !== value) e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }} onMouseLeave={e => { e.currentTarget.style.background = o.value === value ? "rgba(59,130,246,0.12)" : "transparent"; }}>
+              <button key={o.value} type="button" onClick={() => { onChange(o.value); setOpen(false); }} style={{ display: "block", width: "100%", padding: "10px 14px", border: "none", background: o.value === value ? "rgba(59,130,246,0.12)" : "transparent", color: "var(--text)", fontFamily: "var(--font)", fontSize: 13, fontWeight: o.value === value ? 600 : 500, cursor: "pointer", textAlign: "left", transition: "background 0.15s", whiteSpace: "nowrap" }} onMouseEnter={e => { if (o.value !== value) e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }} onMouseLeave={e => { e.currentTarget.style.background = o.value === value ? "rgba(59,130,246,0.12)" : "transparent"; }}>
                 {o.label}{o.value === value && <span style={{ marginLeft: 8, color: "var(--accent-blue)" }}>✓</span>}
               </button>
             ))}
@@ -1035,6 +1029,7 @@ export default function CloudVault() {
   return (
     <AccountProvider token={token}>
     <AccountChrome
+      transferActive={downloadJobs.length > 0 || downloadHistory.length > 0}
       onNavigate={(p) => { setAppPage(null); handleProfileNav(p); }}
       onSignOut={logout}
       onUpgrade={() => { setAppPage("billing"); setActiveView("drive"); }}
@@ -1043,13 +1038,7 @@ export default function CloudVault() {
       <style>{GLOBAL_STYLES}</style>
 
       {/* Mobile hamburger */}
-      <button type="button" className="mobile-menu-button" aria-label="Open navigation menu" aria-expanded={sidebarOpen} onClick={() => setSidebarOpen(v => !v)} style={{
-        display: "none", position: "fixed", top: 16, left: 16, zIndex: 200,
-        background: "var(--bg-card)", border: "1.5px solid var(--border)", borderRadius: 10,
-        width: 40, height: 40, alignItems: "center", justifyContent: "center",
-        cursor: "pointer", color: "var(--text)", fontSize: 20,
-        ...(isMobile ? { display: "flex" } : {})
-      }}>☰</button>
+      <button type="button" className="mobile-menu-button" aria-label="Open navigation menu" aria-expanded={sidebarOpen} onClick={() => setSidebarOpen(v => !v)}>☰</button>
 
       {/* Sidebar Overlay for mobile */}
       {sidebarOpen && isMobile && (
@@ -1203,20 +1192,20 @@ export default function CloudVault() {
           onNewFolder={() => setShowNewFolder(true)}
         />
 
-        <div className="drive-toolbar" style={{ flexDirection: "column", alignItems: "stretch", gap: 16 }}>
-          <div className="mega-search-bar drive-search" style={{ position: "relative" }}>
+        <div className="drive-toolbar">
+          <div className="mega-search-bar drive-search" style={{ position: "relative", flex: 1, minWidth: 0 }}>
             <span className="search-icon" aria-hidden="true" style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)", pointerEvents: "none" }}>🔍</span>
             <input
               className="input-field search-input-animated"
               placeholder={`Search Cloud drive...`} value={search}
               onChange={e => setSearch(e.target.value)}
-              style={{ width: "100%", padding: "12px 60px 12px 44px", borderRadius: 999, background: "var(--bg-card)", border: "1px solid var(--border)", transition: "all .2s ease" }}
+              style={{ width: "100%", padding: "12px 60px 12px 44px", borderRadius: 999, background: "var(--bg-card)", border: "1px solid var(--border)", transition: "border-color .2s ease, box-shadow .2s ease" }}
             />
             <div style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "rgba(255,255,255,.08)", padding: "2px 6px", borderRadius: 6, fontSize: 11, fontWeight: 700, color: "var(--text-muted)", pointerEvents: "none", border: "1px solid var(--border)" }}>
               ⌘K
             </div>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          <div className="drive-toolbar-row">
           <button
             type="button"
             className="icon-btn"

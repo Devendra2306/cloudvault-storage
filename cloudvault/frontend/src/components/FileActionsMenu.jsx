@@ -97,7 +97,7 @@ const menu = {
   border: "1px solid var(--border)",
   borderRadius: 14,
   boxShadow: "var(--shadow)",
-  zIndex: 50,
+  zIndex: 160,
   overflow: "hidden",
   padding: 6,
   animation: "floatIn .16s ease",
