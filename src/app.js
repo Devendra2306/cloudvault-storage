@@ -24,6 +24,7 @@ const publicRoutes = require('./routes/publicRoutes');
 const accountRoutes = require('./routes/accountRoutes');
 const billingRoutes = require('./routes/billingRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
+const chatRoutes = require('./routes/chatRoutes');
 const app = express();
 
 // Security headers
@@ -129,6 +130,7 @@ app.use('/api/v1/public', publicRoutes);
 app.use('/api/v1/account', accountRoutes);
 app.use('/api/v1/billing', billingRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
+app.use('/api/v1/chat', chatRoutes);
 app.use('/api/v1', shareRoutes);
 console.log('All API routes registered successfully');
 
