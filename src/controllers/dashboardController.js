@@ -76,8 +76,6 @@ const getDashboard = async (req, res, next) => {
     const storageQuota = Number(user.storageQuota);
     const storagePercentage = (storageUsed / storageQuota) * 100;
 
-    res.json({
-      success: true,
     const dataPayload = {
       storage: {
         used: storageUsed,
