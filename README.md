@@ -1,224 +1,154 @@
-# CloudVault
+<div align="center">
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&height=200&section=header&text=CloudVault%20Storage&fontSize=70&fontAlignY=35&animation=twinkling&fontColor=ffffff" />
+  
+  <a href="https://cloudvault.co.in">
+    <img src="https://readme-typing-svg.herokuapp.com/?lines=Secure+Cloud+Storage;Infinite+Uploads;Share+With+Confidence&center=true&width=500&height=50&color=00BFFF&vCenter=true&size=22" alt="Typing SVG" />
+  </a>
+  <br />
+  
+  [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
+  [![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
+  [![Prisma](https://img.shields.io/badge/Prisma-3982CE?style=for-the-badge&logo=Prisma&logoColor=white)](https://www.prisma.io/)
+  [![AWS](https://img.shields.io/badge/AWS_S3-232F3E?style=for-the-badge&logo=amazon-aws&logoColor=white)](https://aws.amazon.com/s3/)
+  [![Render](https://img.shields.io/badge/Render-%46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://render.com/)
 
-CloudVault is a secure cloud storage web application for uploading, organizing, previewing, downloading, and sharing files. It provides a drive-style interface with folders, recent files, trash recovery, storage tracking, account controls, authentication, and security checks.
+  <p align="center">
+    <b>Your private, scalable, and ultra-secure file management ecosystem.</b><br />
+    Effortlessly upload, organize, and share your files with infinite scale and robust DoS protection.
+  </p>
+</div>
 
-## Project Overview
+---
 
-CloudVault is built as a full-stack application with a React frontend and an Express backend. Users can create an account, sign in, manage files and folders, preview supported files, share content, restore deleted items, monitor storage usage, and manage profile/security settings.
+<details open>
+<summary><b>✨ Interactive Table of Contents</b> <i>(Click to toggle)</i></summary>
 
-The project includes:
+- [Project Overview](#-project-overview)
+- [Stunning Features](#-stunning-features)
+- [Architecture & Tech Stack](#-architecture--tech-stack)
+- [Interactive Guide / Installation](#-interactive-guide--installation)
+- [Security First](#-security-first)
 
-- User registration and login
-- JWT access and refresh token authentication
-- Optional Firebase/social authentication support
-- Cloudflare Turnstile protection for auth forms
-- Email verification and password reset support
-- File upload, download, preview, rename, move, copy, delete, restore, and permanent delete
-- Folder creation, navigation, move, restore, and delete
-- Recent, starred, shared, trash, activity, billing, storage, profile, settings, and security views
-- Admin-facing controls
-- Storage quota and file size controls
-- S3-compatible object storage integration
-- Prisma-based database access
+</details>
 
-## Tech Stack
+---
 
-### Frontend
+## 🚀 Project Overview
 
-- React 18
-- Vite
-- Custom CSS through shared global styles
-- Firebase client SDK support
-- Cloudflare Turnstile widget
+CloudVault is built as a highly robust full-stack application. Our vision is to provide a "Google Drive-style" interface that is clean, intuitive, and blisteringly fast. 
 
-### Backend
+Users can create an account, manage massive files directly via AWS S3 streaming, share content securely with magic passwords or print codes, and track storage limits in real-time.
 
-- Node.js
-- Express.js
-- Prisma ORM
-- JWT authentication
-- bcrypt password hashing
-- Joi and express-validator validation
-- Multer upload handling
-- Winston logging
-- Helmet, CORS, and rate limiting
+---
 
-### Storage and Services
+## 💎 Stunning Features
 
-- AWS S3 or S3-compatible object storage
-- Cloudflare Turnstile
-- Firebase Authentication support
-- Resend email support
-- Redis support
+<table>
+  <tr>
+    <td align="center"><b>♾️ Infinite File Uploads</b></td>
+    <td align="center"><b>🖨️ "Quick Print" Kiosk</b></td>
+    <td align="center"><b>🎨 Theming Engine</b></td>
+  </tr>
+  <tr>
+    <td>Stream massive files directly to AWS S3 securely, bypassing local memory bottlenecks. No file size limits!</td>
+    <td>Generate a temporary 4-digit code. Go to a print shop, punch it in, and securely download files! Auto-wipes in 24 hrs.</td>
+    <td>Premium UI dynamically switching between Light, Dark, Midnight, and Purple themes.</td>
+  </tr>
+</table>
 
-## Project Structure
+<details>
+<summary><b>👉 View More Features</b></summary>
+<br>
 
-```text
-PROJECT 4.0/
-  cloudvault/
-    frontend/
-      public/
-      src/
-        components/
-        context/
-        hooks/
-        lib/
-        pages/
-        styles/
-      index.html
-      package.json
-      vite.config.js
-  prisma/
-    migrations/
-    schema.prisma
-    seed.js
-  scripts/
-  src/
-    config/
-    controllers/
-    middleware/
-    routes/
-    services/
-    utils/
-    app.js
-  package.json
-  server.js
-```
+- **25GB User Drives**: Generous storage limits with live quota tracking.
+- **Smart Security**: Cloudflare Turnstile bot protection & magic OTP links.
+- **Batched Deletions**: Deleting folders batches S3 object purges automatically.
+- **Orphan Cleanup**: Auto-recovery mechanisms purge ghost files if DB writes fail.
 
-## Environment Configuration
+</details>
 
-The backend reads configuration from the root `.env` file. The frontend reads Vite variables from `cloudvault/frontend/.env` and local development overrides from `cloudvault/frontend/.env.local`.
+---
 
-Required backend configuration includes:
+## 🛠️ Architecture & Tech Stack
 
-- `DATABASE_URL`
-- `JWT_SECRET`
-- `JWT_REFRESH_SECRET`
-- `AWS_ACCESS_KEY_ID`
-- `AWS_SECRET_ACCESS_KEY`
-- `AWS_REGION`
-- `AWS_S3_BUCKET_NAME`
-- `ALLOWED_ORIGINS`
-- `APP_URL`
-- `RESEND_API_KEY`
-- `EMAIL_FROM`
-- `TURNSTILE_SECRET_KEY`
+| Frontend ⚛️ | Backend 🟢 | Infrastructure ☁️ |
+| :--- | :--- | :--- |
+| **React 18 & Vite** | **Node.js & Express** | **AWS S3** |
+| Tailwind CSS | Prisma ORM | Render (Backend) |
+| Context API | Redis (Caching) | Firebase Hosting |
+| Cloudflare Turnstile | bcrypt, JWT auth | GitHub Actions |
 
-Required frontend configuration includes:
+---
 
-- `VITE_API_BASE_URL`
-- `VITE_TURNSTILE_SITE_KEY`
-- Firebase `VITE_FIREBASE_*` values when Firebase auth is enabled
+## 🧑‍💻 Interactive Guide / Installation
 
-For local development, Cloudflare Turnstile can use Cloudflare's official test keys. Production must use the real site key and secret key configured for the deployed hostname.
+Follow these steps to launch the system locally! Click each step to expand:
 
-## Installation
-
-Install backend dependencies:
+<details>
+<summary><b>Step 1: Clone & Install Dependencies</b></summary>
 
 ```bash
+# Backend dependencies
 npm install
-```
 
-Install frontend dependencies:
-
-```bash
+# Frontend dependencies
 npm install --prefix cloudvault/frontend
 ```
+</details>
 
-Generate the Prisma client:
+<details>
+<summary><b>Step 2: Environment Variables</b></summary>
+
+Configure your `.env` securely!
+
+**Backend (`/.env`):**
+```ini
+DATABASE_URL="sqlite:./dev.db" # Or Postgres URL
+JWT_SECRET="your_secret"
+AWS_S3_BUCKET_NAME="cloudvault"
+# ...
+```
+
+**Frontend (`cloudvault/frontend/.env`):**
+```ini
+VITE_API_BASE_URL="http://localhost:3001/api/v1"
+```
+</details>
+
+<details>
+<summary><b>Step 3: Database setup</b></summary>
 
 ```bash
+# Generate Prisma Client & Migrate
 npm run prisma:generate
-```
-
-Apply database migrations:
-
-```bash
 npm run prisma:migrate
-```
-
-Optional seed:
-
-```bash
 npm run prisma:seed
 ```
+</details>
 
-## Running the Project
-
-Start the backend:
+<details>
+<summary><b>Step 4: Launch!</b></summary>
 
 ```bash
+# Start backend
 npm run dev
+
+# Start frontend (in a new terminal)
+npm run dev:frontend
 ```
+</details>
 
-Start the frontend:
+---
 
-```bash
-npm run dev --prefix cloudvault/frontend
-```
+## 🛡️ Security First
 
-Default local services:
+CloudVault leverages industry-grade protection:
+- **Zero-Trust**: JWT access/refresh token rotation.
+- **DoS Protection**: Immediately reads `Content-Length` headers, dropping malicious heavy payloads instantly to save bandwidth.
+- **Orphan Control**: If a database transaction crashes mid-upload, a background process immediately sends a `DeleteObjectCommand` to S3 so you never pay for ghost files.
+- **Rate Limiting & Helmet**: Securing all exposed APIs automatically.
 
-- Backend API: `http://localhost:3001/api/v1`
-- Frontend: `http://localhost:3000`
-
-## Build
-
-Build the frontend:
-
-```bash
-npm run build --prefix cloudvault/frontend
-```
-
-Start the backend in production mode:
-
-```bash
-npm start
-```
-
-## API Areas
-
-Main backend route groups:
-
-- `/api/v1/auth`
-- `/api/v1/account`
-- `/api/v1/admin`
-- `/api/v1/billing`
-- `/api/v1/dashboard`
-- `/api/v1/files`
-- `/api/v1/folders`
-- `/api/v1/notifications`
-- `/api/v1/public`
-- `/api/v1/recent`
-- `/api/v1/search`
-- `/api/v1/share`
-- `/api/v1/storage`
-- `/api/v1/trash`
-- `/api/v1/users`
-
-## Security
-
-CloudVault uses:
-
-- JWT access and refresh tokens
-- bcrypt password hashing
-- Cloudflare Turnstile for auth form protection
-- Rate limiting
-- CORS allowlist
-- Helmet security headers
-- Request validation
-- File size limits
-- Storage quota checks
-- Prisma ORM query protection
-
-## Database
-
-The Prisma schema defines users, sessions, files, folders, shares, activity, billing/trial data, verification tokens, and storage-related records. Migrations are stored in `prisma/migrations`.
-
-## Notes
-
-- Keep real secrets out of commits.
-- Use production Cloudflare Turnstile keys only on approved production hostnames.
-- Use S3 bucket policies and CORS settings that match the deployed API and frontend domains.
-- Run migrations before deploying backend changes that depend on schema updates.
+---
+<div align="center">
+  <i>Built with ❤️ by the CloudVault Team.</i>
+</div>
