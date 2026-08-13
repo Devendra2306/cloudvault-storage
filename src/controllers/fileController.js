@@ -3,6 +3,7 @@ const { getSignedFileUrl, getObjectStream, deleteFile: deleteS3File } = require(
 const { resolveMimeType } = require('../utils/mime');
 const { normalizeTags, parseTagsField } = require('../utils/tags');
 const { NotFoundError, ValidationError, ForbiddenError, QuotaExceededError } = require('../middleware/errorHandler');
+const { getCache, setCache, deleteCache, deleteCachePattern } = require('../config/redis');
 const {
   getStorageQuotaBytes,
   syncExpiredTrial,
@@ -37,8 +38,8 @@ const uploadFile = async (req, res, next) => {
       throw new ValidationError('No file provided');
     }
 
-    // Check storage quota
-    let user = await syncExpiredTrial(userId);
+    // Use quota data from middleware if available, otherwise check fresh
+    let user = req._quotaUser || await syncExpiredTrial(userId);
     const quota = getStorageQuotaBytes(user);
     if (user.storageUsed + BigInt(file.size) > quota) {
       throw new QuotaExceededError('Storage quota exceeded');
@@ -61,66 +62,43 @@ const uploadFile = async (req, res, next) => {
 
     const resolvedMime = resolveMimeType(file.mimetype, file.originalname);
 
-    // Create file record
-    const newFile = await prisma.file.create({
-      data: {
-        userId,
-        folderId,
-        name: file.originalname,
-        originalName: file.originalname,
-        mimeType: resolvedMime,
-        size: BigInt(file.size),
-        s3Key: file.key,
-        s3Bucket: file.bucket,
-        s3Location: file.location,
-        isPublic: isPublic === 'true' || isPublic === true,
-      },
-    });
-
-    // Update user storage used
-    await prisma.user.update({
-      where: { id: userId },
-      data: {
-        storageUsed: {
-          increment: BigInt(file.size),
+    // Create file record and update storage in a single transaction
+    const [newFile] = await prisma.$transaction([
+      prisma.file.create({
+        data: {
+          userId,
+          folderId,
+          name: file.originalname,
+          originalName: file.originalname,
+          mimeType: resolvedMime,
+          size: BigInt(file.size),
+          s3Key: file.key,
+          s3Bucket: file.bucket,
+          s3Location: file.location,
+          isPublic: isPublic === 'true' || isPublic === true,
         },
-      },
-    });
+      }),
+      prisma.user.update({
+        where: { id: userId },
+        data: {
+          storageUsed: {
+            increment: BigInt(file.size),
+          },
+        },
+      }),
+    ]);
 
-    user = await prisma.user.findUnique({ where: { id: userId } });
-    const account = formatAccountUser(user);
-
-    await createNotification(
-      userId,
-      'upload_complete',
-      'Upload complete',
-      `"${file.originalname}" was uploaded successfully.`,
-      { fileId: newFile.id }
-    );
-    await logActivity(userId, 'file_uploaded', 'file', newFile.id, newFile.name, req);
-
-    if (account.storageWarning === 'warning') {
-      await createNotification(userId, 'storage_warning', 'Storage filling up', 'You have used over 80% of your storage.');
-    } else if (account.storageWarning === 'critical') {
-      await createNotification(userId, 'storage_warning', 'Storage almost full', 'You have used over 95% of your storage.');
-    }
-
-    if (account.trialDaysLeft > 0 && account.trialDaysLeft <= 3) {
-      await createNotification(
-        userId,
-        'trial_expiring',
-        'Trial ending soon',
-        `${account.trialDaysLeft} day(s) left on your Pro trial.`
-      );
-    }
-
-    // Generate signed URL
-    const signedUrl = await getSignedFileUrl(newFile.s3Key);
+    // Generate signed URL in parallel with fetching updated user
+    const [signedUrl, updatedUser] = await Promise.all([
+      getSignedFileUrl(newFile.s3Key),
+      prisma.user.findUnique({ where: { id: userId } }),
+    ]);
 
     if (!signedUrl) {
       throw new Error('Failed to generate signed URL for file access');
     }
 
+    // Send response immediately — don't wait for notifications
     res.status(201).json({
       success: true,
       data: {
@@ -137,6 +115,27 @@ const uploadFile = async (req, res, next) => {
         createdAt: newFile.createdAt,
       },
     });
+
+    // Fire-and-forget: notifications, activity log, cache invalidation
+    const account = formatAccountUser(updatedUser);
+    const bgTasks = [
+      createNotification(userId, 'upload_complete', 'Upload complete', `"${file.originalname}" was uploaded successfully.`, { fileId: newFile.id }),
+      logActivity(userId, 'file_uploaded', 'file', newFile.id, newFile.name, req),
+      deleteCachePattern(`files_${userId}_*`),
+      deleteCache(`dashboard_${userId}`),
+    ];
+
+    if (account.storageWarning === 'warning') {
+      bgTasks.push(createNotification(userId, 'storage_warning', 'Storage filling up', 'You have used over 80% of your storage.'));
+    } else if (account.storageWarning === 'critical') {
+      bgTasks.push(createNotification(userId, 'storage_warning', 'Storage almost full', 'You have used over 95% of your storage.'));
+    }
+
+    if (account.trialDaysLeft > 0 && account.trialDaysLeft <= 3) {
+      bgTasks.push(createNotification(userId, 'trial_expiring', 'Trial ending soon', `${account.trialDaysLeft} day(s) left on your Pro trial.`));
+    }
+
+    Promise.all(bgTasks).catch((err) => console.error('Background task error:', err.message));
   } catch (error) {
     console.error('UPLOAD ERROR:', error.name, '-', error.message);
     
@@ -227,6 +226,13 @@ const listFiles = async (req, res, next) => {
       [sortBy]: sortOrder,
     };
 
+    // Try Redis cache for file listings
+    const cacheKey = `files_${userId}_${JSON.stringify({ folderId, mimeType, isStarred, isPublic, trashed, search, tag, sortBy, sortOrder, page, limit })}`;
+    const cached = await getCache(cacheKey);
+    if (cached) {
+      return res.json({ success: true, data: cached });
+    }
+
     const [files, total] = await Promise.all([
       prisma.file.findMany({
         where,
@@ -260,17 +266,22 @@ const listFiles = async (req, res, next) => {
       );
     }
 
+    const responseData = {
+      files: filesWithFolderName,
+      pagination: {
+        total,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        totalPages: Math.ceil(total / parseInt(limit)),
+      },
+    };
+
+    // Cache for 15 seconds (auto-invalidated on upload/delete/move)
+    setCache(cacheKey, responseData, 15).catch(() => {});
+
     res.json({
       success: true,
-      data: {
-        files: filesWithFolderName,
-        pagination: {
-          total,
-          page: parseInt(page),
-          limit: parseInt(limit),
-          totalPages: Math.ceil(total / parseInt(limit)),
-        },
-      },
+      data: responseData,
     });
   } catch (error) {
     next(error);
@@ -317,11 +328,11 @@ const getFile = async (req, res, next) => {
       }
     }
 
-    // Update last accessed
-    await prisma.file.update({
+    // Fire-and-forget: update last accessed (non-blocking)
+    prisma.file.update({
       where: { id },
       data: { lastAccessedAt: new Date() },
-    });
+    }).catch(() => {});
 
     res.json({
       success: true,
@@ -361,16 +372,18 @@ const downloadFile = async (req, res, next) => {
     }
     res.setHeader('Cache-Control', 'private, max-age=3600');
 
-    await prisma.file.update({
-      where: { id },
-      data: { downloadCount: { increment: 1 }, lastAccessedAt: new Date() },
-    });
-    await logActivity(userId, 'file_downloaded', 'file', id, file.name, req);
-    if (file.userId !== userId) {
-      await createNotification(file.userId, 'shared_file_downloaded', 'Shared file downloaded', `"${file.name}" was downloaded.`, { fileId: id, downloadedBy: userId });
-    }
-
+    // Start streaming immediately — fire-and-forget analytics
     s3Object.Body.pipe(res);
+
+    // Non-blocking analytics
+    const bgTasks = [
+      prisma.file.update({ where: { id }, data: { downloadCount: { increment: 1 }, lastAccessedAt: new Date() } }),
+      logActivity(userId, 'file_downloaded', 'file', id, file.name, req),
+    ];
+    if (file.userId !== userId) {
+      bgTasks.push(createNotification(file.userId, 'shared_file_downloaded', 'Shared file downloaded', `"${file.name}" was downloaded.`, { fileId: id, downloadedBy: userId }));
+    }
+    Promise.all(bgTasks).catch((err) => console.error('Download analytics error:', err.message));
   } catch (error) {
     next(error);
   }
@@ -400,13 +413,13 @@ const previewFile = async (req, res, next) => {
     }
     res.setHeader('Cache-Control', 'private, max-age=1800');
 
-    await prisma.file.update({
-      where: { id },
-      data: { viewCount: { increment: 1 }, lastAccessedAt: new Date() },
-    });
-    await logActivity(userId, 'file_previewed', 'file', id, file.name, req);
-
+    // Start streaming immediately — fire-and-forget analytics
     s3Object.Body.pipe(res);
+
+    Promise.all([
+      prisma.file.update({ where: { id }, data: { viewCount: { increment: 1 }, lastAccessedAt: new Date() } }),
+      logActivity(userId, 'file_previewed', 'file', id, file.name, req),
+    ]).catch((err) => console.error('Preview analytics error:', err.message));
   } catch (error) {
     next(error);
   }
@@ -459,12 +472,11 @@ const getDownloadUrl = async (req, res, next) => {
       responseContentDisposition: disposition,
     });
 
-    // Increment download count
-    await prisma.file.update({
-      where: { id },
-      data: { downloadCount: { increment: 1 } },
-    });
-    await logActivity(userId, 'download_url_created', 'file', id, file.name, req);
+    // Fire-and-forget: increment download count + log
+    Promise.all([
+      prisma.file.update({ where: { id }, data: { downloadCount: { increment: 1 } } }),
+      logActivity(userId, 'download_url_created', 'file', id, file.name, req),
+    ]).catch((err) => console.error('Download URL analytics error:', err.message));
 
     res.json({
       success: true,
@@ -508,7 +520,11 @@ const updateFile = async (req, res, next) => {
         ...(tags !== undefined && { tags: normalizeTags(tags) }),
       },
     });
-    await logActivity(userId, 'file_updated', 'file', id, updatedFile.name, req);
+    // Fire-and-forget: activity log + cache invalidation
+    Promise.all([
+      logActivity(userId, 'file_updated', 'file', id, updatedFile.name, req),
+      deleteCachePattern(`files_${userId}_*`),
+    ]).catch(() => {});
 
     res.json({
       success: true,
@@ -587,7 +603,11 @@ const moveFile = async (req, res, next) => {
       where: { id },
       data: { folderId: targetFolderId || null },
     });
-    await logActivity(userId, 'file_moved', 'file', id, file.name, req);
+    // Fire-and-forget: activity log + cache invalidation
+    Promise.all([
+      logActivity(userId, 'file_moved', 'file', id, file.name, req),
+      deleteCachePattern(`files_${userId}_*`),
+    ]).catch(() => {});
 
     res.json({
       success: true,
@@ -672,7 +692,12 @@ const copyFile = async (req, res, next) => {
         },
       },
     });
-    await logActivity(userId, 'file_copied', 'file', copiedFile.id, copiedFile.name, req);
+    // Fire-and-forget
+    Promise.all([
+      logActivity(userId, 'file_copied', 'file', copiedFile.id, copiedFile.name, req),
+      deleteCachePattern(`files_${userId}_*`),
+      deleteCache(`dashboard_${userId}`),
+    ]).catch(() => {});
 
     res.status(201).json({
       success: true,
@@ -722,7 +747,12 @@ const deleteFile = async (req, res, next) => {
         },
       },
     });
-    await logActivity(userId, 'file_trashed', 'file', id, file.name, req);
+    // Fire-and-forget
+    Promise.all([
+      logActivity(userId, 'file_trashed', 'file', id, file.name, req),
+      deleteCachePattern(`files_${userId}_*`),
+      deleteCache(`dashboard_${userId}`),
+    ]).catch(() => {});
 
     res.json({
       success: true,

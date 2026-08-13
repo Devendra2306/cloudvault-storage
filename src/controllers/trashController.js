@@ -79,23 +79,17 @@ const emptyTrash = async (req, res, next) => {
   try {
     const userId = req.user.id;
 
-    // Get all trashed files
-    const trashedFiles = await prisma.file.findMany({
-      where: {
-        userId,
-        trashedAt: { not: null },
-      },
-      select: { id: true, s3Key: true },
-    });
-
-    // Get all trashed folders
-    const trashedFolders = await prisma.folder.findMany({
-      where: {
-        userId,
-        deletedAt: { not: null },
-      },
-      select: { id: true },
-    });
+    // Fetch trashed files and folders in parallel
+    const [trashedFiles, trashedFolders] = await Promise.all([
+      prisma.file.findMany({
+        where: { userId, trashedAt: { not: null } },
+        select: { id: true, s3Key: true },
+      }),
+      prisma.folder.findMany({
+        where: { userId, deletedAt: { not: null } },
+        select: { id: true },
+      }),
+    ]);
 
     // Delete files from S3 and database
     const { deleteFile: deleteS3File } = require('../config/s3');
@@ -223,30 +217,29 @@ const restoreFolder = async (req, res, next) => {
       data: { deletedAt: null },
     });
 
-    // Restore files
-    const files = await prisma.file.findMany({
-      where: { folderId: id },
+    // Restore all files in the folder in one bulk operation
+    // 1. Get total size of files to restore
+    const filesAggregate = await prisma.file.aggregate({
+      where: { folderId: id, trashedAt: { not: null } },
+      _sum: { size: true },
     });
 
-    for (const file of files) {
-      await prisma.file.update({
-        where: { id: file.id },
-        data: {
-          deletedAt: null,
-          trashedAt: null,
-          trashedBy: null,
-        },
-      });
-
-      await prisma.user.update({
-        where: { id: userId },
-        data: {
-          storageUsed: {
-            increment: file.size,
-          },
-        },
-      });
-    }
+    // 2. Bulk-restore files + increment storage in a single transaction
+    const totalSize = filesAggregate._sum.size || BigInt(0);
+    await prisma.$transaction([
+      prisma.file.updateMany({
+        where: { folderId: id },
+        data: { deletedAt: null, trashedAt: null, trashedBy: null },
+      }),
+      ...(totalSize > 0
+        ? [
+            prisma.user.update({
+              where: { id: userId },
+              data: { storageUsed: { increment: totalSize } },
+            }),
+          ]
+        : []),
+    ]);
 
     res.json({
       success: true,

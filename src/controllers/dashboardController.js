@@ -119,7 +119,7 @@ const getDashboard = async (req, res, next) => {
       },
     };
 
-    await setCache(cacheKey, dataPayload, 30);
+    await setCache(cacheKey, dataPayload, 120);
 
     res.json({
       success: true,

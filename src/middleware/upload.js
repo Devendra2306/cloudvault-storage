@@ -20,9 +20,11 @@ const preCheckQuota = async (req, res, next) => {
     const prisma = require('../config/database');
     const { getStorageQuotaBytes, syncExpiredTrial } = require('../services/userAccount');
     
-    let user = await prisma.user.findUnique({ where: { id: req.user.id } });
+    const user = await syncExpiredTrial(req.user.id);
     if (!user) throw new ValidationError('User not found');
-    user = await syncExpiredTrial(user.id);
+
+    // Cache on req so checkQuota + controller don't re-fetch
+    req._quotaUser = user;
 
     const quota = getStorageQuotaBytes(user);
     if (user.storageUsed + BigInt(contentLength) > quota) {
@@ -60,11 +62,12 @@ const _multerS3 = multer({
 // Quota check (verifies actual file size)
 const checkQuota = async (req, res, next) => {
   try {
-    const prisma = require('../config/database');
     const { getStorageQuotaBytes, syncExpiredTrial } = require('../services/userAccount');
-    let user = await prisma.user.findUnique({ where: { id: req.user.id } });
+
+    // Reuse cached user from preCheckQuota if available
+    const user = req._quotaUser || await syncExpiredTrial(req.user.id);
     if (!user) throw new ValidationError('User not found');
-    user = await syncExpiredTrial(user.id);
+    req._quotaUser = user;
 
     let totalSize = 0;
     if (req.file) totalSize = req.file.size;

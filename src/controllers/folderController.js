@@ -166,28 +166,21 @@ const getFolder = async (req, res, next) => {
       }
     }
 
-    let files = [];
-    let subfolders = [];
-
-    if (includeFiles === 'true') {
-      files = await prisma.file.findMany({
-        where: {
-          folderId: id,
-          deletedAt: null,
-        },
-        orderBy: { name: 'asc' },
-      });
-    }
-
-    if (includeSubfolders === 'true') {
-      subfolders = await prisma.folder.findMany({
-        where: {
-          parentId: id,
-          deletedAt: null,
-        },
-        orderBy: { name: 'asc' },
-      });
-    }
+    // Fetch files and subfolders in parallel
+    const [files, subfolders] = await Promise.all([
+      includeFiles === 'true'
+        ? prisma.file.findMany({
+            where: { folderId: id, deletedAt: null },
+            orderBy: { name: 'asc' },
+          })
+        : [],
+      includeSubfolders === 'true'
+        ? prisma.folder.findMany({
+            where: { parentId: id, deletedAt: null },
+            orderBy: { name: 'asc' },
+          })
+        : [],
+    ]);
 
     res.json({
       success: true,
@@ -277,23 +270,22 @@ const deleteFolder = async (req, res, next) => {
       throw new ForbiddenError('You do not have permission to delete this folder');
     }
 
-    // Move folder to trash (soft delete)
-    await prisma.folder.update({
-      where: { id },
-      data: { deletedAt: new Date() },
-    });
-
-    // Also move all subfolders to trash
-    await prisma.folder.updateMany({
-      where: { parentId: id },
-      data: { deletedAt: new Date() },
-    });
-
-    // Also move all files in folder to trash
-    await prisma.file.updateMany({
-      where: { folderId: id },
-      data: { deletedAt: new Date(), trashedAt: new Date(), trashedBy: userId },
-    });
+    // Batch trash folder + subfolders + files in a single transaction
+    const now = new Date();
+    await prisma.$transaction([
+      prisma.folder.update({
+        where: { id },
+        data: { deletedAt: now },
+      }),
+      prisma.folder.updateMany({
+        where: { parentId: id },
+        data: { deletedAt: now },
+      }),
+      prisma.file.updateMany({
+        where: { folderId: id },
+        data: { deletedAt: now, trashedAt: now, trashedBy: userId },
+      }),
+    ]);
 
     res.json({
       success: true,
