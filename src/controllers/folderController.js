@@ -316,23 +316,21 @@ const restoreFolder = async (req, res, next) => {
       throw new ForbiddenError('You do not have permission to restore this folder');
     }
 
-    // Restore folder
-    await prisma.folder.update({
-      where: { id },
-      data: { deletedAt: null },
-    });
-
-    // Restore subfolders
-    await prisma.folder.updateMany({
-      where: { parentId: id },
-      data: { deletedAt: null },
-    });
-
-    // Restore files
-    await prisma.file.updateMany({
-      where: { folderId: id },
-      data: { deletedAt: null, trashedAt: null, trashedBy: null },
-    });
+    // Batch restore folder, subfolders, and files in a single transaction
+    await prisma.$transaction([
+      prisma.folder.update({
+        where: { id },
+        data: { deletedAt: null },
+      }),
+      prisma.folder.updateMany({
+        where: { parentId: id },
+        data: { deletedAt: null },
+      }),
+      prisma.file.updateMany({
+        where: { folderId: id },
+        data: { deletedAt: null, trashedAt: null, trashedBy: null },
+      }),
+    ]);
 
     res.json({
       success: true,

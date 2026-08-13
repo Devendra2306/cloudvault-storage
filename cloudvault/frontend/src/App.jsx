@@ -23,7 +23,6 @@ import { buildFolderTree } from "./lib/folders.js";
 import { AccountProvider, useAccount } from "./context/AccountContext.jsx";
 import ProfileMenu from "./components/ProfileMenu.jsx";
 import TrialBanner from "./components/TrialBanner.jsx";
-import CloudVaultAssistant from "./components/CloudVaultAssistant.jsx";
 import VerifyEmailBanner from "./components/VerifyEmailBanner.jsx";
 import VerifyEmailPage from "./pages/VerifyEmailPage.jsx";
 import NotificationBell from "./components/NotificationBell.jsx";
