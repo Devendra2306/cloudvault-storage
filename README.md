@@ -150,5 +150,5 @@ CloudVault leverages industry-grade protection:
 
 ---
 <div align="center">
-  <i>Built with ❤️ by the CloudVault Team.</i>
+  <i>Built with ❤️.</i>
 </div>
