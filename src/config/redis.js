@@ -7,23 +7,39 @@ let redisClient;
  */
 const createRedisClient = async () => {
   try {
+    const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
+    
     redisClient = redis.createClient({
-      url: process.env.REDIS_URL || 'redis://localhost:6379',
+      url: redisUrl,
+      socket: {
+        reconnectStrategy: (retries) => {
+          if (retries > 3) {
+            console.warn('⚠️  Redis: max reconnection attempts reached, running without cache.');
+            return false; // stop retrying
+          }
+          return Math.min(retries * 500, 3000); // backoff: 500ms, 1s, 1.5s
+        },
+      },
     });
 
     redisClient.on('error', (err) => {
-      console.error('Redis Client Error:', err);
+      // Only log the first error, suppress the reconnect spam
+      if (!redisClient._errorLogged) {
+        console.warn('Redis Client Error (suppressing further):', err.message);
+        redisClient._errorLogged = true;
+      }
     });
 
     redisClient.on('connect', () => {
       console.log('✅ Redis connected successfully');
+      redisClient._errorLogged = false;
     });
 
     await redisClient.connect();
     return redisClient;
   } catch (error) {
-    console.error('❌ Redis connection failed:', error);
-    // Don't exit, app can work without Redis
+    console.warn('⚠️  Redis connection failed, app will work without caching:', error.message);
+    redisClient = null; // Ensure null so getCache/setCache bail out
     return null;
   }
 };

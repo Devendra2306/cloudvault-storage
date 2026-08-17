@@ -216,8 +216,8 @@ const listFiles = async (req, res, next) => {
       ...(trashed === 'true' ? { trashedAt: { not: null } } : { deletedAt: null }),
       ...(search && {
         OR: [
-          { name: { contains: search, mode: 'insensitive' } },
-          { originalName: { contains: search, mode: 'insensitive' } },
+          { name: { contains: search } },
+          { originalName: { contains: search } },
         ],
       }),
     };

@@ -24,8 +24,8 @@ const listUsers = async (req, res, next) => {
     const where = {
       ...(search && {
         OR: [
-          { email: { contains: search, mode: 'insensitive' } },
-          { fullName: { contains: search, mode: 'insensitive' } },
+          { email: { contains: search } },
+          { fullName: { contains: search } },
         ],
       }),
       ...(role && { role }),
