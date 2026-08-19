@@ -119,9 +119,96 @@ export default function LandingPage({ onGetStarted, onLogin, onSignUp }) {
   const [filesCount, filesRef] = useCounter(stats.filesStored || 1240, 2200);
   const [usersCount, usersRef] = useCounter(stats.activeUsers || 380, 2000);
 
+  const canvasRef = useRef(null);
+
+  // Particle star-field animation
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let animId;
+    let particles = [];
+    const PARTICLE_COUNT = 80;
+
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = document.documentElement.scrollHeight;
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    // Create particles
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: Math.random() * 1.5 + 0.3,
+        dx: (Math.random() - 0.5) * 0.15,
+        dy: (Math.random() - 0.5) * 0.12,
+        opacity: Math.random() * 0.5 + 0.1,
+        pulse: Math.random() * Math.PI * 2,
+        pulseSpeed: Math.random() * 0.008 + 0.003,
+      });
+    }
+
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach((p) => {
+        p.x += p.dx;
+        p.y += p.dy;
+        p.pulse += p.pulseSpeed;
+        const alpha = p.opacity * (0.6 + 0.4 * Math.sin(p.pulse));
+
+        // Wrap around
+        if (p.x < 0) p.x = canvas.width;
+        if (p.x > canvas.width) p.x = 0;
+        if (p.y < 0) p.y = canvas.height;
+        if (p.y > canvas.height) p.y = 0;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+        ctx.fill();
+      });
+
+      // Draw faint connection lines between close particles
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 120) {
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.strokeStyle = `rgba(255,255,255,${0.03 * (1 - dist / 120)})`;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          }
+        }
+      }
+      animId = requestAnimationFrame(draw);
+    };
+    draw();
+
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener('resize', resize);
+    };
+  }, []);
+
   return (
     <div className="lr-shell">
       <style>{LANDING_CSS}</style>
+
+      {/* ━━━ ANIMATED BACKGROUND ━━━ */}
+      <div className="lr-bg" aria-hidden="true">
+        <canvas ref={canvasRef} className="lr-bg__particles" />
+        <div className="lr-bg__aurora lr-bg__aurora--1" />
+        <div className="lr-bg__aurora lr-bg__aurora--2" />
+        <div className="lr-bg__aurora lr-bg__aurora--3" />
+        <div className="lr-bg__grid" />
+      </div>
 
       {/* ━━━ NAV ━━━ */}
       <header className={`lr-nav${scrolled ? " lr-nav--scrolled" : ""}`} ref={headerRef}>
@@ -450,10 +537,10 @@ const LANDING_CSS = `
 
 /* ─── Reset & Base ─── */
 .lr-shell {
-  --bg: #050505;
-  --bg-alt: #0a0a0a;
-  --surface: #111113;
-  --surface-hover: #18181b;
+  --bg: #050508;
+  --bg-alt: #08080c;
+  --surface: #101014;
+  --surface-hover: #18181e;
   --border: rgba(255,255,255,.06);
   --border-hover: rgba(255,255,255,.12);
   --text: #fafafa;
@@ -471,11 +558,91 @@ const LANDING_CSS = `
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   line-height: 1.6;
+  position: relative;
 }
 .lr-shell *, .lr-shell *::before, .lr-shell *::after { box-sizing: border-box; margin: 0; padding: 0; }
 .lr-shell img { max-width: 100%; display: block; }
 .lr-shell a { color: var(--text-secondary); text-decoration: none; transition: color .2s; }
 .lr-shell a:hover { color: var(--text); }
+
+/* ─── Animated Background ─── */
+.lr-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.lr-bg__particles {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Aurora gradient blobs */
+.lr-bg__aurora {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0;
+  animation: lr-aurora-in 2s ease-out forwards;
+}
+.lr-bg__aurora--1 {
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(217,0,7,.18) 0%, rgba(217,0,7,.04) 50%, transparent 70%);
+  top: -10%; right: -5%;
+  animation: lr-aurora-in 2s ease-out forwards, lr-aurora-drift-1 20s ease-in-out infinite 2s;
+}
+.lr-bg__aurora--2 {
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(59,130,246,.12) 0%, rgba(59,130,246,.03) 50%, transparent 70%);
+  top: 30%; left: -8%;
+  animation: lr-aurora-in 2.5s ease-out forwards, lr-aurora-drift-2 25s ease-in-out infinite 2.5s;
+}
+.lr-bg__aurora--3 {
+  width: 450px; height: 450px;
+  background: radial-gradient(circle, rgba(139,92,246,.1) 0%, rgba(139,92,246,.02) 50%, transparent 70%);
+  bottom: 10%; right: 15%;
+  animation: lr-aurora-in 3s ease-out forwards, lr-aurora-drift-3 22s ease-in-out infinite 3s;
+}
+
+@keyframes lr-aurora-in {
+  from { opacity: 0; transform: scale(0.6); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes lr-aurora-drift-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(-40px, 30px) scale(1.05); }
+  50% { transform: translate(20px, -20px) scale(0.95); }
+  75% { transform: translate(30px, 40px) scale(1.02); }
+}
+@keyframes lr-aurora-drift-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(50px, -30px) scale(1.08); }
+  66% { transform: translate(-30px, 20px) scale(0.94); }
+}
+@keyframes lr-aurora-drift-3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  30% { transform: translate(-40px, -40px) scale(1.06); }
+  60% { transform: translate(30px, 30px) scale(0.96); }
+}
+
+/* Subtle dot grid overlay */
+.lr-bg__grid {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255,255,255,.03) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black 30%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black 30%, transparent 70%);
+}
+
+/* Ensure all content floats above the background */
+.lr-nav, .lr-hero, .lr-trust, .lr-section, .lr-stats, .lr-cta, .lr-footer, main {
+  position: relative;
+  z-index: 1;
+}
 
 /* ─── Scroll Reveal ─── */
 .lr-reveal {

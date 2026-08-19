@@ -17,30 +17,31 @@
   pointer-events: auto;
 }
 
+/* ── Toggle Button ── */
 .cva-toggle-btn {
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6, #d946ef);
+  background: linear-gradient(135deg, #d90007, #ff4757);
   border: none;
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 8px 24px rgba(139, 92, 246, 0.35);
-  transition: box-shadow 0.2s ease, filter 0.2s ease;
+  box-shadow: 0 8px 24px rgba(217, 0, 7, 0.3), 0 0 0 1px rgba(255,255,255,.06);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
   position: relative;
   flex-shrink: 0;
 }
 
 .cva-toggle-btn:hover {
-  filter: brightness(1.08);
-  box-shadow: 0 10px 28px rgba(139, 92, 246, 0.45);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(217, 0, 7, 0.4), 0 0 0 1px rgba(255,255,255,.1);
 }
 
 .cva-toggle-btn:active {
-  filter: brightness(0.95);
+  transform: translateY(0);
 }
 
 .cva-status-dot {
@@ -52,43 +53,51 @@
   background-color: #10b981;
   border: 2px solid #111;
   border-radius: 50%;
+  animation: cva-pulse 2s ease-in-out infinite;
 }
 
+@keyframes cva-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ── Window ── */
 .cva-window {
   position: relative;
-  width: 380px;
-  height: min(560px, calc(100vh - 100px));
+  width: 400px;
+  height: min(600px, calc(100vh - 100px));
   max-width: calc(100vw - 48px);
-  background-color: var(--bg-card, #141414);
-  border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+  background-color: var(--bg-card, #0f0f11);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 20px;
-  box-shadow: var(--shadow, 0 24px 64px rgba(0, 0, 0, 0.55));
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255,255,255,.04);
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
+/* ── Header ── */
 .cva-header {
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--bg-secondary, #0a0a0a);
+  background: rgba(0, 0, 0, 0.3);
   flex-shrink: 0;
 }
 
 .cva-header-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .cva-header-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #6366f1, #d946ef);
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #d90007, #ff4757);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -97,73 +106,75 @@
 
 .cva-header-title {
   margin: 0;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text, #ffffff);
-  letter-spacing: 0.3px;
+  letter-spacing: -.01em;
 }
 
 .cva-header-status {
-  font-size: 12px;
-  color: var(--text-muted, rgba(255, 255, 255, 0.5));
+  font-size: 11px;
+  color: var(--text-muted, rgba(255, 255, 255, 0.4));
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-top: 2px;
+  gap: 5px;
+  margin-top: 1px;
 }
 
 .cva-header-status span {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background-color: #10b981;
   display: inline-block;
 }
 
-.cva-close-btn {
-  background: rgba(255, 255, 255, 0.05);
+.cva-header-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.cva-icon-btn {
+  background: rgba(255, 255, 255, 0.04);
   border: none;
-  color: var(--text-muted, rgba(255, 255, 255, 0.6));
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
+  color: rgba(255, 255, 255, 0.4);
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+  transition: all 0.15s;
   flex-shrink: 0;
 }
 
-.cva-close-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--text, white);
+.cva-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.8);
 }
 
+/* ── Messages ── */
 .cva-messages {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: 20px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
-.cva-messages::-webkit-scrollbar {
-  width: 6px;
-}
-.cva-messages::-webkit-scrollbar-track {
-  background: transparent;
-}
+.cva-messages::-webkit-scrollbar { width: 5px; }
+.cva-messages::-webkit-scrollbar-track { background: transparent; }
 .cva-messages::-webkit-scrollbar-thumb {
-  background: var(--border, rgba(255, 255, 255, 0.15));
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 10px;
 }
 
 .cva-message-row {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   max-width: 100%;
 }
 
@@ -172,24 +183,30 @@
 }
 
 .cva-message-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  background: rgba(99, 102, 241, 0.2);
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: rgba(217, 0, 7, 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  border: 1px solid rgba(99, 102, 241, 0.3);
+  border: 1px solid rgba(217, 0, 7, 0.2);
+  color: #ff6b6b;
+}
+
+.cva-message-row.user .cva-message-avatar {
+  background: rgba(99, 102, 241, 0.12);
+  border-color: rgba(99, 102, 241, 0.2);
   color: #a5b4fc;
 }
 
 .cva-message-bubble {
-  max-width: 80%;
-  padding: 12px 16px;
-  border-radius: 16px;
-  font-size: 14px;
-  line-height: 1.5;
+  max-width: 82%;
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-size: 13px;
+  line-height: 1.55;
   word-wrap: break-word;
 }
 
@@ -200,37 +217,96 @@
 }
 
 .cva-message-row.assistant .cva-message-bubble {
-  background: var(--surface-raised, rgba(255, 255, 255, 0.05));
-  color: var(--text-secondary, rgba(255, 255, 255, 0.9));
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.85);
   border-bottom-left-radius: 4px;
-  border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.cva-message-bubble p {
-  margin: 0 0 8px 0;
-}
-.cva-message-bubble p:last-child {
-  margin: 0;
-}
+/* Markdown inside bubbles */
+.cva-message-bubble p { margin: 0 0 8px 0; }
+.cva-message-bubble p:last-child { margin: 0; }
+.cva-message-bubble strong { color: #fff; }
 .cva-message-bubble code {
   background: rgba(0, 0, 0, 0.3);
-  padding: 2px 6px;
+  padding: 2px 5px;
   border-radius: 4px;
   font-family: monospace;
-  font-size: 0.9em;
+  font-size: 0.88em;
 }
 .cva-message-bubble pre {
   background: rgba(0, 0, 0, 0.3);
-  padding: 12px;
+  padding: 10px;
   border-radius: 8px;
   overflow-x: auto;
-  margin: 8px 0;
+  margin: 6px 0;
+}
+.cva-message-bubble ul, .cva-message-bubble ol {
+  margin: 6px 0;
+  padding-left: 18px;
+}
+.cva-message-bubble li {
+  margin-bottom: 3px;
 }
 
+/* Tables in AI responses */
+.cva-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0;
+  font-size: 12px;
+}
+.cva-table th, .cva-table td {
+  padding: 5px 8px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.cva-table th {
+  font-weight: 600;
+  color: rgba(255,255,255,.7);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+/* ── Suggestion Chips ── */
+.cva-suggestions {
+  padding: 8px 16px 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  border-top: 1px solid rgba(255,255,255,.04);
+  flex-shrink: 0;
+}
+
+.cva-chip {
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 100px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.03);
+  color: rgba(255,255,255,.6);
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.cva-chip:hover {
+  background: rgba(217,0,7,.1);
+  border-color: rgba(217,0,7,.25);
+  color: #ff8a8a;
+}
+.cva-chip:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── Input Area ── */
 .cva-input-area {
-  padding: 16px 20px;
-  background: var(--bg-secondary, rgba(0, 0, 0, 0.2));
-  border-top: 1px solid var(--border, rgba(255, 255, 255, 0.05));
+  padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.2);
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
   flex-shrink: 0;
 }
 
@@ -242,12 +318,12 @@
 
 .cva-input {
   width: 100%;
-  background: var(--bg-card, rgba(255, 255, 255, 0.05));
-  border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 24px;
-  padding: 12px 48px 12px 18px;
+  padding: 11px 44px 11px 16px;
   color: var(--text, white);
-  font-size: 14px;
+  font-size: 13px;
   font-family: inherit;
   transition: border-color 0.2s, box-shadow 0.2s;
   box-sizing: border-box;
@@ -255,52 +331,60 @@
 
 .cva-input:focus {
   outline: none;
-  border-color: rgba(99, 102, 241, 0.5);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+  border-color: rgba(217, 0, 7, 0.4);
+  box-shadow: 0 0 0 3px rgba(217, 0, 7, 0.1);
 }
 
 .cva-input::placeholder {
-  color: var(--text-muted, rgba(255, 255, 255, 0.3));
+  color: rgba(255, 255, 255, 0.25);
 }
 
 .cva-send-btn {
   position: absolute;
-  right: 6px;
-  width: 32px;
-  height: 32px;
+  right: 5px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  background: #6366f1;
+  background: #d90007;
   border: none;
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background 0.2s, filter 0.2s;
+  transition: all 0.15s;
 }
 
 .cva-send-btn:hover:not(:disabled) {
-  background: #4f46e5;
-  filter: brightness(1.05);
+  background: #ff1a22;
 }
 
 .cva-send-btn:disabled {
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.2);
   cursor: not-allowed;
 }
 
+.cva-input-hint {
+  text-align: center;
+  font-size: 10px;
+  color: rgba(255,255,255,.2);
+  margin-top: 8px;
+  letter-spacing: .02em;
+}
+
+/* ── Typing Indicator ── */
 .cva-typing {
   display: flex;
   align-items: center;
   gap: 4px;
-  height: 24px;
+  height: 20px;
   padding: 0 4px;
 }
 .cva-dot {
-  width: 6px;
-  height: 6px;
-  background: rgba(255, 255, 255, 0.5);
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.4);
   border-radius: 50%;
   animation: cvaBounce 1.4s infinite ease-in-out both;
 }
@@ -312,45 +396,25 @@
   40% { transform: scale(1); }
 }
 
-/* Sit above transfer panel + toast on mobile */
+/* ── Responsive ── */
 @media (max-width: 768px) {
   .cva-widget-container {
     bottom: 20px;
     right: 16px;
   }
-
   .cva-window {
     width: calc(100vw - 32px);
-    height: min(480px, calc(100dvh - 88px));
+    height: min(520px, calc(100dvh - 88px));
     max-width: none;
     border-radius: 16px;
   }
-
-  .cva-toggle-btn {
-    width: 48px;
-    height: 48px;
-  }
+  .cva-toggle-btn { width: 48px; height: 48px; }
 }
 
 @media (max-width: 520px) {
-  .cva-widget-container {
-    bottom: 16px;
-    right: 12px;
-  }
+  .cva-widget-container { bottom: 16px; right: 12px; }
 }
 
-.cva-widget-container--elevated {
-  bottom: 112px;
-}
-
-@media (max-width: 768px) {
-  .cva-widget-container--elevated {
-    bottom: 96px;
-  }
-}
-
-@media (max-width: 520px) {
-  .cva-widget-container--elevated {
-    bottom: 80px;
-  }
-}
+.cva-widget-container--elevated { bottom: 112px; }
+@media (max-width: 768px) { .cva-widget-container--elevated { bottom: 96px; } }
+@media (max-width: 520px) { .cva-widget-container--elevated { bottom: 80px; } }

@@ -1,30 +1,38 @@
 /**
  * Chat Controller
- * Handles AI chat messages (standard JSON response)
+ * Handles AI chat messages powered by Gemini or smart fallback
  */
+const { getAIResponse } = require('../services/aiService');
 
 exports.askChatbot = async (req, res) => {
   try {
     const { message, history } = req.body;
 
-    if (!message) {
+    if (!message || typeof message !== 'string') {
       return res.status(400).json({ error: "Message is required" });
     }
 
-    // Since we don't have an LLM API key yet, we will return a mock response
-    // To wire up OpenAI/Gemini, you would pass `message` and `history` to the respective API here
-    
-    // Simulate slight network delay for better UX
-    await new Promise(resolve => setTimeout(resolve, 800));
+    // Trim and limit message length
+    const trimmed = message.trim().slice(0, 2000);
+    if (!trimmed) {
+      return res.status(400).json({ error: "Message cannot be empty" });
+    }
 
-    const mockResponse = `Hello! I am your new CloudVault AI Assistant. I can see you said: *${message}*. \n\nCurrently, I am running in **Mock Mode** using standard JSON. Please add your API key to the backend to enable real AI responses! 🚀`;
+    // Limit history to last 20 messages to save tokens
+    const recentHistory = Array.isArray(history) ? history.slice(-20) : [];
+
+    const reply = await getAIResponse(trimmed, recentHistory, req.user.id);
 
     res.json({
       success: true,
-      reply: mockResponse
+      reply,
     });
   } catch (error) {
-    console.error("Chat error:", error);
-    res.status(500).json({ error: "Internal server error" });
+    console.error("Chat error:", error.message);
+    res.status(500).json({ 
+      success: false,
+      error: "Something went wrong. Please try again.",
+      reply: "Sorry, I encountered an issue. Please try again in a moment! 🔄"
+    });
   }
 };
