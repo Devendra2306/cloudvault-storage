@@ -28,6 +28,9 @@ const notificationRoutes = require('./routes/notificationRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 const app = express();
 
+// Trust reverse proxy (e.g. Render) to allow rate limiters to see real IPs
+app.set('trust proxy', 1);
+
 // Security headers
 app.use(helmet());
 
@@ -65,12 +68,12 @@ console.log('CORS allowed origins:', allowedOrigins);
 
 app.use(cors({
   origin: (origin, callback) => {
-    // In production, reject requests without an Origin header
-    if (!origin && process.env.NODE_ENV === 'production') {
-      return callback(new Error('Origin required in production'));
+    // Allow requests with no origin (like mobile apps, curl, or automated health checks)
+    if (!origin) {
+      return callback(null, true);
     }
     
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
