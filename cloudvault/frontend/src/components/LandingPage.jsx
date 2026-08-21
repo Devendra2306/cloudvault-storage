@@ -1237,6 +1237,76 @@ const LANDING_CSS = `
   }
   .lr-plan__badge { background: #e11d48; color: #fff; text-transform: uppercase; font-weight: 700; font-size: 11px; }
 
+  /* === ULTRA PREMIUM ENHANCEMENTS === */
+  
+  /* Premium Metallic Gradient Text for Hero */
+  .lr-hero__title {
+    background: linear-gradient(180deg, #ffffff 20%, #a1a1aa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0px 10px 30px rgba(0,0,0,0.5);
+  }
+
+  /* Floating Animation for Dashboard Cards */
+  @keyframes floatCard {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  .lr-preview__card { animation: floatCard 6s ease-in-out infinite; }
+  .lr-preview__card:nth-child(1) { animation-delay: 0s; }
+  .lr-preview__card:nth-child(2) { animation-delay: -1.5s; }
+  .lr-preview__card:nth-child(3) { animation-delay: -3s; }
+  
+  /* Extra float & glow for the glass file */
+  .glass-file { 
+    animation: floatCard 5s ease-in-out infinite; 
+    animation-delay: -2s; 
+    border: 1px solid rgba(255,255,255,0.3);
+    box-shadow: -10px 20px 40px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.4);
+  }
+
+  /* Sweeping Shine Effect on the Main CTA Button */
+  .lr-btn--mega-red {
+    position: relative; overflow: hidden;
+  }
+  .lr-btn--mega-red::after {
+    content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+    transform: skewX(-20deg); animation: button-shine 4.5s infinite;
+  }
+  @keyframes button-shine {
+    0% { left: -100%; }
+    15%, 100% { left: 200%; }
+  }
+
+  /* 3D Scale and Pulse Glowing for Pricing Cards */
+  .lr-plan {
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
+  }
+  .lr-plan:hover {
+    transform: translateY(-10px) scale(1.03);
+    box-shadow: 0 25px 50px rgba(0,0,0,0.6);
+    z-index: 10;
+  }
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 30px rgba(225, 29, 72, 0.15), inset 0 0 20px rgba(225, 29, 72, 0.05); border-color: rgba(225, 29, 72, 0.4); }
+    50% { box-shadow: 0 0 60px rgba(225, 29, 72, 0.4), inset 0 0 30px rgba(225, 29, 72, 0.2); border-color: rgba(225, 29, 72, 0.8); }
+  }
+  .lr-plan--pop { animation: pulse-glow 3.5s infinite; }
+
+  /* VisionOS Style Depth on Dashboard Mockup */
+  .lr-preview {
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.25), inset 0 -1px 0 rgba(255,255,255,0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+  }
+  .lr-preview__upload-btn {
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .lr-preview__upload-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(244, 63, 94, 0.6);
+  }
+
   /* FAQ Accordion Tweak */
   .lr-faq__chevron { color: #e11d48; }
 }
