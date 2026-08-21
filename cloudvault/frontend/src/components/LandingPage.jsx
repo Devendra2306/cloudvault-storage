@@ -234,7 +234,10 @@ export default function LandingPage({ onGetStarted, onLogin, onSignUp }) {
         <section className="lr-hero">
           <div className="lr-hero__ambient" aria-hidden="true">
             <div className="lr-hero__orb lr-hero__orb--1" />
-             <div className="lr-hero__content">
+            <div className="lr-hero__orb lr-hero__orb--2" />
+          </div>
+
+          <div className="lr-hero__content">
             <div className="lr-hero__badge-green lr-reveal">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
               Trusted by 500k+ users
@@ -1104,16 +1107,7 @@ const LANDING_CSS = `
 .lr-footer__bottom span { font-size: 13px; color: var(--text-muted); }
 
 /* ─── Responsive ─── */
-@media (max-width: 900px) {
-  .lr-features { grid-template-columns: repeat(2, 1fr); }
-  .lr-pricing { grid-template-columns: repeat(2, 1fr); }
-  .lr-why { grid-template-columns: 1fr; }
-  .lr-security { flex-direction: column; text-align: center; }
-  .lr-security__checks { align-items: center; }
-  .lr-footer__grid { grid-template-columns: 1fr 1fr; }
-  .lr-preview__side { display: none; }
-  .lr-nav__links { display: none; }
-  /* Custom Mesh Background tweaks (Aurora colors to orange/red) */
+/* Custom Mesh Background tweaks (Aurora colors to orange/red) */
   .lr-bg__aurora--1 { background: radial-gradient(circle at 20% 0%, rgba(220, 38, 38, 0.15) 0%, transparent 60%); }
   .lr-bg__aurora--2 { background: radial-gradient(circle at 80% 40%, rgba(234, 88, 12, 0.12) 0%, transparent 60%); }
   .lr-bg__aurora--3 { background: radial-gradient(circle at 50% 100%, rgba(220, 38, 38, 0.08) 0%, transparent 50%); }
@@ -1309,7 +1303,19 @@ const LANDING_CSS = `
 
   /* FAQ Accordion Tweak */
   .lr-faq__chevron { color: #e11d48; }
-}
+
+@media (max-width: 900px) {
+  .lr-features { grid-template-columns: repeat(2, 1fr); }
+  .lr-pricing { grid-template-columns: repeat(2, 1fr); }
+  .lr-why { grid-template-columns: 1fr; }
+  .lr-security { flex-direction: column; text-align: center; }
+  .lr-security__checks { align-items: center; }
+  .lr-footer__grid { grid-template-columns: 1fr 1fr; }
+  .lr-preview__side-icons { display: none; }
+  .lr-nav__links { display: none; }
+  }
+
+
 @media (max-width: 600px) {
   .lr-hero { padding: 130px 20px 60px; }
   .lr-features { grid-template-columns: 1fr; }
