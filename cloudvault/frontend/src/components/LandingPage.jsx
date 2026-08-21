@@ -234,81 +234,88 @@ export default function LandingPage({ onGetStarted, onLogin, onSignUp }) {
         <section className="lr-hero">
           <div className="lr-hero__ambient" aria-hidden="true">
             <div className="lr-hero__orb lr-hero__orb--1" />
-            <div className="lr-hero__orb lr-hero__orb--2" />
-          </div>
-
-          <div className="lr-hero__content">
-            <div className="lr-hero__badge lr-reveal">
-              <span className="lr-hero__badge-dot" />
-              Trusted by thousands of users
+             <div className="lr-hero__content">
+            <div className="lr-hero__badge-green lr-reveal">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+              Trusted by 500k+ users
             </div>
             <h1 className="lr-hero__title lr-reveal">
-              Your files.<br />Your cloud.<br /><span>Your rules.</span>
+              CloudVault.<br />Your secure digital world.
             </h1>
             <p className="lr-hero__sub lr-reveal">
-              Privacy isn't an option — it's the standard. Store, organize, and share your files
-              from one place, on any device.
+              Uncompromising privacy and performance.
             </p>
-            <div className="lr-hero__ctas lr-reveal">
-              <button type="button" className="lr-btn lr-btn--primary lr-btn--lg" onClick={onGetStarted}>
-                Start free — 5 GB included
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-              </button>
-              <button type="button" className="lr-btn lr-btn--outline lr-btn--lg" onClick={onLogin}>
-                Log in
-              </button>
-            </div>
-            <p className="lr-hero__note lr-reveal">No credit card required · Free forever</p>
           </div>
 
           {/* Dashboard mockup */}
           <div className="lr-hero__preview lr-reveal">
             <div className="lr-preview">
               <div className="lr-preview__glow" aria-hidden="true" />
-              <div className="lr-preview__bar">
-                <div className="lr-preview__dots"><span/><span/><span/></div>
-                <div className="lr-preview__search">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                  Search your drive…
-                </div>
-              </div>
               <div className="lr-preview__body">
-                <aside className="lr-preview__side">
-                  <div className="lr-preview__side-logo">
-                    <span className="lr-nav__logo" style={{width: 22, height: 22}}><img src={BRAND.logoImage} alt="" /></span>
-                    <strong>Drive</strong>
-                  </div>
-                  {["Cloud Drive", "Recent", "Starred", "Shared", "Trash"].map((item, i) => (
-                    <div key={item} className={`lr-preview__nav-item${i === 0 ? " active" : ""}`}>{item}</div>
-                  ))}
-                  <div className="lr-preview__storage">
-                    <div className="lr-preview__storage-label"><span>Free</span><strong>4.5 GB / 5 GB</strong></div>
-                    <div className="lr-preview__storage-bar"><div /></div>
-                  </div>
+                <aside className="lr-preview__side-icons">
+                  <span className="side-icon active"><svg width="20" height="20" viewBox="0 0 24 24" fill="var(--accent)" stroke="none"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg></span>
+                  <span className="side-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></span>
+                  <span className="side-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><line x1="9" x2="15" y1="3" y2="3"/><line x1="9" x2="15" y1="21" y2="21"/><path d="M9 3v18"/><path d="M15 3v18"/></svg></span>
+                  <span className="side-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
                 </aside>
                 <div className="lr-preview__main">
-                  <div className="lr-preview__heading">
-                    <h4>Cloud Drive</h4>
-                    <span className="lr-preview__upload-btn">↑ Upload</span>
+                  <div className="lr-preview__header">
+                    <div className="lr-preview__search">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                      Search
+                    </div>
+                    <button className="lr-preview__upload-btn">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                      Upload
+                    </button>
                   </div>
-                  {[
-                    { name: "Project Alpha", meta: "Folder · 1.2 GB", color: "#3b82f6" },
-                    { name: "Q3 Report.xlsx", meta: "Spreadsheet · 2.4 MB", color: "#22c55e" },
-                    { name: "Banner.png", meta: "Image · 4.1 MB", color: "#f59e0b" },
-                    { name: "Presentation.pdf", meta: "PDF · 8.7 MB", color: "#ef4444" },
-                  ].map((f, i) => (
-                    <div key={f.name} className="lr-preview__file" style={{ animationDelay: `${0.6 + i * 0.12}s` }}>
-                      <div className="lr-preview__file-icon" style={{ background: f.color + "18", color: f.color }} />
-                      <div>
-                        <strong>{f.name}</strong>
-                        <span>{f.meta}</span>
+                  
+                  <div className="lr-preview__grid">
+                    <div className="lr-preview__card folder" style={{ animationDelay: '0.6s' }}>
+                      <div className="lr-folder-icon" />
+                      <div className="lr-card-info">
+                        <h5>Project Alpha</h5>
+                        <span>Folder · 1.2 GB</span>
                       </div>
                     </div>
-                  ))}
+                    
+                    <div className="lr-preview__card folder small-folder" style={{ animationDelay: '0.7s' }}>
+                      <div className="lr-folder-icon" />
+                    </div>
+
+                    <div className="lr-preview__card folder small-folder" style={{ animationDelay: '0.8s' }}>
+                      <div className="lr-folder-icon" />
+                    </div>
+                    
+                    <div className="lr-preview__card file glass-file" style={{ animationDelay: '0.9s' }}>
+                      <div className="lr-file-icon excel">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+                      </div>
+                      <div className="lr-card-info">
+                        <h5>Q3 Report.xlsx</h5>
+                        <span>Spreadsheet · 2.4 MB</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="lr-preview__pagination">
+                    <span className="dot active"></span>
+                    <span className="dot"></span>
+                    <span className="dot"></span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
+
+          <div className="lr-hero__ctas-centered lr-reveal">
+            <button type="button" className="lr-btn lr-btn--mega-red" onClick={onGetStarted}>
+              Start Free – 5GB Included
+            </button>
+            <a href="#login" onClick={(e) => { e.preventDefault(); onLogin(); }} className="lr-hero__login-link">
+              Log In
+            </a>
+          </div>      
         </section>
 
         {/* ━━━ LOGOS / TRUST BAR ━━━ */}
@@ -419,9 +426,7 @@ export default function LandingPage({ onGetStarted, onLogin, onSignUp }) {
         <section id="pricing" className="lr-section lr-section--alt">
           <div className="lr-section__inner">
             <div className="lr-section__header lr-reveal">
-              <span className="lr-kicker">Pricing</span>
-              <h2>Simple, transparent pricing.</h2>
-              <p>Start free. Scale when you need more.</p>
+              <h2>Pricing</h2>
             </div>
             <div className="lr-pricing lr-reveal">
               {PLANS.map((plan) => (
@@ -440,7 +445,7 @@ export default function LandingPage({ onGetStarted, onLogin, onSignUp }) {
                   </ul>
                   <button
                     type="button"
-                    className={`lr-btn ${plan.highlight ? "lr-btn--primary" : "lr-btn--outline"} lr-btn--full`}
+                    className={`lr-btn ${plan.highlight ? "lr-btn--mega-red" : "lr-btn--outline"} lr-btn--full`}
                     onClick={onGetStarted}
                   >
                     Choose {plan.name}
@@ -455,8 +460,7 @@ export default function LandingPage({ onGetStarted, onLogin, onSignUp }) {
         <section id="faq" className="lr-section">
           <div className="lr-section__inner" style={{ maxWidth: 720 }}>
             <div className="lr-section__header lr-reveal">
-              <span className="lr-kicker">FAQ</span>
-              <h2>Questions? Answers.</h2>
+              <h2>FAQ</h2>
             </div>
             <div className="lr-faqs lr-reveal">
               {FAQS.map((item, i) => (
@@ -1109,6 +1113,132 @@ const LANDING_CSS = `
   .lr-footer__grid { grid-template-columns: 1fr 1fr; }
   .lr-preview__side { display: none; }
   .lr-nav__links { display: none; }
+  /* Custom Mesh Background tweaks (Aurora colors to orange/red) */
+  .lr-bg__aurora--1 { background: radial-gradient(circle at 20% 0%, rgba(220, 38, 38, 0.15) 0%, transparent 60%); }
+  .lr-bg__aurora--2 { background: radial-gradient(circle at 80% 40%, rgba(234, 88, 12, 0.12) 0%, transparent 60%); }
+  .lr-bg__aurora--3 { background: radial-gradient(circle at 50% 100%, rgba(220, 38, 38, 0.08) 0%, transparent 50%); }
+
+  /* Hero Content */
+  .lr-hero__badge-green {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2);
+    color: #10b981; font-size: 11px; font-weight: 600; text-transform: uppercase;
+    padding: 6px 14px; border-radius: 99px; margin-bottom: 24px;
+  }
+  .lr-hero__title {
+    font-size: clamp(48px, 6vw, 64px); font-weight: 800; line-height: 1.1;
+    letter-spacing: -0.03em; margin-bottom: 16px; text-align: center;
+  }
+  .lr-hero__sub {
+    font-size: clamp(16px, 2vw, 18px); color: var(--text-secondary); max-width: 600px; margin: 0 auto;
+    text-align: center;
+  }
+
+  /* CTAs Centered */
+  .lr-hero__ctas-centered {
+    display: flex; flex-direction: column; align-items: center; gap: 16px;
+    margin-top: 24px; margin-bottom: 60px;
+  }
+  .lr-btn--mega-red {
+    background: linear-gradient(180deg, #f43f5e 0%, #be123c 100%);
+    box-shadow: 0 4px 20px rgba(225, 29, 72, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+    border: none; color: #fff; padding: 14px 32px; font-size: 16px; font-weight: 600;
+    border-radius: 99px; cursor: pointer; transition: all 0.2s;
+  }
+  .lr-btn--mega-red:hover {
+    box-shadow: 0 6px 24px rgba(225, 29, 72, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+  }
+  .lr-hero__login-link {
+    color: var(--text); font-weight: 500; font-size: 15px; text-decoration: none; transition: color 0.2s;
+  }
+  .lr-hero__login-link:hover { color: #f43f5e; }
+
+  /* Redesigned Glass Dashboard Mockup */
+  .lr-preview {
+    background: rgba(16, 16, 20, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border-radius: 20px; overflow: hidden; width: 100%; max-width: 700px;
+    margin: 40px auto 30px; position: relative;
+    padding: 16px;
+  }
+  .lr-preview__body { display: flex; gap: 16px; height: 340px; }
+  .lr-preview__side-icons {
+    width: 60px; display: flex; flex-direction: column; align-items: center;
+    gap: 20px; padding-top: 10px; border-right: 1px solid var(--border);
+  }
+  .side-icon {
+    width: 36px; height: 36px; border-radius: 10px; display: flex;
+    align-items: center; justify-content: center; color: var(--text-muted); cursor: pointer;
+  }
+  .side-icon.active { background: rgba(225, 29, 72, 0.1); color: #f43f5e; }
+  
+  .lr-preview__main { flex: 1; display: flex; flex-direction: column; }
+  .lr-preview__header {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
+  }
+  .lr-preview__search {
+    background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px; padding: 8px 16px; color: var(--text-muted); font-size: 13px;
+    display: flex; align-items: center; gap: 8px; flex: 1; max-width: 200px;
+  }
+  .lr-preview__upload-btn {
+    background: #f43f5e; color: #fff; border: none; padding: 8px 16px;
+    border-radius: 8px; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 6px;
+  }
+  
+  .lr-preview__grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(2, 1fr);
+    gap: 12px; flex: 1;
+  }
+  .lr-preview__card {
+    background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px; padding: 16px; display: flex; flex-direction: column;
+    justify-content: flex-end; position: relative; overflow: hidden;
+  }
+  .lr-folder-icon {
+    position: absolute; top: 16px; left: 16px; width: 40px; height: 30px;
+    background: #f43f5e; border-radius: 4px;
+  }
+  .lr-folder-icon::before {
+    content: ''; position: absolute; top: -6px; left: 0; width: 16px; height: 6px;
+    background: #e11d48; border-radius: 4px 4px 0 0;
+  }
+  .lr-preview__card.small-folder {
+    grid-column: span 1; padding: 12px;
+  }
+  .lr-card-info h5 { margin: 0 0 4px 0; font-size: 14px; font-weight: 500; }
+  .lr-card-info span { font-size: 11px; color: var(--text-secondary); }
+  
+  .glass-file {
+    background: rgba(255, 255, 255, 0.08); border-top: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    box-shadow: -10px 0 30px rgba(0,0,0,0.2);
+    z-index: 10;
+    grid-column: 2; grid-row: 1 / span 2;
+  }
+  .lr-file-icon.excel {
+    position: absolute; top: 20px; left: 20px; color: #10b981;
+    background: rgba(16, 185, 129, 0.1); padding: 12px; border-radius: 12px;
+  }
+
+  .lr-preview__pagination {
+    display: flex; justify-content: center; gap: 6px; margin-top: 16px;
+  }
+  .lr-preview__pagination .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border); }
+  .lr-preview__pagination .dot.active { background: var(--text-muted); width: 16px; border-radius: 4px; }
+
+  /* Pricing Cards Tweak */
+  .lr-plan--pop {
+    border-color: rgba(225, 29, 72, 0.4);
+    box-shadow: 0 0 30px rgba(225, 29, 72, 0.15), inset 0 0 20px rgba(225, 29, 72, 0.05);
+  }
+  .lr-plan__badge { background: #e11d48; color: #fff; text-transform: uppercase; font-weight: 700; font-size: 11px; }
+
+  /* FAQ Accordion Tweak */
+  .lr-faq__chevron { color: #e11d48; }
 }
 @media (max-width: 600px) {
   .lr-hero { padding: 130px 20px 60px; }
@@ -1122,3 +1252,4 @@ const LANDING_CSS = `
   .lr-footer__grid { grid-template-columns: 1fr; gap: 28px; }
 }
 `;
+
