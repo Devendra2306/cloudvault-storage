@@ -1231,7 +1231,7 @@ const LANDING_CSS = `
   }
   .lr-plan__badge { background: #e11d48; color: #fff; text-transform: uppercase; font-weight: 700; font-size: 11px; }
 
-  /* === ULTRA PREMIUM ENHANCEMENTS === */
+  /* === ULTRA PREMIUM 3D ENHANCEMENTS === */
   
   /* Premium Metallic Gradient Text for Hero */
   .lr-hero__title {
@@ -1241,22 +1241,51 @@ const LANDING_CSS = `
     text-shadow: 0px 10px 30px rgba(0,0,0,0.5);
   }
 
-  /* Floating Animation for Dashboard Cards */
-  @keyframes floatCard {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-8px); }
+  /* 3D Dashboard Perspective Container */
+  .lr-hero__preview {
+    perspective: 1500px;
+    transform-style: preserve-3d;
   }
-  .lr-preview__card { animation: floatCard 6s ease-in-out infinite; }
+
+  /* 3D Dashboard Mockup Tilt */
+  .lr-preview {
+    transform: rotateX(10deg) rotateY(-12deg) rotateZ(2deg) translateY(0);
+    transform-style: preserve-3d;
+    box-shadow: -20px 40px 100px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.25), inset -1px -1px 0 rgba(255,255,255,0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.6s ease;
+  }
+  
+  /* Flatten on hover to interact with it */
+  .lr-preview:hover {
+    transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg) translateY(-10px);
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  }
+
+  .lr-preview__body, .lr-preview__grid {
+    transform-style: preserve-3d;
+  }
+
+  /* 3D Floating Animation for Dashboard Cards */
+  @keyframes floatCard3D {
+    0%, 100% { transform: translateY(0) translateZ(30px); }
+    50% { transform: translateY(-10px) translateZ(30px); }
+  }
+  .lr-preview__card { animation: floatCard3D 6s ease-in-out infinite; box-shadow: -10px 15px 30px rgba(0,0,0,0.4); }
   .lr-preview__card:nth-child(1) { animation-delay: 0s; }
   .lr-preview__card:nth-child(2) { animation-delay: -1.5s; }
   .lr-preview__card:nth-child(3) { animation-delay: -3s; }
   
-  /* Extra float & glow for the glass file */
+  /* Extreme 3D Pop for the Glass File */
+  @keyframes floatFile3D {
+    0%, 100% { transform: translateY(0) translateZ(80px); }
+    50% { transform: translateY(-15px) translateZ(80px); }
+  }
   .glass-file { 
-    animation: floatCard 5s ease-in-out infinite; 
+    animation: floatFile3D 5s ease-in-out infinite; 
     animation-delay: -2s; 
     border: 1px solid rgba(255,255,255,0.3);
-    box-shadow: -10px 20px 40px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.4);
+    box-shadow: -20px 30px 60px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.4);
   }
 
   /* Sweeping Shine Effect on the Main CTA Button */
@@ -1278,7 +1307,7 @@ const LANDING_CSS = `
     transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
   }
   .lr-plan:hover {
-    transform: translateY(-10px) scale(1.03);
+    transform: translateY(-10px) scale(1.03) translateZ(10px);
     box-shadow: 0 25px 50px rgba(0,0,0,0.6);
     z-index: 10;
   }
@@ -1288,16 +1317,11 @@ const LANDING_CSS = `
   }
   .lr-plan--pop { animation: pulse-glow 3.5s infinite; }
 
-  /* VisionOS Style Depth on Dashboard Mockup */
-  .lr-preview {
-    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.25), inset 0 -1px 0 rgba(255,255,255,0.05);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-  }
   .lr-preview__upload-btn {
     transition: transform 0.2s, box-shadow 0.2s;
   }
   .lr-preview__upload-btn:hover {
-    transform: scale(1.05);
+    transform: scale(1.05) translateZ(20px);
     box-shadow: 0 0 15px rgba(244, 63, 94, 0.6);
   }
 
