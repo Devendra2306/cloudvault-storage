@@ -11,20 +11,20 @@ let model = null;
 /**
  * Initialize Gemini (lazy, once)
  */
-function getModel() {
-  if (model) return model;
+function getDynamicModel(systemPrompt) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) return null;
 
-  genAI = new GoogleGenerativeAI(apiKey);
-  model = genAI.getGenerativeModel({
+  if (!genAI) genAI = new GoogleGenerativeAI(apiKey);
+  
+  return genAI.getGenerativeModel({
     model: 'gemini-1.5-flash',
+    systemInstruction: systemPrompt,
     generationConfig: {
       maxOutputTokens: 1024,
       temperature: 0.7,
     },
   });
-  return model;
 }
 
 /**
@@ -108,8 +108,9 @@ async function getUserContext(userId) {
  * Get AI response from Gemini
  */
 async function getAIResponse(message, history, userId) {
-  const gemini = getModel();
   const userContext = await getUserContext(userId);
+  const systemPrompt = buildSystemPrompt(userContext);
+  const gemini = getDynamicModel(systemPrompt);
 
   // If no Gemini API key, use smart fallback
   if (!gemini) {
@@ -130,7 +131,6 @@ async function getAIResponse(message, history, userId) {
 
     const chat = gemini.startChat({
       history: geminiHistory,
-      systemInstruction: buildSystemPrompt(userContext),
     });
 
     const result = await chat.sendMessage(message);
