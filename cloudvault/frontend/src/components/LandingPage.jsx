@@ -815,6 +815,8 @@ const LANDING_CSS = `
   display: flex; align-items: center; gap: 16px;
   padding: 12px 16px; border-bottom: 1px solid var(--border);
   background: rgba(255,255,255,.02);
+  border-top-left-radius: var(--radius-lg);
+  border-top-right-radius: var(--radius-lg);
 }
 .lr-preview__dots { display: flex; gap: 6px; }
 .lr-preview__dots span {
@@ -1327,7 +1329,17 @@ const LANDING_CSS = `
   /* FAQ Accordion Tweak */
   .lr-faq__chevron { color: #e11d48; }
 
+  @keyframes floatCard {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
 @media (max-width: 900px) {
+  .lr-hero__preview { perspective: none; }
+  .lr-preview { transform: none !important; transition: none; }
+  .lr-preview:hover { transform: none !important; box-shadow: 0 40px 80px -20px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.03); }
+  .lr-preview__card { animation: floatCard 6s ease-in-out infinite; transform: none !important; }
+  .glass-file { animation: floatCard 5s ease-in-out infinite; transform: none !important; }
   .lr-features { grid-template-columns: repeat(2, 1fr); }
   .lr-pricing { grid-template-columns: repeat(2, 1fr); }
   .lr-why { grid-template-columns: 1fr; }
