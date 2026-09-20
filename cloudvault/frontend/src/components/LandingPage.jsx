@@ -802,7 +802,7 @@ const LANDING_CSS = `
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: var(--surface);
-  overflow: hidden;
+  /* overflow: hidden removed to allow 3D pop out */
   box-shadow: 0 40px 80px -20px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.03);
 }
 .lr-preview__glow {
@@ -1153,8 +1153,7 @@ const LANDING_CSS = `
     background: rgba(16, 16, 20, 0.4);
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-    border-radius: 20px; overflow: hidden; width: 100%; max-width: 700px;
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);\n    border-radius: 20px; /* overflow: hidden removed */ width: 100%; max-width: 700px;
     margin: 40px auto 30px; position: relative;
     padding: 16px;
   }
@@ -1190,7 +1189,7 @@ const LANDING_CSS = `
   .lr-preview__card {
     background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 12px; padding: 16px; display: flex; flex-direction: column;
-    justify-content: flex-end; position: relative; overflow: hidden;
+    justify-content: flex-end; position: relative; /* overflow: hidden removed */
   }
   .lr-folder-icon {
     position: absolute; top: 16px; left: 16px; width: 40px; height: 30px;
