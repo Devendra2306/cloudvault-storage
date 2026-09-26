@@ -2025,6 +2025,7 @@ export const GLOBAL_STYLES = `
     flex: 1;
     min-width: 0;
     overflow-x: hidden;
+    padding-bottom: 120px;
   }
 
   .account-header {
@@ -2165,6 +2166,7 @@ export const GLOBAL_STYLES = `
       margin-left: 0 !important;
       padding: 14px !important;
       padding-top: 12px !important;
+      padding-bottom: 120px !important;
     }
     .account-header,
     .mega-top-bar {
