@@ -153,7 +153,14 @@ export default function ShareModal({ file, onShare, onCancel }) {
       };
       const data = await onShare(payload);
       const url = data?.shareUrl || data?.data?.shareUrl;
-      if (url) setResultUrl(url);
+      if (url) {
+        setResultUrl(url);
+      } else {
+        alert("Server did not return a share link.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert(err.message || "Failed to create share link");
     } finally {
       setLoading(false);
     }

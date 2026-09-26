@@ -1,48 +1,58 @@
 import { useEffect, useState, useRef, useCallback } from "react";
+import { CheckCircle2 } from "lucide-react";
 import { BRAND, API } from "../lib/constants.js";
 import { fmt } from "../lib/fileTypes.js";
 import { PLANS } from "../lib/plans.js";
+import About from './marketing/About';
+import Contact from './marketing/Contact';
+import Privacy from './marketing/Privacy';
+import Terms from './marketing/Terms';
+import Security from './marketing/Security';
+import Status from './marketing/Status';
 
 /* ─── Data ─── */
 const FEATURES = [
   {
-    title: "Cloud Storage",
-    desc: "5 GB of free, encrypted storage. Upload anything, access anywhere, sync across all your devices.",
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
-      </svg>
-    ),
+    title: "Secure Cloud Storage",
+    desc: "Store your documents, images, videos, and other important files securely in the cloud.",
+    icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
   },
   {
-    title: "Private Sharing",
-    desc: "Share with anyone — password-protected links, expiration dates, and granular permission controls.",
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
-      </svg>
-    ),
+    title: "Organize Your Files",
+    desc: "Create folders, rename files, move content, and keep your digital workspace organized.",
+    icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
   },
   {
-    title: "Smart Search",
-    desc: "Find any file instantly with intelligent filters, tags, and full-text search across your entire drive.",
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
-      </svg>
-    ),
+    title: "Fast Uploads",
+    desc: "Upload files through a simple drag-and-drop interface with an experience designed for speed and reliability.",
+    icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
   },
   {
-    title: "Enterprise Security",
-    desc: "AES-256 encryption, activity audit logs, role-based access, and zero-knowledge architecture.",
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-      </svg>
-    ),
+    title: "File Preview",
+    desc: "Preview supported images, documents, and PDFs without downloading them first.",
+    icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
   },
-];
+  {
+    title: "Easy File Sharing",
+    desc: "Share files when you need to collaborate or send documents to others.",
+    icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+  },
+  {
+    title: "Secure Authentication",
+    desc: "Protect your account with secure authentication and account recovery features.",
+    icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+  },
+  {
+    title: "Access Anywhere",
+    desc: "Access your files from your desktop, laptop, tablet, or mobile browser.",
+    icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+  },
+  {
+    title: "File Management Tools",
+    desc: "Download, delete, rename, organize, and manage your files from one place.",
+    icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+  }
+]
 
 const WHY_DATA = [
   { num: "01", title: "Never run out of space", desc: "Start with 5 GB free. Scale to terabytes when your needs grow." },
@@ -52,11 +62,17 @@ const WHY_DATA = [
 ];
 
 const FAQS = [
-  { q: "Is CloudVault free to use?", a: "Yes. Every account includes 5 GB of free storage with no credit card required. Upgrade anytime." },
-  { q: "How secure are my files?", a: "Files are encrypted in transit (TLS 1.3) and at rest (AES-256). Share links support passwords and expiration." },
-  { q: "Can I share with people outside my team?", a: "Absolutely. Create public or protected links with view, download, or edit permissions for anyone." },
-  { q: "Can I cancel or change my plan?", a: "Plans are fully flexible. Upgrade, downgrade, or cancel from your billing settings at any time." },
-];
+  { q: "What is CloudVault?", a: "CloudVault is a cloud storage platform that allows users to securely store, organize, access, and manage their files online." },
+  { q: "Is CloudVault free?", a: "CloudVault currently provides access to its core cloud storage functionality. Premium storage and additional plans may be introduced in the future." },
+  { q: "What types of files can I upload?", a: "You can upload common file types including documents, images, PDFs, videos, and other supported files." },
+  { q: "Can I access my files from different devices?", a: "Yes. CloudVault is designed to allow you to access your files through a web browser from supported devices." },
+  { q: "Can I preview files without downloading them?", a: "Yes. Supported file types can be previewed directly within CloudVault." },
+  { q: "Can I download my files?", a: "Yes. Files stored in your CloudVault account can be downloaded when needed." },
+  { q: "How do I recover my account?", a: "Use the account recovery option on the login page and follow the verification steps provided by CloudVault." },
+  { q: "Is my data secure?", a: "CloudVault uses authentication and cloud-storage security mechanisms to help protect your account and files." },
+  { q: "Can I delete my files?", a: "Yes. You can manage your stored files and delete files that you no longer need." },
+  { q: "Who can use CloudVault?", a: "CloudVault is designed for individuals and teams looking for a simple way to store and manage files online." }
+]
 
 /* ─── Hooks ─── */
 function useScrollReveal() {
@@ -98,7 +114,7 @@ function useCounter(end, duration = 2000) {
 }
 
 /* ─── Component ─── */
-export default function LandingPage({ onGetStarted, onLogin, onSignUp }) {
+export default function LandingPage({ view = "landing", onNavigate, onGetStarted, onLogin, onSignUp }) {
   const [stats, setStats] = useState({ filesStored: 0, activeUsers: 0, storageUsed: 0, storageCapacity: 10 * 1024 ** 4 });
   const [scrolled, setScrolled] = useState(false);
   const [openFaq, setOpenFaq] = useState(null);
@@ -218,10 +234,11 @@ export default function LandingPage({ onGetStarted, onLogin, onSignUp }) {
             <span className="lr-nav__wordmark">{BRAND.name}</span>
           </button>
           <nav className="lr-nav__links">
-            {["Features", "Security", "Pricing", "FAQ"].map((l) => (
-              <a key={l} href={`#${l.toLowerCase()}`}>{l}</a>
-            ))}
-          </nav>
+              <a href="#features" onClick={(e) => { if(view!=='landing') { e.preventDefault(); onNavigate('landing'); }}}>Features</a>
+              <a href="#pricing" onClick={(e) => { if(view!=='landing') { e.preventDefault(); onNavigate('landing'); }}}>Pricing</a>
+              <a href="#faq" onClick={(e) => { if(view!=='landing') { e.preventDefault(); onNavigate('landing'); }}}>FAQ</a>
+              <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('contact'); }}>Help & Support</a>
+            </nav>
           <div className="lr-nav__actions">
             <button type="button" className="lr-btn lr-btn--ghost" onClick={onLogin}>Log in</button>
             <button type="button" className="lr-btn lr-btn--primary" onClick={onSignUp}>Get started free</button>
@@ -230,6 +247,8 @@ export default function LandingPage({ onGetStarted, onLogin, onSignUp }) {
       </header>
 
       <main>
+        {view === 'landing' && (
+          <div className="lr-landing-content">
         {/* ━━━ HERO ━━━ */}
         <section className="lr-hero">
           <div className="lr-hero__ambient" aria-hidden="true">
@@ -243,11 +262,15 @@ export default function LandingPage({ onGetStarted, onLogin, onSignUp }) {
               Trusted by 500k+ users
             </div>
             <h1 className="lr-hero__title lr-reveal">
-              CloudVault.<br />Your secure digital world.
-            </h1>
-            <p className="lr-hero__sub lr-reveal">
-              Uncompromising privacy and performance.
-            </p>
+                Powerful Cloud Storage,<br />Built for Simplicity.
+              </h1>
+              <p className="lr-hero__sub lr-reveal" style={{ marginBottom: '32px' }}>
+                CloudVault gives you a secure and simple way to store, manage, preview, and share your files from anywhere.
+              </p>
+              <div className="lr-hero__ctas-centered lr-reveal" style={{ flexDirection: 'row', justifyContent: 'center' }}>
+                <button className="lr-btn lr-btn--mega-red" onClick={onGetStarted}>Get Started</button>
+                <a href="#features" className="lr-btn lr-btn--outline" style={{ padding: '14px 32px', fontSize: '16px', borderRadius: '99px' }}>Explore CloudVault</a>
+              </div>
           </div>
 
           {/* Dashboard mockup */}
@@ -427,37 +450,35 @@ export default function LandingPage({ onGetStarted, onLogin, onSignUp }) {
 
         {/* ━━━ PRICING ━━━ */}
         <section id="pricing" className="lr-section lr-section--alt">
-          <div className="lr-section__inner">
-            <div className="lr-section__header lr-reveal">
-              <h2>Pricing</h2>
-            </div>
-            <div className="lr-pricing lr-reveal">
-              {PLANS.map((plan) => (
-                <article key={plan.id} className={`lr-plan${plan.highlight ? " lr-plan--pop" : ""}`}>
-                  {plan.highlight && <span className="lr-plan__badge">Most popular</span>}
-                  <h3>{plan.name}</h3>
-                  <div className="lr-plan__price">{plan.price}<span>{plan.period}</span></div>
-                  <p className="lr-plan__storage">{plan.storage} storage</p>
-                  <ul>
-                    {(plan.features || []).map((f) => (
-                      <li key={f}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-                        {f}
-                      </li>
-                    ))}
+            <div className="lr-section__inner">
+              <div className="lr-section__header lr-reveal">
+                <h2>Simple & Transparent</h2>
+                <p>Choose the CloudVault experience that fits your storage needs.</p>
+              </div>
+              <div className="lr-pricing lr-reveal" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '32px' }}>
+                <article className="lr-plan">
+                  <h3>Free Plan</h3>
+                  <div className="lr-plan__price">₹0<span>/ month</span></div>
+                  <ul style={{ marginBottom: '32px' }}>
+                    <li><CheckCircle2 size={16} /> Secure cloud storage</li>
+                    <li><CheckCircle2 size={16} /> File uploads</li>
+                    <li><CheckCircle2 size={16} /> Folder management</li>
+                    <li><CheckCircle2 size={16} /> File preview</li>
+                    <li><CheckCircle2 size={16} /> File download</li>
+                    <li><CheckCircle2 size={16} /> Basic account management</li>
+                    <li><CheckCircle2 size={16} /> Access from multiple devices</li>
                   </ul>
-                  <button
-                    type="button"
-                    className={`lr-btn ${plan.highlight ? "lr-btn--mega-red" : "lr-btn--outline"} lr-btn--full`}
-                    onClick={onGetStarted}
-                  >
-                    Choose {plan.name}
-                  </button>
+                  <button className="lr-btn lr-btn--outline lr-btn--full" onClick={onGetStarted}>Get Started</button>
                 </article>
-              ))}
+
+                <article className="lr-plan lr-plan--pop" style={{ border: '1px solid rgba(217,0,7,0.3)' }}>
+                  <h3>Coming Soon</h3>
+                  <p style={{ color: 'var(--text-secondary)', marginBottom: '32px', fontSize: '15px' }}>More storage. More possibilities. Premium CloudVault plans with additional storage and advanced features are coming soon.</p>
+                  <button className="lr-btn lr-btn--primary lr-btn--full" onClick={() => alert('Notifications coming soon!')}>Notify Me</button>
+                </article>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
 
         {/* ━━━ FAQ ━━━ */}
         <section id="faq" className="lr-section">
@@ -497,12 +518,29 @@ export default function LandingPage({ onGetStarted, onLogin, onSignUp }) {
             </div>
           </div>
         </section>
+          </div>
+        )}
+        {view === 'about' && <About />}
+        {view === 'contact' && <Contact />}
+        {view === 'privacy' && <Privacy />}
+        {view === 'terms' && <Terms />}
+        {view === 'security' && <Security />}
+        {view === 'status' && <Status />}
       </main>
 
       {/* ━━━ FOOTER ━━━ */}
+            {/* ━━━ CTA BEFORE FOOTER ━━━ */}
+      <section className="lr-section" style={{ borderTop: '1px solid var(--border)', background: 'linear-gradient(to bottom, transparent, rgba(225, 29, 72, 0.05))' }}>
+        <div className="lr-container" style={{ textAlign: 'center', padding: '64px 0' }}>
+          <h2 style={{ fontSize: '36px', marginBottom: '16px' }}>Ready to take control of your files?</h2>
+          <p style={{ fontSize: '18px', color: 'var(--text-secondary)', marginBottom: '32px' }}>Securely store, organize and access your files with CloudVault.</p>
+          <button className="lr-btn lr-btn--mega-red" onClick={onGetStarted}>Get Started &rarr;</button>
+        </div>
+      </section>
+
       <footer className="lr-footer">
         <div className="lr-footer__inner">
-          <div className="lr-footer__grid">
+          <div className="lr-footer__grid" style={{ gridTemplateColumns: '1.5fr 1fr 1fr 1fr 1fr', gap: '32px' }}>
             <div className="lr-footer__brand">
               <div className="lr-footer__brand-lockup">
                 <span className="lr-nav__logo"><img src={BRAND.logoImage} alt="" /></span>
@@ -511,24 +549,37 @@ export default function LandingPage({ onGetStarted, onLogin, onSignUp }) {
               <p>Secure cloud storage for individuals and teams.</p>
             </div>
             <div className="lr-footer__col">
-              <h4>Product</h4>
-              <a href="#features">Features</a>
-              <a href="#pricing">Pricing</a>
-              <a href="#faq">FAQ</a>
+              <h4>PRODUCT</h4>
+              <a href="#features" onClick={(e) => { if(view!=='landing') { e.preventDefault(); onNavigate('landing'); }}}>Features</a>
+              <a href="#pricing" onClick={(e) => { if(view!=='landing') { e.preventDefault(); onNavigate('landing'); }}}>Pricing</a>
+              <a href="#faq" onClick={(e) => { if(view!=='landing') { e.preventDefault(); onNavigate('landing'); }}}>FAQ</a>
+              <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('security'); }}>Security</a>
+              <a href="#" style={{ color: 'var(--text-muted)', cursor: 'default' }}>What\'s New</a>
             </div>
             <div className="lr-footer__col">
-              <h4>Company</h4>
-              <a href="https://www.cloudvault.co.in" target="_blank" rel="noopener noreferrer">About</a>
-              <a href="https://www.cloudvault.co.in" target="_blank" rel="noopener noreferrer">Contact</a>
+              <h4>COMPANY</h4>
+              <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('about'); }}>About</a>
+              <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('contact'); }}>Contact</a>
+              <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('contact'); }}>Support</a>
+              <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('status'); }}>Status</a>
             </div>
             <div className="lr-footer__col">
-              <h4>Legal</h4>
-              <a href="https://www.cloudvault.co.in" target="_blank" rel="noopener noreferrer">Privacy</a>
-              <a href="https://www.cloudvault.co.in" target="_blank" rel="noopener noreferrer">Terms</a>
+              <h4>RESOURCES</h4>
+              <a href="#" style={{ color: 'var(--text-muted)', cursor: 'default' }}>Documentation (Soon)</a>
+              <a href="#" style={{ color: 'var(--text-muted)', cursor: 'default' }}>Help Center (Soon)</a>
+              <a href="#" style={{ color: 'var(--text-muted)', cursor: 'default' }}>API (Soon)</a>
+              <a href="#" style={{ color: 'var(--text-muted)', cursor: 'default' }}>Changelog (Soon)</a>
+            </div>
+            <div className="lr-footer__col">
+              <h4>LEGAL</h4>
+              <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('privacy'); }}>Privacy</a>
+              <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('terms'); }}>Terms</a>
+              <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('privacy'); }}>Cookie Policy</a>
+              <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('terms'); }}>Acceptable Use</a>
             </div>
           </div>
           <div className="lr-footer__bottom">
-            <span>© {new Date().getFullYear()} {BRAND.name}. All rights reserved.</span>
+            <span>&copy; 2026 {BRAND.name}. Made for your files.</span>
           </div>
         </div>
       </footer>
@@ -802,7 +853,7 @@ const LANDING_CSS = `
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: var(--surface);
-  overflow: hidden;
+  /* overflow: hidden removed to allow 3D pop out */
   box-shadow: 0 40px 80px -20px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.03);
 }
 .lr-preview__glow {
@@ -815,6 +866,8 @@ const LANDING_CSS = `
   display: flex; align-items: center; gap: 16px;
   padding: 12px 16px; border-bottom: 1px solid var(--border);
   background: rgba(255,255,255,.02);
+  border-top-left-radius: var(--radius-lg);
+  border-top-right-radius: var(--radius-lg);
 }
 .lr-preview__dots { display: flex; gap: 6px; }
 .lr-preview__dots span {
@@ -1153,8 +1206,7 @@ const LANDING_CSS = `
     background: rgba(16, 16, 20, 0.4);
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-    border-radius: 20px; overflow: hidden; width: 100%; max-width: 700px;
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);\n    border-radius: 20px; /* overflow: hidden removed */ width: 100%; max-width: 700px;
     margin: 40px auto 30px; position: relative;
     padding: 16px;
   }
@@ -1190,7 +1242,7 @@ const LANDING_CSS = `
   .lr-preview__card {
     background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 12px; padding: 16px; display: flex; flex-direction: column;
-    justify-content: flex-end; position: relative; overflow: hidden;
+    justify-content: flex-end; position: relative; /* overflow: hidden removed */
   }
   .lr-folder-icon {
     position: absolute; top: 16px; left: 16px; width: 40px; height: 30px;
@@ -1328,7 +1380,17 @@ const LANDING_CSS = `
   /* FAQ Accordion Tweak */
   .lr-faq__chevron { color: #e11d48; }
 
+  @keyframes floatCard {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
 @media (max-width: 900px) {
+  .lr-hero__preview { perspective: none; }
+  .lr-preview { transform: none !important; transition: none; }
+  .lr-preview:hover { transform: none !important; box-shadow: 0 40px 80px -20px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.03); }
+  .lr-preview__card { animation: floatCard 6s ease-in-out infinite; transform: none !important; }
+  .glass-file { animation: floatCard 5s ease-in-out infinite; transform: none !important; }
   .lr-features { grid-template-columns: repeat(2, 1fr); }
   .lr-pricing { grid-template-columns: repeat(2, 1fr); }
   .lr-why { grid-template-columns: 1fr; }

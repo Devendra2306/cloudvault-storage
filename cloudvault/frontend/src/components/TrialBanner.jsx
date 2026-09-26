@@ -1,7 +1,11 @@
+import { useState } from "react";
 import { fmt } from "../lib/fileTypes.js";
+import { X } from "lucide-react";
 
 export default function TrialBanner({ account, onUpgrade }) {
-  if (!account?.onTrial) return null;
+  const [isVisible, setIsVisible] = useState(true);
+
+  if (!account?.onTrial || !isVisible) return null;
 
   const days = account.trialDaysLeft ?? 0;
 
@@ -18,10 +22,11 @@ export default function TrialBanner({ account, onUpgrade }) {
         flexWrap: "wrap",
         fontFamily: "var(--font)",
         fontSize: 13,
+        position: "relative"
       }}
     >
       <span style={{ color: "var(--text-secondary)" }}>
-        <strong style={{ color: "var(--text)" }}>Pro trial</strong> — {days} day{days !== 1 ? "s" : ""} left · {fmt(account.storageUsed)} used
+        <strong style={{ color: "var(--text)" }}>Pro trial</strong> — {days} day{days !== 1 ? "s" : ""} left • {fmt(account.storageUsed)} used
       </span>
       <button
         type="button"
@@ -38,6 +43,24 @@ export default function TrialBanner({ account, onUpgrade }) {
         }}
       >
         Upgrade
+      </button>
+      <button
+        onClick={() => setIsVisible(false)}
+        style={{
+          position: 'absolute',
+          right: '16px',
+          background: 'none',
+          border: 'none',
+          color: 'var(--text-secondary)',
+          cursor: 'pointer',
+          padding: '4px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}
+        aria-label="Dismiss"
+      >
+        <X size={16} />
       </button>
     </div>
   );

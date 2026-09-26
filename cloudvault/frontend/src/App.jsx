@@ -955,9 +955,15 @@ export default function CloudVault() {
     );
   }
 
-  if (screen === "landing" && !token) {
+  const marketingPages = ["landing", "about", "contact", "privacy", "terms", "security", "status"];
+  if (marketingPages.includes(screen) && !token) {
     return (
       <LandingPage
+        view={screen}
+        onNavigate={(newScreen) => {
+          setScreen(newScreen);
+          window.scrollTo(0, 0);
+        }}
         onGetStarted={() => { setAuthMode("register"); setScreen("auth"); }}
         onLogin={() => { setAuthMode("login"); setScreen("auth"); }}
         onSignUp={() => { setAuthMode("register"); setScreen("auth"); }}
