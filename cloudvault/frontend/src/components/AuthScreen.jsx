@@ -513,7 +513,7 @@ export default function AuthScreen({ onAuth, onBack, onNeedsVerification, initia
       </h1>
 
       {/* Auth Card */}
-      <div className="gh-card">
+      <form className="gh-card" onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
         {error && (
           <div style={{ padding: '12px 16px', background: 'rgba(248,81,73,0.1)', border: '1px solid rgba(248,81,73,0.4)', borderRadius: 6, color: '#ff7b72', fontSize: 13, marginBottom: 16 }}>
             {error}
@@ -602,22 +602,22 @@ export default function AuthScreen({ onAuth, onBack, onNeedsVerification, initia
           </div>
         )}
 
-        <button type="button" onClick={handleSubmit} disabled={!canSubmit || loading} className="gh-btn" style={{ width: '100%', marginTop: 8 }}>
+        <button type="submit" disabled={!canSubmit || loading} className="gh-btn" style={{ width: '100%', marginTop: 8 }}>
           {loading ? <Spinner /> : submitLabel}
         </button>
 
         {/* Social Logins */}
         {[STEPS.LOGIN, STEPS.REGISTER].includes(step) && (
           <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid #30363d', textAlign: 'center' }}>
-            <button type="button" onClick={() => handleOAuth('google')} className="gh-btn" style={{ background: 'transparent', color: '#c9d1d9', borderColor: '#30363d', width: '100%', marginBottom: 8 }}>
+            <button type="button" onClick={() => handleOAuth('google')} disabled={loading || !firebaseReady} className="gh-btn" style={{ background: 'transparent', color: '#c9d1d9', borderColor: '#30363d', width: '100%', marginBottom: 8, opacity: (loading || !firebaseReady) ? 0.5 : 1 }}>
                Sign in with Google
             </button>
-            <button type="button" onClick={() => handleOAuth('github')} className="gh-btn" style={{ background: 'transparent', color: '#c9d1d9', borderColor: '#30363d', width: '100%' }}>
+            <button type="button" onClick={() => handleOAuth('github')} disabled={loading || !firebaseReady} className="gh-btn" style={{ background: 'transparent', color: '#c9d1d9', borderColor: '#30363d', width: '100%', opacity: (loading || !firebaseReady) ? 0.5 : 1 }}>
                Sign in with GitHub
             </button>
           </div>
         )}
-      </div>
+      </form>
 
       {/* Footer / Toggle Step */}
       <div style={{ width: 308, marginTop: 16, padding: '16px 20px', border: '1px solid #30363d', borderRadius: 6, textAlign: 'center', fontSize: 14, color: '#e6edf3' }}>
