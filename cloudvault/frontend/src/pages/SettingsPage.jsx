@@ -69,46 +69,63 @@ export default function SettingsPage({ account, api, token, onBack, onUpdated, n
     }
   };
 
-  return (
-    <div style={{ maxWidth: 520 }}>
-      <button type="button" onClick={onBack} style={backBtn}>← Back</button>
-      <h1 style={title}>Settings</h1>
+  const premiumCard = {
+    background: "rgba(255, 255, 255, 0.03)",
+    backdropFilter: "blur(24px)",
+    border: "1px solid rgba(255, 255, 255, 0.08)",
+    borderRadius: 16,
+    padding: 28,
+    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.2)",
+    marginBottom: 20
+  };
 
-      <section style={card}>
-        <h3 style={sectionTitle}>Profile</h3>
-        <Field label="Display name" value={name} onChange={setName} />
+  return (
+    <div style={{ maxWidth: 640, margin: "0 auto", animation: "fade-in 0.4s ease-out" }}>
+      <button type="button" onClick={onBack} style={backBtn}>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        Back to Dashboard
+      </button>
+      
+      <h1 style={{ fontSize: 32, fontWeight: 800, marginBottom: 28, background: "linear-gradient(90deg, #fff, #a1a1aa)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+        Settings
+      </h1>
+
+      <section style={premiumCard}>
+        <h3 style={sectionTitle}>Profile Details</h3>
+        <Field label="Display Name" value={name} onChange={setName} />
         <Field label="Avatar URL" value={avatar} onChange={setAvatar} placeholder="https://..." />
-        <button type="button" onClick={saveProfile} disabled={saving} style={primaryBtn}>Save changes</button>
+        <button type="button" onClick={saveProfile} disabled={saving} style={primaryBtn}>
+          {saving ? "Saving..." : "Save Changes"}
+        </button>
       </section>
 
       {account?.emailVerificationRequired && !account?.isVerified && (
-        <section style={{ ...card, marginTop: 16 }}>
-          <h3 style={sectionTitle}>Email verification</h3>
-          <p style={hint}>Verify your email to upload files.</p>
-          <button type="button" onClick={resendVerify} style={secondaryBtn}>Resend verification email</button>
+        <section style={{ ...premiumCard, border: "1px solid rgba(245, 158, 11, 0.3)", background: "rgba(245, 158, 11, 0.05)" }}>
+          <h3 style={{ ...sectionTitle, color: "#f59e0b" }}>Email Verification</h3>
+          <p style={hint}>Verify your email to upload files and secure your account.</p>
+          <button type="button" onClick={resendVerify} style={secondaryBtn}>Resend Verification Email</button>
         </section>
       )}
 
       {account?.authProvider === "email" && (
-        <section style={{ ...card, marginTop: 16 }}>
-          <h3 style={sectionTitle}>Password</h3>
-          <Field label="Current password" value={currentPassword} onChange={setCurrentPassword} type="password" />
-          <Field label="New password" value={newPassword} onChange={setNewPassword} type="password" />
-          <button type="button" onClick={changePassword} disabled={saving} style={primaryBtn}>Update password</button>
+        <section style={premiumCard}>
+          <h3 style={sectionTitle}>Security</h3>
+          <Field label="Current Password" value={currentPassword} onChange={setCurrentPassword} type="password" />
+          <Field label="New Password" value={newPassword} onChange={setNewPassword} type="password" />
+          <button type="button" onClick={changePassword} disabled={saving} style={primaryBtn}>Update Password</button>
         </section>
       )}
 
-      <section style={{ ...card, marginTop: 16 }}>
-        <h3 style={sectionTitle}>Theme</h3>
+      <section style={premiumCard}>
+        <h3 style={sectionTitle}>App Theme</h3>
         <p style={hint}>Choose how CloudVault looks across this browser.</p>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 10 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12, marginTop: 16 }}>
           {THEMES.map((item) => (
             <button
               key={item.id}
               type="button"
               onClick={() => onThemeChange?.(item.id)}
-              className={theme === item.id ? "btn-primary" : "btn-secondary"}
-              style={{ minHeight: 44, textAlign: "left" }}
+              style={theme === item.id ? { ...primaryBtn, padding: "12px 16px" } : { ...secondaryBtn, padding: "12px 16px" }}
             >
               {item.label}
             </button>
@@ -116,44 +133,52 @@ export default function SettingsPage({ account, api, token, onBack, onUpdated, n
         </div>
       </section>
 
-      <section style={{ ...card, marginTop: 16 }}>
-        <h3 style={sectionTitle}>Notifications</h3>
-        <p style={hint}>Product updates, file activity, and security emails are enabled for important account events.</p>
-        <button type="button" style={secondaryBtn}>Email notifications on</button>
-      </section>
-
-      <section style={{ ...card, marginTop: 16, borderColor: "rgba(255,77,77,.3)" }}>
-        <h3 style={{ ...sectionTitle, color: "var(--danger)" }}>Delete account</h3>
+      <section style={{ ...premiumCard, border: "1px solid rgba(239, 68, 68, 0.2)", background: "rgba(239, 68, 68, 0.03)" }}>
+        <h3 style={{ ...sectionTitle, color: "#ef4444" }}>Danger Zone</h3>
+        <p style={{ ...hint, marginBottom: 16 }}>Once you delete your account, there is no going back. Please be certain.</p>
         {account?.authProvider === "email" && (
-          <Field label="Confirm password" value={deletePassword} onChange={setDeletePassword} type="password" />
+          <Field label="Confirm Password" value={deletePassword} onChange={setDeletePassword} type="password" />
         )}
-        <button type="button" onClick={deleteAccount} style={dangerBtn}>Delete my account</button>
+        <button type="button" onClick={deleteAccount} style={dangerBtn}>Delete Account</button>
       </section>
     </div>
   );
 }
 
 function Field({ label, value, onChange, type = "text", placeholder }) {
+  const [focused, setFocused] = useState(false);
   return (
-    <label style={{ display: "block", marginBottom: 14 }}>
-      <span style={{ fontSize: 12, fontWeight: 600, color: "var(--text-secondary)" }}>{label}</span>
+    <label style={{ display: "block", marginBottom: 20 }}>
+      <span style={{ fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.6)", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: 8 }}>{label}</span>
       <input
         type={type}
         value={value}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
-        style={input}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        style={{
+          display: "block",
+          width: "100%",
+          padding: "14px 16px",
+          borderRadius: 12,
+          border: `1px solid ${focused ? "var(--accent)" : "rgba(255,255,255,0.1)"}`,
+          background: "rgba(0,0,0,0.2)",
+          color: "#fff",
+          fontFamily: "var(--font)",
+          fontSize: 15,
+          outline: "none",
+          transition: "all 0.2s ease",
+          boxShadow: focused ? "0 0 0 4px rgba(var(--accent-rgb), 0.15)" : "none"
+        }}
       />
     </label>
   );
 }
 
-const backBtn = { background: "none", border: "none", color: "var(--accent-blue)", cursor: "pointer", fontWeight: 600, marginBottom: 12, fontFamily: "var(--font)" };
-const title = { fontSize: 26, fontWeight: 800, marginBottom: 20 };
-const card = { background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 14, padding: 22 };
-const sectionTitle = { fontSize: 15, fontWeight: 700, marginBottom: 14 };
-const hint = { fontSize: 13, color: "var(--text-muted)", marginBottom: 12 };
-const input = { display: "block", width: "100%", marginTop: 6, padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg-primary)", color: "var(--text)", fontFamily: "var(--font)" };
-const primaryBtn = { padding: "10px 18px", borderRadius: 10, border: "none", background: "var(--accent)", color: "#fff", fontWeight: 700, cursor: "pointer", fontFamily: "var(--font)" };
-const secondaryBtn = { ...primaryBtn, background: "var(--bg-primary)", color: "var(--text)", border: "1px solid var(--border)" };
-const dangerBtn = { ...primaryBtn, background: "var(--danger)" };
+const backBtn = { display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", color: "var(--accent)", cursor: "pointer", fontWeight: 600, marginBottom: 20, padding: 0, fontSize: 15, transition: "color 0.2s ease" };
+const sectionTitle = { fontSize: 18, fontWeight: 700, marginBottom: 16, color: "#fff" };
+const hint = { fontSize: 14, color: "rgba(255,255,255,0.5)", marginBottom: 16, lineHeight: 1.5 };
+const primaryBtn = { padding: "12px 24px", borderRadius: 12, border: "none", background: "linear-gradient(135deg, var(--accent), #f43f5e)", color: "#fff", fontWeight: 700, cursor: "pointer", fontFamily: "var(--font)", fontSize: 15, boxShadow: "0 4px 14px rgba(244, 63, 94, 0.3)", transition: "transform 0.2s, box-shadow 0.2s" };
+const secondaryBtn = { ...primaryBtn, background: "rgba(255,255,255,0.05)", color: "#fff", border: "1px solid rgba(255,255,255,0.1)", boxShadow: "none" };
+const dangerBtn = { ...primaryBtn, background: "linear-gradient(135deg, #ef4444, #b91c1c)", boxShadow: "0 4px 14px rgba(239, 68, 68, 0.3)" };
