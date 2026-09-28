@@ -5,7 +5,7 @@ import { GLOBAL_STYLES } from "../styles/globalStyles.js";
 import { isFirebaseConfigured, getFirebaseProviderStatus, signInWithProvider } from "../firebase.js";
 import Turnstile from "./Turnstile.jsx";
 
-// ── Helpers ────────────────────────────────────────────────────────────────────
+// ΓöÇΓöÇ Helpers ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 const friendlyError = (msg = "") => {
   const m = msg.toLowerCase();
   if (m.includes("failed to fetch") || m.includes("cannot reach") || m.includes("networkerror"))
@@ -18,7 +18,7 @@ const friendlyError = (msg = "") => {
 const validateEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 const validatePassword = (p) => p.length >= 8 && /[A-Z]/.test(p) && /[a-z]/.test(p) && /\d/.test(p);
 
-// ── Sub-components ─────────────────────────────────────────────────────────────
+// ΓöÇΓöÇ Sub-components ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 function Spinner({ size = 20 }) {
   return (
     <span style={{
@@ -30,15 +30,16 @@ function Spinner({ size = 20 }) {
   );
 }
 
-function BrandMark({ size = 42 }) {
+function BrandMark({ size = 48 }) {
   return (
     <span style={{
-      width: size, height: size, borderRadius: "50%",
-      background: "var(--mega-red, #d90007)", display: "inline-flex", alignItems: "center",
-      justifyContent: "center", boxShadow: "0 8px 24px rgba(217,0,7,.35)",
-      flexShrink: 0, overflow: "hidden",
+      width: size, height: size, borderRadius: 14,
+      background: "linear-gradient(135deg, #d90007, #ff4d4d)", 
+      display: "inline-flex", alignItems: "center",
+      justifyContent: "center", boxShadow: "0 12px 24px -6px rgba(217,0,7,0.4)",
+      flexShrink: 0, overflow: "hidden", border: "1px solid rgba(255,255,255,0.15)"
     }}>
-      <img src={BRAND.logoImage} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+      <img src={BRAND.logoImage} alt="" style={{ width: "65%", height: "65%", objectFit: "contain" }} />
     </span>
   );
 }
@@ -50,16 +51,14 @@ function FloatingInput({ label, type = "text", value, onChange, placeholder, aut
     <div style={{ position: "relative", marginBottom: 4 }}>
       <label style={{
         position: "absolute", left: 16,
-        top: focused || hasValue ? 8 : "50%",
-        transform: focused || hasValue ? "translateY(0) scale(0.82)" : "translateY(-50%)",
+        top: focused || hasValue ? 10 : "50%",
+        transform: focused || hasValue ? "translateY(0) scale(0.85)" : "translateY(-50%)",
         transformOrigin: "left top",
-        fontSize: focused || hasValue ? 11 : 14,
-        fontWeight: 600,
-        color: focused ? "var(--cv-accent)" : error ? "var(--cv-danger)" : "var(--cv-text-muted)",
-        transition: "all 0.18s cubic-bezier(0.4,0,0.2,1)",
+        fontSize: focused || hasValue ? 12 : 15,
+        fontWeight: 500,
+        color: focused ? "var(--cv-accent-blue)" : error ? "var(--cv-danger)" : "var(--cv-text-muted)",
+        transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
         pointerEvents: "none", zIndex: 1,
-        letterSpacing: focused || hasValue ? "0.04em" : "0",
-        textTransform: focused || hasValue ? "uppercase" : "none",
       }}>
         {label}
       </label>
@@ -72,17 +71,17 @@ function FloatingInput({ label, type = "text", value, onChange, placeholder, aut
         autoFocus={autoFocus}
         placeholder={focused ? placeholder : ""}
         style={{
-          width: "100%", padding: "28px 16px 10px",
-          background: "var(--cv-bg-card)",
-          border: `1.5px solid ${error ? "var(--cv-danger)" : focused ? "var(--cv-accent)" : "var(--cv-border)"}`,
+          width: "100%", padding: "26px 16px 10px",
+          background: "rgba(0, 0, 0, 0.25)",
+          border: `1px solid ${error ? "var(--cv-danger)" : focused ? "rgba(59,130,246,0.5)" : "var(--cv-border)"}`,
           borderRadius: "var(--cv-radius-lg)",
           color: "var(--cv-text)", fontSize: 15, outline: "none",
-          transition: "border-color 0.18s ease, box-shadow 0.18s ease",
-          boxShadow: focused ? `0 0 0 3px ${error ? "rgba(239,68,68,0.12)" : "rgba(99,102,241,0.12)"}` : "none",
+          transition: "all 0.2s ease",
+          boxShadow: focused ? `0 0 0 4px ${error ? "rgba(239,68,68,0.1)" : "rgba(59,130,246,0.15)"}` : "none",
         }}
       />
       {error && (
-        <div style={{ fontSize: 12, color: "var(--cv-danger)", marginTop: 4, paddingLeft: 4, fontWeight: 500 }}>
+        <div style={{ fontSize: 13, color: "var(--cv-danger)", marginTop: 6, paddingLeft: 4, fontWeight: 500 }}>
           {error}
         </div>
       )}
@@ -201,7 +200,7 @@ function PasswordStrength({ password }) {
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
         {checks.map((c) => (
           <span key={c.label} style={{ fontSize: 11, color: c.ok ? "#10b981" : "var(--cv-text-muted)", fontWeight: 500 }}>
-            {c.ok ? "✓" : "○"} {c.label}
+            {c.ok ? "Γ£ô" : "Γùï"} {c.label}
           </span>
         ))}
       </div>
@@ -209,7 +208,7 @@ function PasswordStrength({ password }) {
   );
 }
 
-// ── Auth Screen Views ──────────────────────────────────────────────────────────
+// ΓöÇΓöÇ Auth Screen Views ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 
 const STEPS = {
   LOGIN: "login",
@@ -219,7 +218,7 @@ const STEPS = {
   RESET_PASSWORD: "reset_password",
 };
 
-// ── Main Component ─────────────────────────────────────────────────────────────
+// ΓöÇΓöÇ Main Component ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 export default function AuthScreen({ onAuth, onBack, onNeedsVerification, initialMode = "login" }) {
   const [step, setStep] = useState(initialMode === "login" ? STEPS.LOGIN : STEPS.REGISTER);
   const [loading, setLoading] = useState(false);
@@ -289,7 +288,7 @@ export default function AuthScreen({ onAuth, onBack, onNeedsVerification, initia
     setTurnstileKey((k) => k + 1);
   };
 
-  // ── Handlers ──────────────────────────────────────────────────────────────
+  // ΓöÇΓöÇ Handlers ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   const handleLogin = async () => {
     const errs = {};
     if (!validateEmail(email)) errs.email = "Enter a valid email address";
@@ -438,7 +437,7 @@ export default function AuthScreen({ onAuth, onBack, onNeedsVerification, initia
     setLoading(false);
   };
 
-  // ── Step Configs ────────────────────────────────────────────────────────────
+  // ΓöÇΓöÇ Step Configs ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   const stepTitles = {
     [STEPS.LOGIN]: { title: "Welcome back", sub: `Sign in to ${BRAND.name}` },
     [STEPS.REGISTER]: { title: "Create account", sub: "Start your CloudVault journey" },
@@ -466,181 +465,356 @@ export default function AuthScreen({ onAuth, onBack, onNeedsVerification, initia
     [STEPS.RESET_PASSWORD]: "Reset password",
   }[step];
 
-  // 👇👇 Render 👇👇
+  // ΓöÇΓöÇ Render ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   return (
-    <div style={{ minHeight: '100vh', background: '#050505', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: 'var(--font, -apple-system, BlinkMacSystemFont, sans-serif)', position: 'relative', overflow: 'hidden' }}>
-      
-      {/* Subtle Background Glow */}
-      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '80vw', height: '80vw', maxWidth: 800, maxHeight: 800, background: 'radial-gradient(circle, rgba(59,130,246,0.15) 0%, rgba(0,0,0,0) 70%)', pointerEvents: 'none', zIndex: 0 }}></div>
-
+    <div className="auth-splash" style={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '24px',
+      position: 'relative',
+      background: '#050505',
+      overflow: 'hidden'
+    }}>
+      <style>{GLOBAL_STYLES}</style>
       <style>{`
-        .auth-container { position: relative; z-index: 10; width: 100%; max-width: 420px; display: flex; flex-direction: column; align-items: center; }
-        .auth-card { width: 100%; background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 24px; padding: 40px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
-        .auth-title { font-size: 28px; font-weight: 700; color: #fff; margin-bottom: 8px; text-align: center; letter-spacing: -0.02em; }
-        .auth-subtitle { font-size: 15px; color: #a1a1aa; text-align: center; margin-bottom: 32px; }
-        .auth-label { display: block; font-size: 13px; font-weight: 500; color: #d4d4d8; margin-bottom: 8px; }
-        .auth-input { width: 100%; background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 14px 16px; color: #fff; font-size: 15px; outline: none; transition: all 0.2s ease; box-sizing: border-box; }
-        .auth-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15); background: rgba(0, 0, 0, 0.4); }
-        .auth-btn-primary { width: 100%; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #fff; border: none; border-radius: 12px; padding: 14px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.25); display: flex; align-items: center; justify-content: center; margin-top: 24px; }
-        .auth-btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 20px 0 rgba(59, 130, 246, 0.4); }
-        .auth-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
-        .auth-btn-social { width: 100%; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 12px; font-size: 14px; font-weight: 500; color: #e4e4e7; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .auth-btn-social:hover:not(:disabled) { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.15); }
-        .auth-btn-social:disabled { opacity: 0.5; cursor: not-allowed; }
-        .auth-link { color: #3b82f6; text-decoration: none; background: none; border: none; padding: 0; font-size: inherit; cursor: pointer; font-weight: 500; transition: color 0.2s ease; }
-        .auth-link:hover { color: #60a5fa; }
-        .auth-divider { display: flex; align-items: center; text-align: center; margin: 24px 0; color: #71717a; font-size: 13px; }
-        .auth-divider::before, .auth-divider::after { content: ''; flex: 1; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
-        .auth-divider:not(:empty)::before { margin-right: 16px; }
-        .auth-divider:not(:empty)::after { margin-left: 16px; }
-        /* Variables for OtpInput */
         :root {
-          --cv-bg-card: rgba(0,0,0,0.2);
+          --cv-bg-card: rgba(20, 20, 20, 0.6);
+          --cv-surface-raised: rgba(255, 255, 255, 0.03);
           --cv-border: rgba(255,255,255,0.1);
-          --cv-text: #fff;
-          --cv-accent: #3b82f6;
+          --cv-border-strong: rgba(217,0,7,0.5);
+          --cv-text: #ffffff;
+          --cv-text-muted: #a1a1aa;
+          --cv-text-secondary: #e4e4e7;
+          --cv-accent: #d90007;
+          --cv-accent-blue: #3b82f6;
+          --cv-danger: #ef4444;
+          --cv-radius-lg: 16px;
         }
+        @keyframes cv-spin { to { transform: rotate(360deg); } }
+        @keyframes cv-slide-in { 
+          from { opacity: 0; transform: translateY(30px) scale(0.98); } 
+          to { opacity: 1; transform: translateY(0) scale(1); } 
+        }
+        @keyframes cv-fade { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes mesh-gradient {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        .auth-background {
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(circle at 15% 50%, rgba(217,0,7,0.15), transparent 25%),
+                      radial-gradient(circle at 85% 30%, rgba(59,130,246,0.15), transparent 25%);
+          background-size: 200% 200%;
+          animation: mesh-gradient 15s ease infinite;
+          z-index: 0;
+          pointer-events: none;
+        }
+        .cv-auth-card { 
+          animation: cv-slide-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+          backdrop-filter: blur(24px);
+          -webkit-backdrop-filter: blur(24px);
+          z-index: 10;
+        }
+        .cv-auth-step { animation: cv-fade 0.4s ease forwards; }
       `}</style>
+      
+      <div className="auth-background" />
 
-      <div className="auth-container">
-        {/* Logo */}
-        <div style={{ marginBottom: 32, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center' }} onClick={onBack}>
-          <div style={{
-            width: 56, height: 56, borderRadius: 16, background: 'linear-gradient(135deg, #d90007, #ff4d4d)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(217,0,7,0.3)'
-          }}>
-            <img src={BRAND.logoImage} alt="CloudVault" style={{ width: 32, height: 32 }} />
+      <div className="cv-auth-card" style={{
+        width: "100%", maxWidth: 440,
+        background: "var(--cv-bg-card)",
+        borderRadius: 24, 
+        border: "1px solid var(--cv-border)",
+        boxShadow: "0 40px 80px -20px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.05)",
+        overflow: "hidden",
+        position: "relative",
+      }}>
+        {/* Top gradient glow */}
+        <div style={{
+          position: "absolute", top: 0, left: 0, right: 0, height: 120,
+          background: "linear-gradient(180deg, rgba(217,0,7,0.08) 0%, transparent 100%)",
+          pointerEvents: "none"
+        }} />
+
+        <div style={{ padding: "40px 36px" }}>
+          {/* Brand */}
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 28, justifyContent: "center" }}>
+            <BrandMark size={36} />
+            <div style={{ fontSize: 18, fontWeight: 800, color: "var(--cv-text)", letterSpacing: "-0.02em" }}>
+              {BRAND.name}
+            </div>
           </div>
-        </div>
 
-        <form className="auth-card" onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
-          <h1 className="auth-title">{stepTitles[step].title}</h1>
-          <p className="auth-subtitle">
-            {step === STEPS.LOGIN ? "Enter your credentials to access your vault" : 
-             step === STEPS.REGISTER ? "Sign up to start securely storing your files" :
-             "Follow the instructions to regain access"}
-          </p>
+          {/* Back / Step indicator */}
+          {step !== STEPS.LOGIN && (
+            <button type="button" onClick={goBack} style={{
+              display: "flex", alignItems: "center", gap: 6, marginBottom: 24,
+              background: "none", border: "none", cursor: "pointer",
+              color: "var(--text-muted)", fontSize: 13, fontWeight: 600,
+              padding: "4px 0", transition: "color 0.15s",
+            }} onMouseEnter={(e) => e.currentTarget.style.color = "var(--text)"}
+              onMouseLeave={(e) => e.currentTarget.style.color = "var(--text-muted)"}>
+              ΓåÉ Back
+            </button>
+          )}
 
-          {error && (
-            <div style={{ padding: '14px 16px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 12, color: '#fca5a5', fontSize: 14, marginBottom: 24, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-              <span>{error}</span>
+          {/* Title */}
+          <div className="cv-auth-step" style={{ marginBottom: 28 }}>
+            <h1 style={{ fontSize: 26, fontWeight: 800, color: "var(--text)", letterSpacing: "-0.03em", margin: "0 0 4px" }}>
+              {stepTitles[step].title}
+            </h1>
+            <p style={{ fontSize: 14, color: "var(--text-muted)", margin: 0, fontWeight: 500 }}>
+              {stepTitles[step].sub}
+            </p>
+          </div>
+
+          {/* Login/Register Tab Switcher */}
+          {(step === STEPS.LOGIN || step === STEPS.REGISTER) && (
+            <div style={{
+              display: "flex", gap: 4, background: "var(--surface-raised)",
+              borderRadius: 14, padding: 4, marginBottom: 24,
+              border: "1px solid var(--border)",
+            }}>
+              {[STEPS.LOGIN, STEPS.REGISTER].map((s) => (
+                <button key={s} type="button" onClick={() => goTo(s)} style={{
+                  flex: 1, padding: "9px 12px", borderRadius: 10, border: "none",
+                  background: step === s ? "var(--bg-card)" : "transparent",
+                  color: step === s ? "var(--text)" : "var(--text-muted)",
+                  fontSize: 14, fontWeight: step === s ? 700 : 500, cursor: "pointer",
+                  boxShadow: step === s ? "0 2px 8px rgba(0,0,0,0.08)" : "none",
+                  transition: "all 0.18s ease",
+                }}>
+                  {s === STEPS.LOGIN ? "Sign In" : "Sign Up"}
+                </button>
+              ))}
             </div>
           )}
 
-          {info && (
-            <div style={{ padding: '14px 16px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 12, color: '#86efac', fontSize: 14, marginBottom: 24, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-              <span>{info}</span>
-            </div>
-          )}
+          {/* ΓöÇΓöÇ FORM FIELDS ΓöÇΓöÇ */}
+          <div className="cv-auth-step" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
 
-          {step === STEPS.LOGIN && (
-            <>
-              <div style={{ marginBottom: 20 }}>
-                <label className="auth-label">Email Address</label>
-                <input type="email" className="auth-input" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} autoFocus />
-              </div>
-              <div style={{ marginBottom: 8 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
-                  <label className="auth-label" style={{ margin: 0 }}>Password</label>
-                  <button type="button" onClick={() => goTo(STEPS.FORGOT)} className="auth-link" style={{ fontSize: 13 }}>Forgot password?</button>
+            {/* REGISTER: Full Name */}
+            {step === STEPS.REGISTER && (
+              <FloatingInput
+                label="Full Name"
+                value={fullName}
+                onChange={(e) => { setFullName(e.target.value); setFieldErrors((p) => ({ ...p, fullName: "" })); }}
+                placeholder="Jane Smith"
+                autoFocus
+                error={fieldErrors.fullName}
+              />
+            )}
+
+            {/* LOGIN + REGISTER + FORGOT: Email */}
+            {[STEPS.LOGIN, STEPS.REGISTER, STEPS.FORGOT].includes(step) && (
+              <FloatingInput
+                label="Email Address"
+                type="email"
+                value={email}
+                onChange={(e) => { setEmail(e.target.value); setFieldErrors((p) => ({ ...p, email: "" })); }}
+                placeholder="you@example.com"
+                autoFocus={step === STEPS.LOGIN || step === STEPS.FORGOT}
+                error={fieldErrors.email}
+              />
+            )}
+
+            {/* LOGIN + REGISTER + RESET: Password */}
+            {[STEPS.LOGIN, STEPS.REGISTER, STEPS.RESET_PASSWORD].includes(step) && (
+              <div>
+                <div style={{ position: "relative" }}>
+                  <FloatingInput
+                    label="Password"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => { setPassword(e.target.value); setFieldErrors((p) => ({ ...p, password: "" })); }}
+                    placeholder={step === STEPS.LOGIN ? "Your password" : "Min 8 chars, A-Z, 0-9"}
+                    autoFocus={step === STEPS.RESET_PASSWORD}
+                    error={fieldErrors.password}
+                  />
+                  <button type="button" onClick={() => setShowPassword((v) => !v)} style={{
+                    position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)",
+                    background: "none", border: "none", cursor: "pointer",
+                    color: "var(--text-muted)", fontSize: 13, fontWeight: 600, marginTop: fieldErrors.password ? -10 : 0,
+                  }}>
+                    {showPassword ? "Hide" : "Show"}
+                  </button>
                 </div>
-                <input type="password" className="auth-input" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} />
+                {(step === STEPS.REGISTER || step === STEPS.RESET_PASSWORD) && (
+                  <PasswordStrength password={password} />
+                )}
               </div>
-            </>
-          )}
+            )}
 
-          {step === STEPS.REGISTER && (
-            <>
-              <div style={{ marginBottom: 20 }}>
-                <label className="auth-label">Email Address</label>
-                <input type="email" className="auth-input" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} autoFocus />
+            {/* REGISTER + RESET: Confirm Password */}
+            {[STEPS.REGISTER, STEPS.RESET_PASSWORD].includes(step) && (
+              <div style={{ position: "relative" }}>
+                <FloatingInput
+                  label="Confirm Password"
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => { setConfirmPassword(e.target.value); setFieldErrors((p) => ({ ...p, confirmPassword: "" })); }}
+                  placeholder="Repeat your password"
+                  error={fieldErrors.confirmPassword}
+                />
+                <button type="button" onClick={() => setShowConfirmPassword((v) => !v)} style={{
+                  position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)",
+                  background: "none", border: "none", cursor: "pointer",
+                  color: "var(--text-muted)", fontSize: 13, fontWeight: 600, marginTop: fieldErrors.confirmPassword ? -10 : 0,
+                }}>
+                  {showConfirmPassword ? "Hide" : "Show"}
+                </button>
               </div>
-              <div style={{ marginBottom: 20 }}>
-                <label className="auth-label">Password</label>
-                <input type="password" className="auth-input" placeholder="Create a password" value={password} onChange={e => setPassword(e.target.value)} />
-              </div>
-              <div style={{ marginBottom: 8 }}>
-                <label className="auth-label">Confirm Password</label>
-                <input type="password" className="auth-input" placeholder="Confirm your password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
-              </div>
-            </>
-          )}
+            )}
 
-          {step === STEPS.FORGOT && (
-            <div style={{ marginBottom: 8 }}>
-              <label className="auth-label">Email Address</label>
-              <input type="email" className="auth-input" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} autoFocus />
-            </div>
-          )}
-
-          {step === STEPS.VERIFY_OTP && (
-            <div style={{ marginBottom: 8 }}>
-              <label className="auth-label" style={{ textAlign: 'center', marginBottom: 16 }}>Verification Code</label>
-              <div style={{ display: 'flex', justifyContent: 'center' }}>
+            {/* OTP Input */}
+            {step === STEPS.VERIFY_OTP && (
+              <div>
                 <OtpInput value={otp} onChange={setOtp} />
+                <div style={{ textAlign: "center", marginTop: 12 }}>
+                  <span style={{ fontSize: 13, color: "var(--text-muted)" }}>
+                    Didn't get the code?{" "}
+                  </span>
+                  <button type="button" onClick={handleResendOtp} disabled={otpResendCooldown > 0 || loading} style={{
+                    background: "none", border: "none", cursor: otpResendCooldown > 0 ? "default" : "pointer",
+                    color: otpResendCooldown > 0 ? "var(--text-muted)" : "var(--accent-blue)",
+                    fontSize: 13, fontWeight: 600,
+                  }}>
+                    {otpResendCooldown > 0 ? `Resend in ${otpResendCooldown}s` : "Resend"}
+                  </button>
+                </div>
               </div>
+            )}
+
+            {/* LOGIN: Remember me + Forgot password */}
+            {step === STEPS.LOGIN && (
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
+                  <input type="checkbox" checked={keepLoggedIn} onChange={(e) => setKeepLoggedIn(e.target.checked)}
+                    style={{ width: 16, height: 16, accentColor: "var(--accent-blue)" }} />
+                  <span style={{ fontSize: 13, color: "var(--text-secondary)", fontWeight: 500 }}>Remember me</span>
+                </label>
+                <button type="button" onClick={() => goTo(STEPS.FORGOT)} style={{
+                  background: "none", border: "none", cursor: "pointer",
+                  color: "var(--accent-blue)", fontSize: 13, fontWeight: 600,
+                }}>
+                  Forgot password?
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* ΓöÇΓöÇ Error / Info Banners ΓöÇΓöÇ */}
+          {error && (
+            <div style={{
+              marginTop: 16, padding: "12px 14px",
+              background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)",
+              borderRadius: 12, color: "#ef4444", fontSize: 13, fontWeight: 500, lineHeight: 1.5,
+            }}>
+              {error}
+              {error.includes("verify your email") && (
+                <button type="button" onClick={async () => {
+                  try {
+                    await apiFetch("/auth/resend-verification", { method: "POST", body: JSON.stringify({ email }) });
+                    setInfo("Verification email resent. Check your inbox.");
+                    setError("");
+                  } catch (e) { /* noop */ }
+                }} style={{
+                  display: "block", marginTop: 8, background: "none", border: "none",
+                  cursor: "pointer", color: "var(--accent-blue)", fontSize: 12, fontWeight: 600,
+                }}>
+                  Resend verification email ΓåÆ
+                </button>
+              )}
             </div>
           )}
-
-          {step === STEPS.RESET_PASSWORD && (
-            <>
-              <div style={{ marginBottom: 20 }}>
-                <label className="auth-label">New Password</label>
-                <input type="password" className="auth-input" placeholder="New password" value={password} onChange={e => setPassword(e.target.value)} autoFocus />
-              </div>
-              <div style={{ marginBottom: 8 }}>
-                <label className="auth-label">Confirm New Password</label>
-                <input type="password" className="auth-input" placeholder="Confirm password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
-              </div>
-            </>
+          {info && (
+            <div style={{
+              marginTop: 16, padding: "12px 14px",
+              background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.2)",
+              borderRadius: 12, color: "#10b981", fontSize: 13, fontWeight: 500, lineHeight: 1.5,
+            }}>
+              {info}
+            </div>
           )}
 
           {/* Turnstile */}
           {turnstileEnabled && [STEPS.LOGIN, STEPS.REGISTER, STEPS.FORGOT].includes(step) && (
-            <div style={{ marginTop: 24, display: 'flex', justifyContent: 'center' }}>
+            <div style={{ marginTop: 16 }}>
               <Turnstile
                 key={turnstileKey}
                 onVerified={(t) => { setTurnstileToken(t); setTurnstileVerified(true); }}
-                onError={(message) => { setError(message || "Security check failed."); setTurnstileVerified(false); }}
+                onError={(message) => { setError(message || "Security check failed. Please refresh."); setTurnstileVerified(false); }}
                 onExpire={() => { setTurnstileToken(null); setTurnstileVerified(false); }}
               />
             </div>
           )}
 
-          <button type="submit" disabled={!canSubmit || loading} className="auth-btn-primary">
+          {/* ── Submit Button ── */}
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={!canSubmit}
+            style={{
+              width: "100%", marginTop: 24, padding: "16px 20px",
+              background: canSubmit
+                ? "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)"
+                : "rgba(255, 255, 255, 0.05)",
+              color: canSubmit ? "#fff" : "var(--cv-text-muted)",
+              border: canSubmit ? "none" : "1px solid rgba(255,255,255,0.05)",
+              borderRadius: 14, fontSize: 16, fontWeight: 600,
+              cursor: canSubmit ? "pointer" : "not-allowed",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+              transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+              boxShadow: canSubmit ? "0 8px 24px -6px rgba(59,130,246,0.5), inset 0 1px 0 rgba(255,255,255,0.2)" : "none",
+            }}
+            onMouseEnter={(e) => { if (canSubmit) e.currentTarget.style.transform = "translateY(-2px)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
+          >
             {loading ? <Spinner /> : submitLabel}
           </button>
 
-          {/* Social Logins */}
+          {/* ΓöÇΓöÇ Social Login (Login + Register only) ΓöÇΓöÇ */}
           {[STEPS.LOGIN, STEPS.REGISTER].includes(step) && (
-            <>
-              <div className="auth-divider">Or continue with</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <button type="button" onClick={() => handleOAuth('google')} disabled={loading || !firebaseReady} className="auth-btn-social">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-                  Google
-                </button>
-                <button type="button" onClick={() => handleOAuth('github')} disabled={loading || !firebaseReady} className="auth-btn-social">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
-                  GitHub
-                </button>
+            <div style={{ marginTop: 20 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+                <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
+                <span style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 600, letterSpacing: "0.04em", textTransform: "uppercase" }}>
+                  or
+                </span>
+                <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
               </div>
-            </>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {[
+                  { id: "google", label: "Google", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg> },
+                  { id: "github", label: "GitHub", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg> },
+                  { id: "microsoft", label: "Microsoft", icon: <svg width="20" height="20" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 0H0v10h10V0z" fill="#F25022"/><path d="M21 0H11v10h10V0z" fill="#7FBA00"/><path d="M10 11H0v10h10V11z" fill="#00A4EF"/><path d="M21 11H11v10h10V11z" fill="#FFB900"/></svg> },
+                ].map((p) => (
+                  <SocialButton
+                    key={p.id}
+                    label={p.label}
+                    icon={p.icon}
+                    disabled={loading || !firebaseReady}
+                    onClick={() => handleOAuth(p.id)}
+                  />
+                ))}
+              </div>
+            </div>
           )}
-        </form>
 
-        {/* Footer */}
-        <div style={{ marginTop: 24, textAlign: 'center', fontSize: 14, color: '#a1a1aa' }}>
+          {/* Back to Landing */}
           {step === STEPS.LOGIN && (
-            <>Don't have an account? <button type="button" onClick={() => goTo(STEPS.REGISTER)} className="auth-link">Sign up</button></>
-          )}
-          {step === STEPS.REGISTER && (
-            <>Already have an account? <button type="button" onClick={() => goTo(STEPS.LOGIN)} className="auth-link">Log in</button></>
-          )}
-          {(step === STEPS.FORGOT || step === STEPS.VERIFY_OTP || step === STEPS.RESET_PASSWORD) && (
-             <button type="button" onClick={() => goTo(STEPS.LOGIN)} className="auth-link">Back to log in</button>
+            <div style={{ textAlign: "center", marginTop: 20 }}>
+              <button type="button" onClick={onBack} style={{
+                background: "none", border: "none", cursor: "pointer",
+                color: "var(--text-muted)", fontSize: 13, fontWeight: 500,
+              }}>
+                ΓåÉ Back to home
+              </button>
+            </div>
           )}
         </div>
       </div>
