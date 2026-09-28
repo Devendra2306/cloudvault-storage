@@ -200,7 +200,7 @@ function PasswordStrength({ password }) {
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
         {checks.map((c) => (
           <span key={c.label} style={{ fontSize: 11, color: c.ok ? "#10b981" : "var(--cv-text-muted)", fontWeight: 500 }}>
-            {c.ok ? "Γ£ô" : "Γùï"} {c.label}
+            {c.ok ? "\u2714" : "\u25CB"} {c.label}
           </span>
         ))}
       </div>
