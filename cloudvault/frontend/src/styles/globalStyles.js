@@ -107,6 +107,8 @@ export const GLOBAL_STYLES = `
     -webkit-text-size-adjust: 100%;
   }
 
+  html { font-size: 14px; zoom: 0.9; }
+
   body {
     background: var(--bg-primary);
     font-family: var(--font);

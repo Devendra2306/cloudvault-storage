@@ -294,28 +294,65 @@ function StorageWarning({ account, onManage }) {
   );
 }
 
-function DriveHero({ username, stats, storagePercent, onUpload, onNewFolder }) {
+function DriveHero({ username, stats, storagePercent }) {
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+  const emoji = hour < 12 ? "☀️" : hour < 18 ? "🌅" : "🌙";
+
+  const storageQuota = stats.storageQuota || 1024 * 1024 * 1024 * 10;
+  const pct = Math.min(100, (stats.storageUsed / storageQuota) * 100);
+
   return (
-    <div className="mega-drive-header">
-      <h1 style={{ fontSize: 28, fontWeight: 800, color: "var(--text)", marginBottom: 20 }}>
-        Cloud drive
+    <div style={{ marginBottom: 32, animation: "fadeIn 0.3s ease-out" }}>
+      <h1 style={{ fontSize: 26, fontWeight: 800, color: "#fff", marginBottom: 24, display: "flex", alignItems: "center", gap: 10 }}>
+        {greeting}, {username?.split(" ")[0] || "User"} {emoji}
       </h1>
-      <div className="mega-drive-actions">
-        <button type="button" className="btn-primary mega-upload-btn" onClick={onUpload}>
-          ↑ Upload
-        </button>
-        <button type="button" className="btn-secondary mega-folder-btn" onClick={onNewFolder}>
-          + New folder
-        </button>
+      
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16 }}>
+        
+        {/* Storage Card */}
+        <div style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 16, padding: 20 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
+            <span style={{ color: "#a1a1aa", fontSize: 13, fontWeight: 600 }}>Storage Used</span>
+            <span style={{ background: "rgba(59,130,246,0.1)", color: "#60a5fa", padding: "2px 8px", borderRadius: 99, fontSize: 12, fontWeight: 700 }}>{Math.round(pct)}%</span>
+          </div>
+          <div style={{ fontSize: 22, fontWeight: 800, color: "#fff", marginBottom: 4 }}>{fmt(stats.storageUsed)}</div>
+          <div style={{ fontSize: 13, color: "#71717a", fontWeight: 500 }}>of {fmt(storageQuota)}</div>
+        </div>
+
+        {/* Activity Card */}
+        <div style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 16, padding: 20 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
+            <span style={{ color: "#a1a1aa", fontSize: 13, fontWeight: 600 }}>Recent Activity</span>
+            <span style={{ background: "rgba(16,185,129,0.1)", color: "#10b981", padding: "2px 8px", borderRadius: 99, fontSize: 12, fontWeight: 700 }}>Auto-sync</span>
+          </div>
+          <div style={{ fontSize: 22, fontWeight: 800, color: "#fff", marginBottom: 4 }}>{stats.totalFiles} files stored</div>
+          <div style={{ fontSize: 13, color: "#71717a", fontWeight: 500 }}>All vaults synced</div>
+        </div>
+
+        {/* Shared Card */}
+        <div style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 16, padding: 20 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
+            <span style={{ color: "#a1a1aa", fontSize: 13, fontWeight: 600 }}>Shared with Me</span>
+          </div>
+          <div style={{ fontSize: 22, fontWeight: 800, color: "#fff", marginBottom: 4 }}>0 shared items</div>
+          <div style={{ fontSize: 13, color: "#71717a", fontWeight: 500 }}>Direct files & shared folders</div>
+        </div>
+
+        {/* Security Card */}
+        <div style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 16, padding: 20 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
+            <span style={{ color: "#a1a1aa", fontSize: 13, fontWeight: 600 }}>Security</span>
+            <span style={{ background: "rgba(245,158,11,0.1)", color: "#f59e0b", padding: "2px 8px", borderRadius: 99, fontSize: 12, fontWeight: 700 }}>Locked</span>
+          </div>
+          <div style={{ fontSize: 22, fontWeight: 800, color: "#fff", marginBottom: 4 }}>Standard Security</div>
+          <div style={{ fontSize: 13, color: "#71717a", fontWeight: 500 }}>AES-256 GCM • Zero-Knowledge</div>
+        </div>
+
       </div>
-      <p style={{ color: "var(--text-muted)", fontSize: 13, marginBottom: 8 }}>
-        {stats.totalFiles} files · {stats.totalFolders} folders · {Math.round(storagePercent)}% storage used
-        {username ? ` · @${username}` : ""}
-      </p>
     </div>
   );
 }
-
 function AccountChrome({ children, onNavigate, onSignOut, onUpgrade, transferActive = false }) {
   const { account, notifications, unreadCount, markAllRead } = useAccount();
   return (
@@ -1065,12 +1102,12 @@ export default function CloudVault() {
       }}>
         {/* Header / Logo */}
         <div style={{ padding: "20px 24px", display: "flex", alignItems: "center", gap: 12, borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-          <div style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg, #d90007, #ff4d4d)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(217,0,7,0.3)" }}>
-            <BrandMark size={20} />
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg, #0ea5e9, #2563eb)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(14,165,233,0.3)" }}>
+            <Database size={20} color="#fff" />
           </div>
           <div>
-            <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>CloudVault</div>
-            <div style={{ fontSize: 12, color: "#a1a1aa", marginTop: 2, fontWeight: 500 }}>@{username}</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>DataStock</div>
+            <div style={{ fontSize: 11, color: "#93c5fd", marginTop: 2, fontWeight: 600 }}>Enterprise Cloud Storage</div>
           </div>
         </div>
 
@@ -1408,29 +1445,33 @@ export default function CloudVault() {
           {loading ? (
             <FileListSkeleton count={6} grid={viewMode === "grid"} />
           ) : filteredFiles.length === 0 ? (
-            <div className="glass-card empty-state" style={{
-              textAlign: "center", padding: "72px 32px", borderRadius: "var(--radius-lg)",
-              border: "1.5px dashed var(--border)", animation: "fadeIn .3s ease",
-            }}>
-              <div style={{
-                width: 88, height: 88, margin: "0 auto 20px", borderRadius: 24,
-                background: "var(--gradient-soft)", display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 40, boxShadow: "var(--glow)",
-              }}><BrandMark size={48} /></div>
-              <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 8, color: "var(--text)" }}>
-                {fileFilter !== "all" ? "No matching files" : "No files in My Drive yet"}
-              </div>
-              <div style={{ fontSize: 14, color: "var(--text-muted)", marginBottom: 24, maxWidth: 360, margin: "0 auto 24px" }}>
-                {fileFilter !== "all" ? "Try a different filter or upload new files." : "Upload photos, documents, and more. Everything stays secure in your drive."}
-              </div>
-              {fileFilter === "all" && (
-                <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
-                  <button type="button" className="btn-primary" onClick={() => fileInput.current?.click()}>Upload your first file</button>
-                  <button type="button" className="btn-secondary" onClick={() => setShowNewFolder(true)}>Create folder</button>
+              <div className="glass-card empty-state" style={{
+                textAlign: "center", padding: "64px 32px", borderRadius: "16px", background: "rgba(255,255,255,0.02)",
+                border: "1px dashed rgba(255,255,255,0.1)", animation: "fadeIn .3s ease", marginBottom: 40
+              }}>
+                <div style={{ fontWeight: 800, fontSize: 22, marginBottom: 12, color: "#fff" }}>
+                  {fileFilter !== "all" ? "No matching files" : "No files in My Drive yet"}
                 </div>
-              )}
-            </div>
-          ) : (
+                <div style={{ fontSize: 15, color: "#a1a1aa", marginBottom: 32, maxWidth: 420, margin: "0 auto 32px" }}>
+                  {fileFilter !== "all" ? "Try a different filter or upload new files." : "Upload your first file or create a folder to get started"}
+                </div>
+                {fileFilter === "all" && (
+                  <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginBottom: 48 }}>
+                    <button type="button" onClick={() => fileInput.current?.click()} style={{ background: "#3b82f6", color: "#fff", border: "none", borderRadius: 8, padding: "12px 24px", fontWeight: 600, cursor: "pointer", fontSize: 14 }}>Upload a file</button>
+                    <button type="button" onClick={() => setShowNewFolder(true)} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff", borderRadius: 8, padding: "12px 24px", fontWeight: 600, cursor: "pointer", fontSize: 14 }}>Upload Folder</button>
+                  </div>
+                )}
+                
+                <div style={{ background: "rgba(0,0,0,0.2)", borderRadius: 12, padding: 24, textAlign: "left", maxWidth: 640, margin: "0 auto" }}>
+                  <h4 style={{ margin: "0 0 16px", color: "#fff", fontSize: 15, display: "flex", alignItems: "center", gap: 8 }}>💡 Quick Tips</h4>
+                  <ul style={{ margin: 0, paddingLeft: 20, color: "#a1a1aa", fontSize: 14, display: "flex", flexDirection: "column", gap: 12, lineHeight: 1.5 }}>
+                    <li><strong>Drag and drop</strong> files anywhere on the page to trigger instant uploads.</li>
+                    <li><strong>Toggle the E2EE switch</strong> in the toolbar to encrypt files zero-knowledge.</li>
+                    <li><strong>Hold Ctrl</strong> to select multiple files for batch downloads and shares.</li>
+                  </ul>
+                </div>
+              </div>
+            ) : (
             <>
             <div className={`file-grid${viewMode === "grid" ? " grid-view" : ""}`} style={{
               display: viewMode === "grid" ? "grid" : "flex",
