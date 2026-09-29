@@ -4,8 +4,8 @@ export const API =
   "http://localhost:3001/api/v1";
 
 export const BRAND = {
-  name: "DataStock",
-  shortName: "DataStock",
+  name: "CloudVault",
+  shortName: "CloudVault",
   tagline: "Enterprise Cloud Storage",
   logo: "CV",
   logoImage: "/cloudvault-logo.svg",

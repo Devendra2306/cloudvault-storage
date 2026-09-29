@@ -7,7 +7,7 @@ export default function HelpPage({ onBack }) {
   const [expandedId, setExpandedId] = useState(null);
 
   const categories = [
-    { id: "getting-started", title: "Getting Started", icon: <Book size={20} color="#3b82f6" />, desc: "Learn the basics of DataStock" },
+    { id: "getting-started", title: "Getting Started", icon: <Book size={20} color="#3b82f6" />, desc: "Learn the basics of CloudVault" },
     { id: "security", title: "Security & E2EE", icon: <ShieldAlert size={20} color="#10b981" />, desc: "Encryption and privacy" },
     { id: "billing", title: "Account & Billing", icon: <CreditCard size={20} color="#f59e0b" />, desc: "Plans, quotas and payments" },
     { id: "files", title: "File Management", icon: <FolderOpen size={20} color="#8b5cf6" />, desc: "Uploads, sharing, and folders" },

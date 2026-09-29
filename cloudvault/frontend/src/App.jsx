@@ -1106,7 +1106,7 @@ export default function CloudVault() {
             <Database size={20} color="#fff" />
           </div>
           <div>
-            <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>DataStock</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>CloudVault</div>
             <div style={{ fontSize: 11, color: "#93c5fd", marginTop: 2, fontWeight: 600 }}>Enterprise Cloud Storage</div>
           </div>
         </div>
