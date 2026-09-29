@@ -18,6 +18,8 @@ import AdminPanel from "./components/AdminPanel.jsx";
 import FileActionsMenu from "./components/FileActionsMenu.jsx";
 import { FileListSkeleton } from "./components/Skeleton.jsx";
 import { useDebounce } from "./hooks/useDebounce.js";
+import { Folder, Image as ImageIcon, Film, FileText, FileType, FileSpreadsheet, Presentation, Archive as ArchiveIcon, ShieldCheck, Trash2, Box, Activity, Bell, Settings, LogOut, FileSearch, Search, X, ChevronRight, HardDrive, Filter, LayoutGrid } from "lucide-react";
+
 import { uploadWithFolderStructure } from "./lib/folderUpload.js";
 import { buildFolderTree } from "./lib/folders.js";
 import { AccountProvider, useAccount } from "./context/AccountContext.jsx";
@@ -1055,81 +1057,123 @@ export default function CloudVault() {
 
       {/* Sidebar */}
       <div className={`sidebar ${sidebarOpen ? "open" : ""}`} style={{
-        position: "fixed", left: 0, top: 0, bottom: 0, width: 260,
-        background: "var(--bg-sidebar)", borderRight: "1px solid var(--border)",
-        padding: "16px 12px", display: "flex", flexDirection: "column", gap: 4, zIndex: 100,
-        transition: "transform .35s cubic-bezier(.4,0,.2,1)",
+        position: "fixed", left: 0, top: 0, bottom: 0, width: 280,
+        background: "var(--bg-card)", borderRight: "1px solid rgba(255,255,255,0.08)",
+        display: "flex", flexDirection: "column", zIndex: 100,
+        transition: "transform .3s cubic-bezier(.4,0,.2,1)",
         ...(isMobile ? { transform: sidebarOpen ? "translateX(0)" : "translateX(-100%)" } : {})
       }}>
-        {/* Logo */}
-        <div style={{ marginBottom: 16, display: "flex", alignItems: "center", gap: 10, padding: "4px 8px" }}>
-          <BrandMark size={40} />
+        {/* Header / Logo */}
+        <div style={{ padding: "20px 24px", display: "flex", alignItems: "center", gap: 12, borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg, #d90007, #ff4d4d)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(217,0,7,0.3)" }}>
+            <BrandMark size={20} />
+          </div>
           <div>
-            <div style={{ fontSize: 20, fontWeight: 800, color: "var(--text)", letterSpacing: "-0.02em" }}>Drive</div>
-            <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 1 }}>@{username}</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>CloudVault</div>
+            <div style={{ fontSize: 12, color: "#a1a1aa", marginTop: 2, fontWeight: 500 }}>@{username}</div>
           </div>
         </div>
 
-        <button type="button" onClick={() => fileInput.current?.click()} className="btn-primary" style={{
-          minHeight: 48, borderRadius: 999, fontSize: 15, justifyContent: "center",
-          display: "flex", alignItems: "center", gap: 8, margin: "0 0 16px",
-        }}>
-          + New
-        </button>
-
-        {/* Nav items */}
-        {[
-          { id: "drive", icon: "drive", label: "My Drive" },
-          { id: "recent", icon: "recent", label: "Recent" },
-          { id: "starred", icon: "starred", label: "Starred" },
-          { id: "shared", icon: "shared", label: "Shared" },
-          { id: "dashboard", icon: "usage", label: "Storage" },
-          { id: "trash", icon: "trash", label: "Trash" },
-          { id: "activity", icon: "activity", label: "Activity" },
-          ...(userRole === "admin" || userRole === "super_admin" ? [{ id: "admin", icon: "admin", label: "Admin" }] : []),
-        ].map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            className={`nav-item${activeView === item.id ? " active" : ""}`}
-            aria-current={activeView === item.id ? "page" : undefined}
-            onClick={() => { setAppPage(null); setActiveView(item.id); setSidebarOpen(false); if (item.id === "drive") { setCurrentFolder(null); setFolderPath([]); } }}
-          >
-            <NavIcon name={item.icon} active={activeView === item.id} />
-            <span>{item.label}</span>
-          </button>
-        ))}
-
-        <div style={{ borderTop: "1px solid var(--border)", margin: "12px 0 8px" }} />
-
-        {/* Quick stats */}
-        <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", letterSpacing: "1px", marginBottom: 8, paddingLeft: 4 }}>OVERVIEW</div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 16 }}>
-          <div className="stat-mini">
-            <div style={{ fontSize: 22, fontWeight: 800, color: "var(--text)" }}>{stats.totalFiles}</div>
-            <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>Files</div>
-          </div>
-          <div className="stat-mini">
-            <div style={{ fontSize: 22, fontWeight: 800, color: "var(--text)" }}>{stats.totalFolders}</div>
-            <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>Folders</div>
-          </div>
-        </div>
-
-        {/* Bottom section */}
-        <div style={{ marginTop: "auto" }}>
-          {/* Storage */}
-          <div style={{ marginBottom: 16, background: "var(--surface-raised)", borderRadius: 14, padding: "14px", border: "1px solid var(--border)" }} title={`${fmt(stats.storageUsed)} of ${fmt(storageLimit)} used`}>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "var(--text-secondary)", marginBottom: 8 }}>
-              <span style={{ fontWeight: 600 }}>Free</span><span>{fmt(stats.storageUsed)} of {fmt(storageLimit)} used</span>
+        {/* Scrollable Content */}
+        <div style={{ flex: 1, overflowY: "auto", padding: "20px 16px", display: "flex", flexDirection: "column", gap: 24 }} className="hide-scrollbar">
+          
+          {/* Folders */}
+          <div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, padding: "0 8px" }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "#71717a", textTransform: "uppercase", letterSpacing: "0.05em", display: "flex", alignItems: "center", gap: 6 }}>
+                <Folder size={14} /> Folders ({stats.totalFolders})
+              </div>
             </div>
-            <ProgressBar value={storagePercent} />
-            <button type="button" onClick={() => setAppPage("billing")} className="btn-mega-red" style={{ width: "100%", marginTop: 12, minHeight: 40, animation: "softPulse 3s ease infinite" }}>
-              Upgrade
-            </button>
+            {stats.totalFolders === 0 ? (
+              <div style={{ fontSize: 13, color: "#52525b", padding: "8px", fontStyle: "italic" }}>No folders yet</div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                {folders.slice(0, 4).map(f => (
+                  <button key={f.id} type="button" onClick={() => { setCurrentFolder(f.id); setFolderPath(p => [...p, f]); setSidebarOpen(false); }} className="nav-item-new">
+                    <Folder size={16} color="#60a5fa" />
+                    <span>{f.name}</span>
+                  </button>
+                ))}
+                {folders.length > 4 && (
+                  <button type="button" className="nav-item-new" style={{ color: "#a1a1aa" }}>
+                    <ChevronRight size={16} /> <span>View all folders</span>
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
-          {/* Sign out */}
-          <button type="button" onClick={logout} className="btn-danger">Sign Out</button>
+          {/* Quick Filters */}
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "#71717a", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12, padding: "0 8px", display: "flex", alignItems: "center", gap: 6 }}>
+              <Filter size={14} /> Quick Filters
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <button type="button" onClick={() => { setFileFilter("images"); setActiveView("drive"); setSidebarOpen(false); }} className={`nav-item-new ${fileFilter === "images" && activeView === "drive" ? "active" : ""}`}>
+                <ImageIcon size={16} /> <span>Images</span>
+              </button>
+              <button type="button" onClick={() => { setFileFilter("videos"); setActiveView("drive"); setSidebarOpen(false); }} className={`nav-item-new ${fileFilter === "videos" && activeView === "drive" ? "active" : ""}`}>
+                <Film size={16} /> <span>Videos</span>
+              </button>
+              <button type="button" onClick={() => { setFileFilter("documents"); setActiveView("drive"); setSidebarOpen(false); }} className={`nav-item-new ${fileFilter === "documents" && activeView === "drive" ? "active" : ""}`}>
+                <FileText size={16} /> <span>PDFs & Docs</span>
+              </button>
+              <button type="button" onClick={() => { setFileFilter("archives"); setActiveView("drive"); setSidebarOpen(false); }} className={`nav-item-new ${fileFilter === "archives" && activeView === "drive" ? "active" : ""}`}>
+                <ArchiveIcon size={16} /> <span>ZIP Files</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Utilities */}
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "#71717a", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12, padding: "0 8px", display: "flex", alignItems: "center", gap: 6 }}>
+              <Settings size={14} /> Utilities
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <button type="button" onClick={() => { setActiveView("trash"); setSidebarOpen(false); }} className={`nav-item-new ${activeView === "trash" ? "active" : ""}`}>
+                <Trash2 size={16} /> <span>Trash</span>
+              </button>
+              <button type="button" onClick={() => { setActiveView("admin"); setSidebarOpen(false); }} className={`nav-item-new ${activeView === "admin" ? "active" : ""}`}>
+                <Box size={16} /> <span>Archive</span>
+              </button>
+              <button type="button" className="nav-item-new">
+                <Activity size={16} /> <span>Audit Logs</span>
+              </button>
+              <button type="button" className="nav-item-new">
+                <Bell size={16} /> <span>Notifications</span>
+              </button>
+              <button type="button" onClick={() => { setActiveView("activity"); setSidebarOpen(false); }} className={`nav-item-new ${activeView === "activity" ? "active" : ""}`}>
+                <LayoutGrid size={16} /> <span>Storage Activity</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Footer / Storage */}
+        <div style={{ padding: "20px 16px", borderTop: "1px solid rgba(255,255,255,0.04)", background: "rgba(0,0,0,0.2)" }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: "#e4e4e7", display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}>
+            <HardDrive size={15} color="#3b82f6" /> Storage
+          </div>
+          
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 8 }}>
+              <span style={{ fontSize: 12, color: "#a1a1aa", fontWeight: 500 }}>{fmt(stats.storageUsed)} used</span>
+              <span style={{ fontSize: 12, color: "#e4e4e7", fontWeight: 600 }}>{fmt(storageLimit)}</span>
+            </div>
+            <div style={{ width: "100%", height: 6, background: "rgba(255,255,255,0.1)", borderRadius: 99 }}>
+              <div style={{ width: `${Math.max(2, storagePercent)}%`, height: "100%", background: "linear-gradient(90deg, #3b82f6, #60a5fa)", borderRadius: 99, boxShadow: "0 0 10px rgba(59,130,246,0.5)" }} />
+            </div>
+            <div style={{ fontSize: 12, color: "#a1a1aa", marginTop: 8, fontWeight: 500 }}>Free Workspace</div>
+          </div>
+
+          <button type="button" onClick={() => setAppPage("billing")} style={{ width: "100%", padding: "12px", background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.3)", borderRadius: 12, color: "#60a5fa", fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", flexDirection: "column", gap: 4, transition: "all 0.2s" }} onMouseEnter={e => e.currentTarget.style.background = "rgba(59,130,246,0.15)"} onMouseLeave={e => e.currentTarget.style.background = "rgba(59,130,246,0.1)"}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
+              <span>Upgrade &rarr;</span>
+              <ShieldCheck size={14} />
+            </div>
+            <span style={{ fontSize: 11, color: "#93c5fd", fontWeight: 400, opacity: 0.8 }}>Expand to 2 TB with E2EE Priority</span>
+          </button>
         </div>
       </div>
 

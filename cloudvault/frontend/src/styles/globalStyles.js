@@ -2356,4 +2356,31 @@ export const GLOBAL_STYLES = `
       transition-duration: 0.01ms !important;
     }
   }
+
+/* New Sidebar Item Styles */
+.nav-item-new {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: #d4d4d8;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+.nav-item-new:hover {
+  background: rgba(255,255,255,0.05);
+  color: #fff;
+}
+.nav-item-new.active {
+  background: rgba(59,130,246,0.15);
+  color: #60a5fa;
+  font-weight: 600;
+}
 `;
