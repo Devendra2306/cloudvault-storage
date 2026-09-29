@@ -2,7 +2,7 @@
 const router = express.Router();
 const { authenticate } = require('../middleware/auth');
 const prisma = require('../config/database');
-const { generatePresignedDownloadUrl } = require('../services/s3Service');
+const { getSignedFileUrl } = require('../config/s3');
 
 // In-memory store for 6-digit print codes (expires quickly, perfectly fine to keep in memory)
 const printCodes = new Map();
@@ -111,7 +111,10 @@ router.get('/:code/download', async (req, res, next) => {
     }
 
     // Generate presigned download URL
-    const downloadUrl = await generatePresignedDownloadUrl(printJob.s3Key, printJob.name);
+    const downloadUrl = await getSignedFileUrl(printJob.s3Key, 3600, {
+      responseContentType: printJob.mimeType || undefined,
+      responseContentDisposition: `attachment; filename="${printJob.name}"`
+    });
     
     // We could delete the code immediately after download for 1-time use, but users might fail to print and retry.
     // Let's keep it until expiry.
