@@ -13,6 +13,7 @@ const folderRoutes = require('./routes/folderRoutes');
 const fileRoutes = require('./routes/fileRoutes');
 const trashRoutes = require('./routes/trashRoutes');
 const shareRoutes = require('./routes/shareRoutes');
+const printRoutes = require('./routes/printRoutes');
 const searchRoutes = require('./routes/searchRoutes');
 const storageRoutes = require('./routes/storageRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
@@ -48,6 +49,8 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
       'https://www.cloudvault.co.in',
       'https://cloudvault.co.in',
       'https://cloudvault-storage-2jsb.vercel.app',
+        'https://print.cloudvault.co.in',
+        'http://localhost:5174',
     ];
 
 console.log('CORS allowed origins:', allowedOrigins);
@@ -110,6 +113,7 @@ app.use('/api/v1/folders', folderRoutes);
 app.use('/api/v1/files', fileRoutes);
 app.use('/api/v1/trash', trashRoutes);
 app.use('/api/v1/search', searchRoutes);
+app.use('/api/v1/print', printRoutes);
 app.use('/api/v1/storage', storageRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);
 app.use('/api/v1/recent', recentRoutes);
