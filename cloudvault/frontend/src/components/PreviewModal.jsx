@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { downloadFileWithProgress } from "../lib/api.js";
 import { previewKind } from "../lib/fileTypes.js";
 import CommentsPanel from "./CommentsPanel.jsx";
+import AdvancedPdfViewer from "./AdvancedPdfViewer.jsx";
 
 function Spinner({ size = 22 }) {
   return (
@@ -111,11 +112,9 @@ export default function PreviewModal({ file, token, onClose, customFetchBlob }) 
     }
     if (kind === "pdf" && url) {
       return (
-        <iframe
-          src={url}
-          title={file.name}
-          style={{ width: "75vw", height: "75vh", border: "none", borderRadius: 12 }}
-        />
+        <div style={{ width: "80vw", height: "85vh", background: "var(--bg-card)", borderRadius: 12, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+           <AdvancedPdfViewer url={url} onClose={onClose} />
+        </div>
       );
     }
     if (kind === "video" && url) {
