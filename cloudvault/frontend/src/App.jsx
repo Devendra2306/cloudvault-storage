@@ -1114,25 +1114,32 @@ export default function CloudVault() {
         {/* Scrollable Content */}
         <div style={{ flex: 1, overflowY: "auto", padding: "20px 16px", display: "flex", flexDirection: "column", gap: 24 }} className="hide-scrollbar">
           
+          {/* My Drive */}
+          <div>
+            <button type="button" onClick={() => { setActiveView("drive"); setFileFilter("all"); setCurrentFolder(null); setFolderPath([]); setSidebarOpen(false); }} className={`nav-item-new ${activeView === "drive" && fileFilter === "all" && !currentFolder ? "active" : ""}`} style={{ fontSize: 14, fontWeight: 700 }}>
+              <HardDrive size={18} /> <span>My Drive</span>
+            </button>
+          </div>
+
           {/* Folders */}
           <div>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, padding: "0 8px" }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: "#71717a", textTransform: "uppercase", letterSpacing: "0.05em", display: "flex", alignItems: "center", gap: 6 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", display: "flex", alignItems: "center", gap: 6 }}>
                 <Folder size={14} /> Folders ({stats.totalFolders})
               </div>
             </div>
             {stats.totalFolders === 0 ? (
-              <div style={{ fontSize: 13, color: "#52525b", padding: "8px", fontStyle: "italic" }}>No folders yet</div>
+              <div style={{ fontSize: 13, color: "var(--text-muted)", padding: "8px", fontStyle: "italic" }}>No folders yet</div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                 {folders.slice(0, 4).map(f => (
-                  <button key={f.id} type="button" onClick={() => { setCurrentFolder(f.id); setFolderPath(p => [...p, f]); setSidebarOpen(false); }} className="nav-item-new">
+                  <button key={f.id} type="button" onClick={() => { setCurrentFolder(f.id); setFolderPath(p => [...p, f]); setActiveView("drive"); setSidebarOpen(false); }} className="nav-item-new">
                     <Folder size={16} color="#60a5fa" />
                     <span>{f.name}</span>
                   </button>
                 ))}
                 {folders.length > 4 && (
-                  <button type="button" className="nav-item-new" style={{ color: "#a1a1aa" }}>
+                  <button type="button" className="nav-item-new" style={{ color: "var(--text-muted)" }}>
                     <ChevronRight size={16} /> <span>View all folders</span>
                   </button>
                 )}
@@ -1142,7 +1149,7 @@ export default function CloudVault() {
 
           {/* Quick Filters */}
           <div>
-            <div style={{ fontSize: 12, fontWeight: 700, color: "#71717a", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12, padding: "0 8px", display: "flex", alignItems: "center", gap: 6 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12, padding: "0 8px", display: "flex", alignItems: "center", gap: 6 }}>
               <Filter size={14} /> Quick Filters
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
@@ -1163,7 +1170,7 @@ export default function CloudVault() {
 
           {/* Utilities */}
           <div>
-            <div style={{ fontSize: 12, fontWeight: 700, color: "#71717a", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12, padding: "0 8px", display: "flex", alignItems: "center", gap: 6 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12, padding: "0 8px", display: "flex", alignItems: "center", gap: 6 }}>
               <Settings size={14} /> Utilities
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
@@ -1173,14 +1180,11 @@ export default function CloudVault() {
               <button type="button" onClick={() => { setActiveView("admin"); setSidebarOpen(false); }} className={`nav-item-new ${activeView === "admin" ? "active" : ""}`}>
                 <Box size={16} /> <span>Archive</span>
               </button>
-              <button type="button" className="nav-item-new">
-                <Activity size={16} /> <span>Audit Logs</span>
-              </button>
-              <button type="button" className="nav-item-new">
-                <Bell size={16} /> <span>Notifications</span>
-              </button>
               <button type="button" onClick={() => { setActiveView("activity"); setSidebarOpen(false); }} className={`nav-item-new ${activeView === "activity" ? "active" : ""}`}>
-                <LayoutGrid size={16} /> <span>Storage Activity</span>
+                <Activity size={16} /> <span>Activity Log</span>
+              </button>
+              <button type="button" onClick={() => { setActiveView("dashboard"); setSidebarOpen(false); }} className={`nav-item-new ${activeView === "dashboard" ? "active" : ""}`}>
+                <LayoutGrid size={16} /> <span>Storage Dashboard</span>
               </button>
             </div>
           </div>
