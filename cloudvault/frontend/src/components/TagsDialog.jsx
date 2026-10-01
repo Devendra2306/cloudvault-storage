@@ -136,4 +136,4 @@ const btnGhost = {
   fontWeight: 600,
 };
 
-const btnPrimary = { ...btnGhost, border: "none", background: "var(--accent)", color: "#fff" };
+const btnPrimary = { ...btnGhost, border: "none", background: "var(--accent)", color: "var(--text)" };

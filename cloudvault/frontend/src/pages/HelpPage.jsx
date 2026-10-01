@@ -34,24 +34,24 @@ export default function HelpPage({ onBack }) {
       </button>
 
       {/* Hero Section */}
-      <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 24, padding: "48px 32px", textAlign: "center", marginBottom: 32, position: "relative", overflow: "hidden" }}>
+      <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 24, padding: "48px 32px", textAlign: "center", marginBottom: 32, position: "relative", overflow: "hidden" }}>
         {/* Decorative Glow */}
         <div style={{ position: "absolute", top: "-50%", left: "50%", transform: "translateX(-50%)", width: 400, height: 400, background: "radial-gradient(circle, rgba(59,130,246,0.15) 0%, rgba(0,0,0,0) 70%)", pointerEvents: "none" }} />
         
-        <h1 style={{ fontSize: 36, fontWeight: 800, margin: "0 0 16px", color: "#fff" }}>How can we help you?</h1>
-        <p style={{ color: "#a1a1aa", fontSize: 16, margin: "0 0 32px", maxWidth: 500, marginInline: "auto" }}>
+        <h1 style={{ fontSize: 36, fontWeight: 800, margin: "0 0 16px", color: "var(--text)" }}>How can we help you?</h1>
+        <p style={{ color: "var(--text-muted)", fontSize: 16, margin: "0 0 32px", maxWidth: 500, marginInline: "auto" }}>
           Search our knowledge base or browse categories below to find answers to your questions about {BRAND.name}.
         </p>
 
         {/* Search Bar */}
         <div style={{ position: "relative", maxWidth: 560, margin: "0 auto" }}>
-          <Search style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", color: "#71717a" }} size={20} />
+          <Search style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)" }} size={20} />
           <input 
             type="text" 
             placeholder="Search articles, guides, and FAQs..." 
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            style={{ width: "100%", padding: "16px 20px 16px 48px", borderRadius: 99, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(0,0,0,0.4)", color: "#fff", fontSize: 16, outline: "none", transition: "border 0.2s, box-shadow 0.2s", boxShadow: "0 4px 20px rgba(0,0,0,0.2)" }}
+            style={{ width: "100%", padding: "16px 20px 16px 48px", borderRadius: 99, border: "1px solid var(--border)", background: "var(--bg-card)", color: "var(--text)", fontSize: 16, outline: "none", transition: "border 0.2s, box-shadow 0.2s", boxShadow: "0 4px 20px rgba(0,0,0,0.2)" }}
             onFocus={e => { e.target.style.borderColor = "#3b82f6"; e.target.style.boxShadow = "0 0 0 4px rgba(59,130,246,0.15)"; }}
             onBlur={e => { e.target.style.borderColor = "rgba(255,255,255,0.1)"; e.target.style.boxShadow = "0 4px 20px rgba(0,0,0,0.2)"; }}
           />
@@ -63,12 +63,12 @@ export default function HelpPage({ onBack }) {
           {/* Categories Grid */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16, marginBottom: 48 }}>
             {categories.map((cat) => (
-              <div key={cat.id} style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 16, padding: 20, cursor: "pointer", transition: "transform 0.2s, background 0.2s" }} onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }} onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.background = "rgba(255,255,255,0.02)"; }}>
-                <div style={{ width: 48, height: 48, borderRadius: 12, background: "rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
+              <div key={cat.id} style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 16, padding: 20, cursor: "pointer", transition: "transform 0.2s, background 0.2s" }} onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }} onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.background = "rgba(255,255,255,0.02)"; }}>
+                <div style={{ width: 48, height: 48, borderRadius: 12, background: "var(--bg-card)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
                   {cat.icon}
                 </div>
-                <h3 style={{ margin: "0 0 6px", color: "#fff", fontSize: 16, fontWeight: 600 }}>{cat.title}</h3>
-                <p style={{ margin: 0, color: "#a1a1aa", fontSize: 13 }}>{cat.desc}</p>
+                <h3 style={{ margin: "0 0 6px", color: "var(--text)", fontSize: 16, fontWeight: 600 }}>{cat.title}</h3>
+                <p style={{ margin: 0, color: "var(--text-muted)", fontSize: 13 }}>{cat.desc}</p>
               </div>
             ))}
           </div>
@@ -77,32 +77,32 @@ export default function HelpPage({ onBack }) {
 
       {/* FAQs Section */}
       <div style={{ marginBottom: 48 }}>
-        <h2 style={{ fontSize: 20, fontWeight: 700, color: "#fff", marginBottom: 20, display: "flex", alignItems: "center", gap: 10 }}>
+        <h2 style={{ fontSize: 20, fontWeight: 700, color: "var(--text)", marginBottom: 20, display: "flex", alignItems: "center", gap: 10 }}>
           {search ? "Search Results" : "Frequently Asked Questions"}
         </h2>
         
         {filteredFaqs.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "40px", background: "rgba(255,255,255,0.02)", borderRadius: 16, border: "1px dashed rgba(255,255,255,0.1)" }}>
+          <div style={{ textAlign: "center", padding: "40px", background: "var(--bg-card)", borderRadius: 16, border: "1px dashed rgba(255,255,255,0.1)" }}>
             <Search size={32} color="#71717a" style={{ marginBottom: 12 }} />
-            <div style={{ color: "#fff", fontSize: 16, fontWeight: 600, marginBottom: 4 }}>No results found</div>
-            <div style={{ color: "#a1a1aa", fontSize: 14 }}>Try adjusting your search terms.</div>
+            <div style={{ color: "var(--text)", fontSize: 16, fontWeight: 600, marginBottom: 4 }}>No results found</div>
+            <div style={{ color: "var(--text-muted)", fontSize: 14 }}>Try adjusting your search terms.</div>
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {filteredFaqs.map((faq) => {
               const isExpanded = expandedId === faq.id;
               return (
-                <div key={faq.id} style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 12, overflow: "hidden" }}>
+                <div key={faq.id} style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 12, overflow: "hidden" }}>
                   <button 
                     type="button"
                     onClick={() => setExpandedId(isExpanded ? null : faq.id)}
-                    style={{ width: "100%", padding: "20px", display: "flex", alignItems: "center", justifyContent: "space-between", background: "none", border: "none", color: "#fff", cursor: "pointer", textAlign: "left", fontSize: 15, fontWeight: 500 }}
+                    style={{ width: "100%", padding: "20px", display: "flex", alignItems: "center", justifyContent: "space-between", background: "none", border: "none", color: "var(--text)", cursor: "pointer", textAlign: "left", fontSize: 15, fontWeight: 500 }}
                   >
                     <span>{faq.q}</span>
                     <ChevronRight size={20} color="#71717a" style={{ transform: isExpanded ? "rotate(90deg)" : "none", transition: "transform 0.2s" }} />
                   </button>
                   {isExpanded && (
-                    <div style={{ padding: "0 20px 20px", color: "#a1a1aa", fontSize: 14, lineHeight: 1.6, animation: "fadeIn 0.3s ease" }}>
+                    <div style={{ padding: "0 20px 20px", color: "var(--text-muted)", fontSize: 14, lineHeight: 1.6, animation: "fadeIn 0.3s ease" }}>
                       {faq.a}
                     </div>
                   )}
@@ -116,14 +116,14 @@ export default function HelpPage({ onBack }) {
       {/* Support CTA */}
       <div style={{ background: "linear-gradient(135deg, rgba(59,130,246,0.1), rgba(37,99,235,0.1))", border: "1px solid rgba(59,130,246,0.2)", borderRadius: 16, padding: 32, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 20 }}>
         <div>
-          <h3 style={{ margin: "0 0 6px", color: "#fff", fontSize: 18, fontWeight: 600 }}>Still need help?</h3>
+          <h3 style={{ margin: "0 0 6px", color: "var(--text)", fontSize: 18, fontWeight: 600 }}>Still need help?</h3>
           <p style={{ margin: 0, color: "#93c5fd", fontSize: 14 }}>Our enterprise support team is available 24/7.</p>
         </div>
         <div style={{ display: "flex", gap: 12 }}>
-          <button type="button" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff", padding: "10px 20px", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
+          <button type="button" style={{ background: "var(--bg-card)", border: "1px solid var(--border)", color: "var(--text)", padding: "10px 20px", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
             <MessageCircle size={16} /> Live Chat
           </button>
-          <button type="button" style={{ background: "#3b82f6", border: "none", color: "#fff", padding: "10px 20px", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 8, boxShadow: "0 4px 14px rgba(59,130,246,0.3)" }}>
+          <button type="button" style={{ background: "#3b82f6", border: "none", color: "var(--text)", padding: "10px 20px", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 8, boxShadow: "0 4px 14px rgba(59,130,246,0.3)" }}>
             <Mail size={16} /> Email Support
           </button>
         </div>

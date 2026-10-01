@@ -211,9 +211,9 @@ export const GLOBAL_STYLES = `
   }
 
   .btn-secondary:hover:not(:disabled) {
-    border-color: rgba(255,255,255,.25);
+    border-color: var(--border-hover);
     color: var(--text);
-    background: rgba(255,255,255,.06);
+    background: var(--bg-card);
   }
 
   .btn-ghost {
@@ -232,7 +232,7 @@ export const GLOBAL_STYLES = `
   .btn-ghost:hover:not(:disabled) {
     border-color: var(--border-hover);
     color: var(--text);
-    background: rgba(255,255,255,.05);
+    background: var(--bg-card);
   }
 
   .btn-danger {
@@ -311,12 +311,12 @@ export const GLOBAL_STYLES = `
   }
 
   .nav-item:hover {
-    background: rgba(255,255,255,.05);
+    background: var(--bg-card);
     color: var(--text);
   }
 
   .nav-item.active {
-    background: rgba(255,255,255,.08);
+    background: var(--bg-card);
     color: var(--text);
     box-shadow: none;
   }
@@ -345,7 +345,7 @@ export const GLOBAL_STYLES = `
   }
 
   .nav-item:hover .nav-icon:not(.active) {
-    background: rgba(255,255,255,.08);
+    background: var(--bg-card);
     color: var(--text-secondary);
   }
 
@@ -388,7 +388,7 @@ export const GLOBAL_STYLES = `
   }
 
   .view-toggle-btn:hover:not(.active) {
-    background: rgba(255,255,255,.05);
+    background: var(--bg-card);
     color: var(--text-secondary);
   }
 
@@ -472,7 +472,7 @@ export const GLOBAL_STYLES = `
     min-height: 38px;
     border-radius: 10px;
     border: 1px solid var(--border);
-    background: rgba(255,255,255,.06);
+    background: var(--bg-card);
     color: var(--text-secondary);
     cursor: pointer;
     font-family: var(--font);
@@ -801,7 +801,7 @@ export const GLOBAL_STYLES = `
     display: inline-flex;
     align-items: center;
     gap: 10px;
-    background: rgba(255,255,255,.06);
+    background: var(--bg-card);
     border: 1px solid rgba(255,255,255,.1);
     border-radius: 999px;
     padding: 10px 18px;
@@ -1013,7 +1013,7 @@ export const GLOBAL_STYLES = `
   }
 
   .preview-nav-item.active {
-    background: rgba(255,255,255,.08);
+    background: var(--bg-card);
     color: #ffffff;
   }
 
@@ -1046,7 +1046,7 @@ export const GLOBAL_STYLES = `
   .preview-bar {
     height: 6px;
     border-radius: 999px;
-    background: rgba(255,255,255,.1);
+    background: var(--bg-card);
     overflow: hidden;
   }
 
@@ -1101,7 +1101,7 @@ export const GLOBAL_STYLES = `
   }
 
   .preview-file:hover {
-    background: rgba(255,255,255,.05);
+    background: var(--bg-card);
     transform: translateX(4px);
   }
 
@@ -1361,7 +1361,7 @@ export const GLOBAL_STYLES = `
   .auth-cloud-bg {
     position: absolute;
     inset: 0;
-    background: rgba(255,255,255,.06);
+    background: var(--bg-card);
     border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
     filter: blur(1px);
   }
@@ -2377,7 +2377,7 @@ export const GLOBAL_STYLES = `
   text-align: left;
 }
 .nav-item-new:hover {
-  background: rgba(255,255,255,0.05);
+  background: var(--bg-card);
   color: #fff;
 }
 .nav-item-new.active {

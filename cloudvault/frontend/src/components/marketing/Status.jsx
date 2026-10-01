@@ -21,7 +21,7 @@ export default function Status() {
         </div>
 
         <div style={{ border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden', background: 'var(--surface)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--border)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '16px 24px', background: "var(--bg-card)", borderBottom: '1px solid var(--border)' }}>
             <span style={{ fontWeight: '600', color: 'var(--text-secondary)' }}>Service</span>
             <span style={{ fontWeight: '600', color: 'var(--text-secondary)' }}>Status</span>
           </div>

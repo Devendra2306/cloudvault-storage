@@ -41,7 +41,7 @@ export default function NotificationBell({ notifications, unreadCount, onMarkAll
               height: 16,
               borderRadius: 99,
               background: "var(--accent)",
-              color: "#fff",
+              color: "var(--text)",
               fontSize: 10,
               fontWeight: 700,
               display: "flex",

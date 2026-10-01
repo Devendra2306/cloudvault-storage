@@ -36,7 +36,7 @@ export default function TrialBanner({ account, onUpgrade }) {
           borderRadius: 8,
           border: "none",
           background: "var(--accent)",
-          color: "#fff",
+          color: "var(--text)",
           fontWeight: 700,
           cursor: "pointer",
           fontSize: 12,

@@ -58,7 +58,7 @@ function Toast({ msg, type, onClose }) {
   return (
     <div className="toast" role="alert" aria-live="polite" style={{
       position: "fixed", bottom: 32, right: 32, zIndex: 9999,
-      background: bg, color: "#fff", padding: "14px 24px", borderRadius: "var(--radius)",
+      background: bg, color: "var(--text)", padding: "14px 24px", borderRadius: "var(--radius)",
       fontFamily: "var(--font)", fontWeight: 600, fontSize: 14,
       boxShadow: "var(--shadow)", animation: "slideUp .3s cubic-bezier(.4,0,.2,1)",
       display: "flex", alignItems: "center", gap: 10, maxWidth: 420
@@ -71,7 +71,7 @@ function Toast({ msg, type, onClose }) {
 }
 
 function Spinner({ size = 22, color = "var(--accent)" }) {
-  return <div style={{ width: size, height: size, border: `3px solid rgba(255,255,255,.15)`, borderTopColor: color, borderRadius: "50%", animation: "spin 0.7s linear infinite", display: "inline-block" }} />;
+  return <div style={{ width: size, height: size, border: `3px solid var(--border)`, borderTopColor: color, borderRadius: "50%", animation: "spin 0.7s linear infinite", display: "inline-block" }} />;
 }
 
 function ProgressBar({ value }) {
@@ -103,7 +103,7 @@ function DownloadManager({ jobs, history }) {
     <div className="transfer-panel">
       <div style={{ padding: "14px 16px", borderBottom: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <strong style={{ fontSize: 13 }}>Transfers</strong>
-        <span style={{ fontSize: 11, background: "var(--mega-red)", color: "#fff", padding: "2px 8px", borderRadius: 99, fontWeight: 700 }}>
+        <span style={{ fontSize: 11, background: "var(--mega-red)", color: "var(--text)", padding: "2px 8px", borderRadius: 99, fontWeight: 700 }}>
           {jobs.filter(j => j.status === "downloading").length}
         </span>
       </div>
@@ -304,49 +304,49 @@ function DriveHero({ username, stats, storagePercent }) {
 
   return (
     <div style={{ marginBottom: 32, animation: "fadeIn 0.3s ease-out" }}>
-      <h1 style={{ fontSize: 26, fontWeight: 800, color: "#fff", marginBottom: 24, display: "flex", alignItems: "center", gap: 10 }}>
+      <h1 style={{ fontSize: 26, fontWeight: 800, color: "var(--text)", marginBottom: 24, display: "flex", alignItems: "center", gap: 10 }}>
         {greeting}, {username?.split(" ")[0] || "User"} {emoji}
       </h1>
       
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16 }}>
         
         {/* Storage Card */}
-        <div style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 16, padding: 20 }}>
+        <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 16, padding: 20 }}>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
-            <span style={{ color: "#a1a1aa", fontSize: 13, fontWeight: 600 }}>Storage Used</span>
+            <span style={{ color: "var(--text-muted)", fontSize: 13, fontWeight: 600 }}>Storage Used</span>
             <span style={{ background: "rgba(59,130,246,0.1)", color: "#60a5fa", padding: "2px 8px", borderRadius: 99, fontSize: 12, fontWeight: 700 }}>{Math.round(pct)}%</span>
           </div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: "#fff", marginBottom: 4 }}>{fmt(stats.storageUsed)}</div>
-          <div style={{ fontSize: 13, color: "#71717a", fontWeight: 500 }}>of {fmt(storageQuota)}</div>
+          <div style={{ fontSize: 22, fontWeight: 800, color: "var(--text)", marginBottom: 4 }}>{fmt(stats.storageUsed)}</div>
+          <div style={{ fontSize: 13, color: "var(--text-muted)", fontWeight: 500 }}>of {fmt(storageQuota)}</div>
         </div>
 
         {/* Activity Card */}
-        <div style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 16, padding: 20 }}>
+        <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 16, padding: 20 }}>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
-            <span style={{ color: "#a1a1aa", fontSize: 13, fontWeight: 600 }}>Recent Activity</span>
+            <span style={{ color: "var(--text-muted)", fontSize: 13, fontWeight: 600 }}>Recent Activity</span>
             <span style={{ background: "rgba(16,185,129,0.1)", color: "#10b981", padding: "2px 8px", borderRadius: 99, fontSize: 12, fontWeight: 700 }}>Auto-sync</span>
           </div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: "#fff", marginBottom: 4 }}>{stats.totalFiles} files stored</div>
-          <div style={{ fontSize: 13, color: "#71717a", fontWeight: 500 }}>All vaults synced</div>
+          <div style={{ fontSize: 22, fontWeight: 800, color: "var(--text)", marginBottom: 4 }}>{stats.totalFiles} files stored</div>
+          <div style={{ fontSize: 13, color: "var(--text-muted)", fontWeight: 500 }}>All vaults synced</div>
         </div>
 
         {/* Shared Card */}
-        <div style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 16, padding: 20 }}>
+        <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 16, padding: 20 }}>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
-            <span style={{ color: "#a1a1aa", fontSize: 13, fontWeight: 600 }}>Shared with Me</span>
+            <span style={{ color: "var(--text-muted)", fontSize: 13, fontWeight: 600 }}>Shared with Me</span>
           </div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: "#fff", marginBottom: 4 }}>0 shared items</div>
-          <div style={{ fontSize: 13, color: "#71717a", fontWeight: 500 }}>Direct files & shared folders</div>
+          <div style={{ fontSize: 22, fontWeight: 800, color: "var(--text)", marginBottom: 4 }}>0 shared items</div>
+          <div style={{ fontSize: 13, color: "var(--text-muted)", fontWeight: 500 }}>Direct files & shared folders</div>
         </div>
 
         {/* Security Card */}
-        <div style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 16, padding: 20 }}>
+        <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 16, padding: 20 }}>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
-            <span style={{ color: "#a1a1aa", fontSize: 13, fontWeight: 600 }}>Security</span>
+            <span style={{ color: "var(--text-muted)", fontSize: 13, fontWeight: 600 }}>Security</span>
             <span style={{ background: "rgba(245,158,11,0.1)", color: "#f59e0b", padding: "2px 8px", borderRadius: 99, fontSize: 12, fontWeight: 700 }}>Locked</span>
           </div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: "#fff", marginBottom: 4 }}>Standard Security</div>
-          <div style={{ fontSize: 13, color: "#71717a", fontWeight: 500 }}>AES-256 GCM • Zero-Knowledge</div>
+          <div style={{ fontSize: 22, fontWeight: 800, color: "var(--text)", marginBottom: 4 }}>Standard Security</div>
+          <div style={{ fontSize: 13, color: "var(--text-muted)", fontWeight: 500 }}>AES-256 GCM • Zero-Knowledge</div>
         </div>
 
       </div>
@@ -423,7 +423,7 @@ function CustomSelect({ value, onChange, options, style }) {
           <div onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 150 }} />
           <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, minWidth: "100%", background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 12, boxShadow: "0 12px 40px rgba(0,0,0,0.35)", zIndex: 151, overflow: "hidden", animation: "fadeIn 0.15s ease" }}>
             {options.map(o => (
-              <button key={o.value} type="button" onClick={() => { onChange(o.value); setOpen(false); }} style={{ display: "block", width: "100%", padding: "10px 14px", border: "none", background: o.value === value ? "rgba(59,130,246,0.12)" : "transparent", color: "var(--text)", fontFamily: "var(--font)", fontSize: 13, fontWeight: o.value === value ? 600 : 500, cursor: "pointer", textAlign: "left", transition: "background 0.15s", whiteSpace: "nowrap" }} onMouseEnter={e => { if (o.value !== value) e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }} onMouseLeave={e => { e.currentTarget.style.background = o.value === value ? "rgba(59,130,246,0.12)" : "transparent"; }}>
+              <button key={o.value} type="button" onClick={() => { onChange(o.value); setOpen(false); }} style={{ display: "block", width: "100%", padding: "10px 14px", border: "none", background: o.value === value ? "rgba(59,130,246,0.12)" : "transparent", color: "var(--text)", fontFamily: "var(--font)", fontSize: 13, fontWeight: o.value === value ? 600 : 500, cursor: "pointer", textAlign: "left", transition: "background 0.15s", whiteSpace: "nowrap" }} onMouseEnter={e => { if (o.value !== value) e.currentTarget.style.background = "var(--bg-card-hover)"; }} onMouseLeave={e => { e.currentTarget.style.background = o.value === value ? "rgba(59,130,246,0.12)" : "transparent"; }}>
                 {o.label}{o.value === value && <span style={{ marginLeft: 8, color: "var(--accent-blue)" }}>✓</span>}
               </button>
             ))}
@@ -1095,19 +1095,19 @@ export default function CloudVault() {
       {/* Sidebar */}
       <div className={`sidebar ${sidebarOpen ? "open" : ""}`} style={{
         position: "fixed", left: 0, top: 0, bottom: 0, width: 280,
-        background: "var(--bg-card)", borderRight: "1px solid rgba(255,255,255,0.08)",
+        background: "var(--bg-card)", borderRight: "1px solid var(--border)",
         display: "flex", flexDirection: "column", zIndex: 100,
         transition: "transform .3s cubic-bezier(.4,0,.2,1)",
         ...(isMobile ? { transform: sidebarOpen ? "translateX(0)" : "translateX(-100%)" } : {})
       }}>
         {/* Header / Logo */}
-        <div style={{ padding: "20px 24px", display: "flex", alignItems: "center", gap: 12, borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+        <div style={{ padding: "20px 24px", display: "flex", alignItems: "center", gap: 12, borderBottom: "1px solid var(--border)" }}>
           <div style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg, #0ea5e9, #2563eb)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(14,165,233,0.3)" }}>
             <Database size={20} color="#fff" />
           </div>
           <div>
-            <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>CloudVault</div>
-            <div style={{ fontSize: 11, color: "#93c5fd", marginTop: 2, fontWeight: 600 }}>Enterprise Cloud Storage</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: "var(--text)", letterSpacing: "-0.02em" }}>CloudVault</div>
+            <div style={{ fontSize: 11, color: "var(--accent-blue)", marginTop: 2, fontWeight: 600 }}>Enterprise Cloud Storage</div>
           </div>
         </div>
 
@@ -1192,20 +1192,20 @@ export default function CloudVault() {
         </div>
 
         {/* Footer / Storage */}
-        <div style={{ padding: "20px 16px", borderTop: "1px solid rgba(255,255,255,0.04)", background: "rgba(0,0,0,0.2)" }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: "#e4e4e7", display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}>
+        <div style={{ padding: "20px 16px", borderTop: "1px solid var(--border)", background: "var(--bg-card)" }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}>
             <HardDrive size={15} color="#3b82f6" /> Storage
           </div>
           
           <div style={{ marginBottom: 16 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 8 }}>
-              <span style={{ fontSize: 12, color: "#a1a1aa", fontWeight: 500 }}>{fmt(stats.storageUsed)} used</span>
-              <span style={{ fontSize: 12, color: "#e4e4e7", fontWeight: 600 }}>{fmt(storageLimit)}</span>
+              <span style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 500 }}>{fmt(stats.storageUsed)} used</span>
+              <span style={{ fontSize: 12, color: "var(--text-secondary)", fontWeight: 600 }}>{fmt(storageLimit)}</span>
             </div>
-            <div style={{ width: "100%", height: 6, background: "rgba(255,255,255,0.1)", borderRadius: 99 }}>
+            <div style={{ width: "100%", height: 6, background: "var(--border)", borderRadius: 99 }}>
               <div style={{ width: `${Math.max(2, storagePercent)}%`, height: "100%", background: "linear-gradient(90deg, #3b82f6, #60a5fa)", borderRadius: 99, boxShadow: "0 0 10px rgba(59,130,246,0.5)" }} />
             </div>
-            <div style={{ fontSize: 12, color: "#a1a1aa", marginTop: 8, fontWeight: 500 }}>Free Workspace</div>
+            <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 8, fontWeight: 500 }}>Free Workspace</div>
           </div>
 
           <button type="button" onClick={() => setAppPage("billing")} style={{ width: "100%", padding: "12px", background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.3)", borderRadius: 12, color: "#60a5fa", fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", flexDirection: "column", gap: 4, transition: "all 0.2s" }} onMouseEnter={e => e.currentTarget.style.background = "rgba(59,130,246,0.15)"} onMouseLeave={e => e.currentTarget.style.background = "rgba(59,130,246,0.1)"}>
@@ -1213,7 +1213,7 @@ export default function CloudVault() {
               <span>Upgrade &rarr;</span>
               <ShieldCheck size={14} />
             </div>
-            <span style={{ fontSize: 11, color: "#93c5fd", fontWeight: 400, opacity: 0.8 }}>Expand to 2 TB with E2EE Priority</span>
+            <span style={{ fontSize: 11, color: "var(--accent-blue)", fontWeight: 400, opacity: 0.8 }}>Expand to 2 TB with E2EE Priority</span>
           </button>
         </div>
       </div>
@@ -1292,7 +1292,7 @@ export default function CloudVault() {
               onChange={e => setSearch(e.target.value)}
               style={{ width: "100%", padding: "12px 60px 12px 44px", borderRadius: 999, background: "var(--bg-card)", border: "1px solid var(--border)", transition: "border-color .2s ease, box-shadow .2s ease" }}
             />
-            <div style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "rgba(255,255,255,.08)", padding: "2px 6px", borderRadius: 6, fontSize: 11, fontWeight: 700, color: "var(--text-muted)", pointerEvents: "none", border: "1px solid var(--border)" }}>
+            <div style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "var(--surface-raised)", padding: "2px 6px", borderRadius: 6, fontSize: 11, fontWeight: 700, color: "var(--text-muted)", pointerEvents: "none", border: "1px solid var(--border)" }}>
               ⌘K
             </div>
           </div>
@@ -1450,25 +1450,25 @@ export default function CloudVault() {
             <FileListSkeleton count={6} grid={viewMode === "grid"} />
           ) : filteredFiles.length === 0 ? (
               <div className="glass-card empty-state" style={{
-                textAlign: "center", padding: "64px 32px", borderRadius: "16px", background: "rgba(255,255,255,0.02)",
-                border: "1px dashed rgba(255,255,255,0.1)", animation: "fadeIn .3s ease", marginBottom: 40
+                textAlign: "center", padding: "64px 32px", borderRadius: "16px", background: "var(--bg-card)",
+                border: "1px dashed var(--border)", animation: "fadeIn .3s ease", marginBottom: 40
               }}>
-                <div style={{ fontWeight: 800, fontSize: 22, marginBottom: 12, color: "#fff" }}>
+                <div style={{ fontWeight: 800, fontSize: 22, marginBottom: 12, color: "var(--text)" }}>
                   {fileFilter !== "all" ? "No matching files" : "No files in My Drive yet"}
                 </div>
-                <div style={{ fontSize: 15, color: "#a1a1aa", marginBottom: 32, maxWidth: 420, margin: "0 auto 32px" }}>
+                <div style={{ fontSize: 15, color: "var(--text-muted)", marginBottom: 32, maxWidth: 420, margin: "0 auto 32px" }}>
                   {fileFilter !== "all" ? "Try a different filter or upload new files." : "Upload your first file or create a folder to get started"}
                 </div>
                 {fileFilter === "all" && (
                   <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginBottom: 48 }}>
-                    <button type="button" onClick={() => fileInput.current?.click()} style={{ background: "#3b82f6", color: "#fff", border: "none", borderRadius: 8, padding: "12px 24px", fontWeight: 600, cursor: "pointer", fontSize: 14 }}>Upload a file</button>
-                    <button type="button" onClick={() => setShowNewFolder(true)} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff", borderRadius: 8, padding: "12px 24px", fontWeight: 600, cursor: "pointer", fontSize: 14 }}>Upload Folder</button>
+                    <button type="button" onClick={() => fileInput.current?.click()} style={{ background: "#3b82f6", color: "var(--text)", border: "none", borderRadius: 8, padding: "12px 24px", fontWeight: 600, cursor: "pointer", fontSize: 14 }}>Upload a file</button>
+                    <button type="button" onClick={() => setShowNewFolder(true)} style={{ background: "var(--bg-card)", border: "1px solid var(--border)", color: "var(--text)", borderRadius: 8, padding: "12px 24px", fontWeight: 600, cursor: "pointer", fontSize: 14 }}>Upload Folder</button>
                   </div>
                 )}
                 
-                <div style={{ background: "rgba(0,0,0,0.2)", borderRadius: 12, padding: 24, textAlign: "left", maxWidth: 640, margin: "0 auto" }}>
-                  <h4 style={{ margin: "0 0 16px", color: "#fff", fontSize: 15, display: "flex", alignItems: "center", gap: 8 }}>💡 Quick Tips</h4>
-                  <ul style={{ margin: 0, paddingLeft: 20, color: "#a1a1aa", fontSize: 14, display: "flex", flexDirection: "column", gap: 12, lineHeight: 1.5 }}>
+                <div style={{ background: "var(--bg-card)", borderRadius: 12, padding: 24, textAlign: "left", maxWidth: 640, margin: "0 auto" }}>
+                  <h4 style={{ margin: "0 0 16px", color: "var(--text)", fontSize: 15, display: "flex", alignItems: "center", gap: 8 }}>💡 Quick Tips</h4>
+                  <ul style={{ margin: 0, paddingLeft: 20, color: "var(--text-muted)", fontSize: 14, display: "flex", flexDirection: "column", gap: 12, lineHeight: 1.5 }}>
                     <li><strong>Drag and drop</strong> files anywhere on the page to trigger instant uploads.</li>
                     <li><strong>Toggle the E2EE switch</strong> in the toolbar to encrypt files zero-knowledge.</li>
                     <li><strong>Hold Ctrl</strong> to select multiple files for batch downloads and shares.</li>

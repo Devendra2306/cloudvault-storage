@@ -159,5 +159,5 @@ const btnPrimary = {
   ...btnSecondary,
   border: "none",
   background: "var(--accent)",
-  color: "#fff",
+  color: "var(--text)",
 };

@@ -101,7 +101,7 @@ export default function ProfilePage({ account, onBack, api = apiFetch }) {
 
   const cardStyle = {
     background: "var(--bg-card)",
-    border: "1px solid rgba(255, 255, 255, 0.06)",
+    border: "1px solid var(--border)",
     borderRadius: 16,
     padding: 24,
     boxShadow: "0 8px 32px rgba(0, 0, 0, 0.2)",
@@ -109,8 +109,8 @@ export default function ProfilePage({ account, onBack, api = apiFetch }) {
   };
 
   const inputStyle = {
-    width: "100%", background: "rgba(0,0,0,0.3)", border: "1px solid rgba(255,255,255,0.1)",
-    color: "#fff", padding: "10px 14px", borderRadius: 8, fontSize: 14, outline: "none", transition: "border 0.2s"
+    width: "100%", background: "var(--bg-card)", border: "1px solid var(--border)",
+    color: "var(--text)", padding: "10px 14px", borderRadius: 8, fontSize: 14, outline: "none", transition: "border 0.2s"
   };
 
   return (
@@ -121,8 +121,8 @@ export default function ProfilePage({ account, onBack, api = apiFetch }) {
         <button type="button" onClick={onBack} style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", color: "#60a5fa", cursor: "pointer", fontWeight: 600, padding: 0, fontSize: 14, marginBottom: 16 }}>
           &larr; Back to Dashboard
         </button>
-        <h1 style={{ fontSize: 32, fontWeight: 800, margin: "0 0 4px", color: "#fff" }}>My Profile</h1>
-        <p style={{ margin: 0, color: "#a1a1aa", fontSize: 15 }}>Manage your account settings and preferences</p>
+        <h1 style={{ fontSize: 32, fontWeight: 800, margin: "0 0 4px", color: "var(--text)" }}>My Profile</h1>
+        <p style={{ margin: 0, color: "var(--text-muted)", fontSize: 15 }}>Manage your account settings and preferences</p>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1.2fr", gap: 24, alignItems: "start" }}>
@@ -134,15 +134,15 @@ export default function ProfilePage({ account, onBack, api = apiFetch }) {
           <div style={{ ...cardStyle, display: "flex", alignItems: "center", gap: 20 }}>
             <div style={{ 
               width: 80, height: 80, borderRadius: "50%", background: avatarPreview ? `url(${avatarPreview}) center/cover` : "linear-gradient(135deg, #3b82f6, #2563eb)", 
-              display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, color: "#fff", fontWeight: 700, boxShadow: "0 4px 14px rgba(59,130,246,0.4)", flexShrink: 0
+              display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, color: "var(--text)", fontWeight: 700, boxShadow: "0 4px 14px rgba(59,130,246,0.4)", flexShrink: 0
             }}>
               {!avatarPreview && (account.fullName?.[0] || "?").toUpperCase()}
             </div>
             <div style={{ flex: 1 }}>
-              <h3 style={{ margin: "0 0 4px", color: "#fff", fontSize: 18, fontWeight: 600 }}>{account.fullName}</h3>
-              <p style={{ margin: "0 0 12px", color: "#71717a", fontSize: 13 }}>JPG, PNG or WEBP (Max 5MB)</p>
+              <h3 style={{ margin: "0 0 4px", color: "var(--text)", fontSize: 18, fontWeight: 600 }}>{account.fullName}</h3>
+              <p style={{ margin: "0 0 12px", color: "var(--text-muted)", fontSize: 13 }}>JPG, PNG or WEBP (Max 5MB)</p>
               <div style={{ display: "flex", gap: 12 }}>
-                <button type="button" onClick={() => fileInputRef.current?.click()} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff", padding: "6px 12px", borderRadius: 6, fontSize: 13, cursor: "pointer", fontWeight: 500 }}>
+                <button type="button" onClick={() => fileInputRef.current?.click()} style={{ background: "var(--bg-card)", border: "1px solid var(--border)", color: "var(--text)", padding: "6px 12px", borderRadius: 6, fontSize: 13, cursor: "pointer", fontWeight: 500 }}>
                   Change
                 </button>
                 <input type="file" ref={fileInputRef} onChange={handleAvatarChange} accept="image/*" style={{ display: "none" }} />
@@ -158,17 +158,17 @@ export default function ProfilePage({ account, onBack, api = apiFetch }) {
           {/* Profile Info Card */}
           <div style={cardStyle}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-              <h3 style={{ margin: 0, color: "#fff", fontSize: 18, fontWeight: 600, display: "flex", alignItems: "center", gap: 8 }}><UserIcon size={18} color="#3b82f6" /> Profile Information</h3>
+              <h3 style={{ margin: 0, color: "var(--text)", fontSize: 18, fontWeight: 600, display: "flex", alignItems: "center", gap: 8 }}><UserIcon size={18} color="#3b82f6" /> Profile Information</h3>
               <span style={{ background: "rgba(16, 185, 129, 0.1)", color: "#10b981", padding: "4px 10px", borderRadius: 99, fontSize: 12, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
                 <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#10b981" }} /> Active
               </span>
             </div>
 
             <div style={{ marginBottom: 20 }}>
-              <label style={{ display: "block", color: "#a1a1aa", fontSize: 13, fontWeight: 500, marginBottom: 8 }}>Username</label>
+              <label style={{ display: "block", color: "var(--text-muted)", fontSize: 13, fontWeight: 500, marginBottom: 8 }}>Username</label>
               <div style={{ display: "flex", gap: 8 }}>
                 <input type="text" value={username} onChange={e => setUsername(e.target.value)} style={inputStyle} />
-                <button type="button" onClick={handleSaveProfile} disabled={savingProfile} style={{ background: "#3b82f6", color: "#fff", border: "none", borderRadius: 8, padding: "0 16px", fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" }}>
+                <button type="button" onClick={handleSaveProfile} disabled={savingProfile} style={{ background: "#3b82f6", color: "var(--text)", border: "none", borderRadius: 8, padding: "0 16px", fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" }}>
                   {savingProfile ? "..." : "Save"}
                 </button>
               </div>
@@ -176,29 +176,29 @@ export default function ProfilePage({ account, onBack, api = apiFetch }) {
             </div>
 
             <div style={{ marginBottom: 20 }}>
-              <label style={{ display: "block", color: "#a1a1aa", fontSize: 13, fontWeight: 500, marginBottom: 8 }}>Email</label>
+              <label style={{ display: "block", color: "var(--text-muted)", fontSize: 13, fontWeight: 500, marginBottom: 8 }}>Email</label>
               <input type="text" value={account.email} readOnly style={{ ...inputStyle, opacity: 0.6, cursor: "not-allowed" }} />
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, paddingTop: 16, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, paddingTop: 16, borderTop: "1px solid var(--border)" }}>
               <div>
-                <p style={{ margin: "0 0 4px", color: "#71717a", fontSize: 13 }}>Storage Used</p>
-                <p style={{ margin: 0, color: "#fff", fontSize: 15, fontWeight: 600 }}>{fmt(account.storageUsed)}</p>
+                <p style={{ margin: "0 0 4px", color: "var(--text-muted)", fontSize: 13 }}>Storage Used</p>
+                <p style={{ margin: 0, color: "var(--text)", fontSize: 15, fontWeight: 600 }}>{fmt(account.storageUsed)}</p>
               </div>
               <div>
-                <p style={{ margin: "0 0 4px", color: "#71717a", fontSize: 13 }}>Member Since</p>
-                <p style={{ margin: 0, color: "#fff", fontSize: 15, fontWeight: 600 }}>{joined}</p>
+                <p style={{ margin: "0 0 4px", color: "var(--text-muted)", fontSize: 13 }}>Member Since</p>
+                <p style={{ margin: 0, color: "var(--text)", fontSize: 15, fontWeight: 600 }}>{joined}</p>
               </div>
             </div>
           </div>
 
           {/* Account Settings */}
-          <button type="button" onClick={() => window.location.href = "/settings"} style={{ ...cardStyle, marginBottom: 0, display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(255,255,255,0.02)", cursor: "pointer", transition: "background 0.2s" }} onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.04)"} onMouseLeave={e => e.currentTarget.style.background = "rgba(255,255,255,0.02)"}>
+          <button type="button" onClick={() => window.location.href = "/settings"} style={{ ...cardStyle, marginBottom: 0, display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--bg-card)", cursor: "pointer", transition: "background 0.2s" }} onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.04)"} onMouseLeave={e => e.currentTarget.style.background = "rgba(255,255,255,0.02)"}>
             <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-              <div style={{ width: 40, height: 40, borderRadius: 10, background: "rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "center" }}><Settings size={18} color="#a1a1aa" /></div>
+              <div style={{ width: 40, height: 40, borderRadius: 10, background: "var(--bg-card)", display: "flex", alignItems: "center", justifyContent: "center" }}><Settings size={18} color="#a1a1aa" /></div>
               <div style={{ textAlign: "left" }}>
-                <h4 style={{ margin: "0 0 2px", color: "#fff", fontSize: 15, fontWeight: 600 }}>Account Settings</h4>
-                <p style={{ margin: 0, color: "#71717a", fontSize: 13 }}>Privacy, security & more</p>
+                <h4 style={{ margin: "0 0 2px", color: "var(--text)", fontSize: 15, fontWeight: 600 }}>Account Settings</h4>
+                <p style={{ margin: 0, color: "var(--text-muted)", fontSize: 13 }}>Privacy, security & more</p>
               </div>
             </div>
             <ArrowUpRight size={18} color="#a1a1aa" />
@@ -213,36 +213,36 @@ export default function ProfilePage({ account, onBack, api = apiFetch }) {
           <div style={cardStyle}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 24 }}>
               <HardDrive size={18} color="#8b5cf6" />
-              <h3 style={{ margin: 0, color: "#fff", fontSize: 18, fontWeight: 600 }}>Storage Overview</h3>
+              <h3 style={{ margin: 0, color: "var(--text)", fontSize: 18, fontWeight: 600 }}>Storage Overview</h3>
             </div>
             
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 8 }}>
               <div>
                 <span style={{ background: "rgba(139, 92, 246, 0.1)", color: "#a78bfa", padding: "4px 10px", borderRadius: 6, fontSize: 12, fontWeight: 600, display: "inline-block", marginBottom: 8 }}>Mini Drive</span>
-                <div style={{ color: "#fff", fontSize: 24, fontWeight: 800 }}>{fmt(account.storageUsed)} <span style={{ fontSize: 14, color: "#71717a", fontWeight: 500 }}>used</span></div>
+                <div style={{ color: "var(--text)", fontSize: 24, fontWeight: 800 }}>{fmt(account.storageUsed)} <span style={{ fontSize: 14, color: "var(--text-muted)", fontWeight: 500 }}>used</span></div>
               </div>
-              <div style={{ color: "#a1a1aa", fontSize: 14, fontWeight: 500 }}>{fmt(account.storageQuota)} Total</div>
+              <div style={{ color: "var(--text-muted)", fontSize: 14, fontWeight: 500 }}>{fmt(account.storageQuota)} Total</div>
             </div>
             
-            <div style={{ width: "100%", height: 8, background: "rgba(255,255,255,0.1)", borderRadius: 99, overflow: "hidden", marginBottom: 24 }}>
+            <div style={{ width: "100%", height: 8, background: "var(--bg-card)", borderRadius: 99, overflow: "hidden", marginBottom: 24 }}>
               <div style={{ width: `${Math.max(2, (account.storageUsed / account.storageQuota) * 100)}%`, height: "100%", background: "linear-gradient(90deg, #8b5cf6, #a78bfa)", borderRadius: 99 }} />
             </div>
             
-            <div style={{ paddingTop: 16, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-              <h4 style={{ margin: "0 0 12px", color: "#a1a1aa", fontSize: 13, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>Quick Stats</h4>
+            <div style={{ paddingTop: 16, borderTop: "1px solid var(--border)" }}>
+              <h4 style={{ margin: "0 0 12px", color: "var(--text-muted)", fontSize: 13, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>Quick Stats</h4>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                <div style={{ background: "rgba(0,0,0,0.2)", padding: 12, borderRadius: 10, display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ background: "var(--bg-card)", padding: 12, borderRadius: 10, display: "flex", alignItems: "center", gap: 12 }}>
                   <div style={{ width: 32, height: 32, background: "rgba(59,130,246,0.1)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }}><File size={16} color="#3b82f6" /></div>
                   <div>
-                    <div style={{ color: "#fff", fontSize: 16, fontWeight: 700 }}>{stats.totalFiles}</div>
-                    <div style={{ color: "#71717a", fontSize: 12 }}>Files</div>
+                    <div style={{ color: "var(--text)", fontSize: 16, fontWeight: 700 }}>{stats.totalFiles}</div>
+                    <div style={{ color: "var(--text-muted)", fontSize: 12 }}>Files</div>
                   </div>
                 </div>
-                <div style={{ background: "rgba(0,0,0,0.2)", padding: 12, borderRadius: 10, display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ background: "var(--bg-card)", padding: 12, borderRadius: 10, display: "flex", alignItems: "center", gap: 12 }}>
                   <div style={{ width: 32, height: 32, background: "rgba(245,158,11,0.1)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }}><Folder size={16} color="#f59e0b" /></div>
                   <div>
-                    <div style={{ color: "#fff", fontSize: 16, fontWeight: 700 }}>{stats.totalFolders}</div>
-                    <div style={{ color: "#71717a", fontSize: 12 }}>Folders</div>
+                    <div style={{ color: "var(--text)", fontSize: 16, fontWeight: 700 }}>{stats.totalFolders}</div>
+                    <div style={{ color: "var(--text-muted)", fontSize: 12 }}>Folders</div>
                   </div>
                 </div>
               </div>
@@ -253,12 +253,12 @@ export default function ProfilePage({ account, onBack, api = apiFetch }) {
           <div style={{ ...cardStyle, background: "linear-gradient(to bottom, rgba(16,185,129,0.05), rgba(0,0,0,0.2))", borderColor: "rgba(16,185,129,0.2)" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
               <ShieldCheck size={20} color="#10b981" />
-              <h3 style={{ margin: 0, color: "#fff", fontSize: 18, fontWeight: 600 }}>End-to-End Encryption Security Center</h3>
+              <h3 style={{ margin: 0, color: "var(--text)", fontSize: 18, fontWeight: 600 }}>End-to-End Encryption Security Center</h3>
             </div>
             
             {!e2eEnabled ? (
               <>
-                <p style={{ color: "#a1a1aa", fontSize: 14, lineHeight: 1.5, margin: "0 0 20px" }}>
+                <p style={{ color: "var(--text-muted)", fontSize: 14, lineHeight: 1.5, margin: "0 0 20px" }}>
                   Keep your private files safe with client-side zero-knowledge encryption. 
                 </p>
                 
@@ -276,7 +276,7 @@ export default function ProfilePage({ account, onBack, api = apiFetch }) {
                   {e2eError && <p style={{ margin: 0, color: "#f87171", fontSize: 13 }}>{e2eError}</p>}
                 </div>
 
-                <button type="button" onClick={handleEnableE2EE} style={{ width: "100%", background: "#10b981", color: "#fff", border: "none", padding: "12px", borderRadius: 8, fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, cursor: "pointer" }}>
+                <button type="button" onClick={handleEnableE2EE} style={{ width: "100%", background: "#10b981", color: "var(--text)", border: "none", padding: "12px", borderRadius: 8, fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, cursor: "pointer" }}>
                   <Key size={16} /> Enable E2EE & Download Recovery Backup
                 </button>
               </>
@@ -285,9 +285,9 @@ export default function ProfilePage({ account, onBack, api = apiFetch }) {
                 <div style={{ width: 64, height: 64, background: "rgba(16,185,129,0.1)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
                   <CheckCircle2 size={32} color="#10b981" />
                 </div>
-                <h4 style={{ color: "#fff", fontSize: 18, margin: "0 0 8px" }}>E2EE is Enabled</h4>
-                <p style={{ color: "#a1a1aa", fontSize: 14, margin: "0 0 24px" }}>Your files are secured with zero-knowledge encryption.</p>
-                <button type="button" onClick={() => { localStorage.removeItem("cv_e2ee_enabled"); setE2eEnabled(false); }} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff", padding: "8px 16px", borderRadius: 6, fontSize: 13, cursor: "pointer" }}>
+                <h4 style={{ color: "var(--text)", fontSize: 18, margin: "0 0 8px" }}>E2EE is Enabled</h4>
+                <p style={{ color: "var(--text-muted)", fontSize: 14, margin: "0 0 24px" }}>Your files are secured with zero-knowledge encryption.</p>
+                <button type="button" onClick={() => { localStorage.removeItem("cv_e2ee_enabled"); setE2eEnabled(false); }} style={{ background: "var(--bg-card)", border: "1px solid var(--border)", color: "var(--text)", padding: "8px 16px", borderRadius: 6, fontSize: 13, cursor: "pointer" }}>
                   Reset Passphrase (DANGER)
                 </button>
               </div>
@@ -298,13 +298,13 @@ export default function ProfilePage({ account, onBack, api = apiFetch }) {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
             <button type="button" onClick={() => window.location.href = "/billing"} style={{ ...cardStyle, marginBottom: 0, padding: 20, cursor: "pointer", background: "linear-gradient(135deg, rgba(236,72,153,0.1), rgba(217,70,239,0.1))", borderColor: "rgba(236,72,153,0.2)", transition: "transform 0.2s" }} onMouseEnter={e => e.currentTarget.style.transform = "translateY(-2px)"} onMouseLeave={e => e.currentTarget.style.transform = "none"}>
               <UploadCloud size={24} color="#ec4899" style={{ marginBottom: 12 }} />
-              <h4 style={{ margin: "0 0 4px", color: "#fff", fontSize: 16, fontWeight: 600, textAlign: "left" }}>Upgrade to Pro</h4>
+              <h4 style={{ margin: "0 0 4px", color: "var(--text)", fontSize: 16, fontWeight: 600, textAlign: "left" }}>Upgrade to Pro</h4>
               <p style={{ margin: 0, color: "#fbcfe8", fontSize: 13, textAlign: "left" }}>Get 2TB & premium support</p>
             </button>
-            <button type="button" style={{ ...cardStyle, marginBottom: 0, padding: 20, cursor: "pointer", background: "rgba(255,255,255,0.02)", transition: "transform 0.2s" }} onMouseEnter={e => e.currentTarget.style.transform = "translateY(-2px)"} onMouseLeave={e => e.currentTarget.style.transform = "none"}>
+            <button type="button" style={{ ...cardStyle, marginBottom: 0, padding: 20, cursor: "pointer", background: "var(--bg-card)", transition: "transform 0.2s" }} onMouseEnter={e => e.currentTarget.style.transform = "translateY(-2px)"} onMouseLeave={e => e.currentTarget.style.transform = "none"}>
               <UserIcon size={24} color="#3b82f6" style={{ marginBottom: 12 }} />
-              <h4 style={{ margin: "0 0 4px", color: "#fff", fontSize: 16, fontWeight: 600, textAlign: "left" }}>Refer a Friend</h4>
-              <p style={{ margin: 0, color: "#a1a1aa", fontSize: 13, textAlign: "left" }}>Earn extra storage</p>
+              <h4 style={{ margin: "0 0 4px", color: "var(--text)", fontSize: 16, fontWeight: 600, textAlign: "left" }}>Refer a Friend</h4>
+              <p style={{ margin: 0, color: "var(--text-muted)", fontSize: 13, textAlign: "left" }}>Earn extra storage</p>
             </button>
           </div>
 

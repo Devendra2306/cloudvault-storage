@@ -29,7 +29,7 @@ export default function VerifyEmailBanner({ account, onOpenSettings }) {
           borderRadius: 8,
           border: "none",
           background: "var(--danger)",
-          color: "#fff",
+          color: "var(--text)",
           fontWeight: 700,
           cursor: "pointer",
           fontSize: 12,

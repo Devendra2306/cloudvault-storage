@@ -193,7 +193,7 @@ export default function ShareModal({ file, onShare, onCancel }) {
       <div onClick={(e) => e.stopPropagation()} style={{ background: 'var(--surface)', borderRadius: 24, width: '100%', maxWidth: 500, overflow: 'hidden', boxShadow: '0 24px 80px rgba(0,0,0,0.4)', border: '1px solid var(--border)' }}>
         
         {/* Header */}
-        <div style={{ padding: '24px 32px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.02)' }}>
+        <div style={{ padding: '24px 32px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: "var(--bg-card)" }}>
           <div style={{ minWidth: 0, flex: 1 }}>
             <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Share "{displayName(file.name)}"</h3>
             <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--text-muted)' }}>Securely distribute this file</p>
@@ -220,7 +220,7 @@ export default function ShareModal({ file, onShare, onCancel }) {
                   <div style={{ padding: 20, background: "rgba(99, 102, 241, 0.08)", border: "1px solid rgba(99, 102, 241, 0.2)", borderRadius: 16, marginBottom: 24 }}>
                     <p style={{ margin: "0 0 12px", fontSize: 13, fontWeight: 700, color: "var(--accent-blue)", textTransform: "uppercase", letterSpacing: 0.5 }}>Share Link Created</p>
                     <div style={{ fontSize: 14, wordBreak: "break-all", color: "var(--text)", lineHeight: 1.5, marginBottom: 16 }}>{resultUrl}</div>
-                    <button onClick={copyLink} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", padding: 14, borderRadius: 12, background: copied ? "#10b981" : "var(--accent-blue)", color: "#fff", border: "none", fontWeight: 700, cursor: "pointer", transition: "0.2s" }}>
+                    <button onClick={copyLink} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", padding: 14, borderRadius: 12, background: copied ? "#10b981" : "var(--accent-blue)", color: "var(--text)", border: "none", fontWeight: 700, cursor: "pointer", transition: "0.2s" }}>
                       {copied ? <Check size={18} /> : <Copy size={18} />}
                       {copied ? "Copied to Clipboard" : "Copy Link"}
                     </button>
@@ -253,7 +253,7 @@ export default function ShareModal({ file, onShare, onCancel }) {
                     <button onClick={() => shareToSocial('linkedin')} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: 16, background: "rgba(0, 119, 181, 0.1)", color: "#0077b5", border: "1px solid rgba(0, 119, 181, 0.2)", borderRadius: 16, cursor: "pointer", fontWeight: 600, transition: "0.2s" }}>
                       <LinkedinIcon /> LinkedIn
                     </button>
-                    <button onClick={() => shareToSocial('email')} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: 16, background: "rgba(255, 255, 255, 0.05)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 16, cursor: "pointer", fontWeight: 600, transition: "0.2s" }}>
+                    <button onClick={() => shareToSocial('email')} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: 16, background: "var(--bg-card)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 16, cursor: "pointer", fontWeight: 600, transition: "0.2s" }}>
                       <Mail size={20} /> Email App
                     </button>
                   </div>
@@ -267,7 +267,7 @@ export default function ShareModal({ file, onShare, onCancel }) {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                 <div>
                   <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>Share Method</label>
-                  <div style={{ display: 'flex', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: 12, padding: 4 }}>
+                  <div style={{ display: 'flex', background: "var(--bg-card)", border: '1px solid var(--border)', borderRadius: 12, padding: 4 }}>
                     <button onClick={() => setShareType("link")} style={{ flex: 1, padding: '8px', background: shareType === "link" ? 'var(--surface)' : 'transparent', color: shareType === "link" ? 'var(--text)' : 'var(--text-muted)', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer', boxShadow: shareType === "link" ? '0 2px 8px rgba(0,0,0,0.2)' : 'none' }}>Link</button>
                     <button onClick={() => setShareType("email")} style={{ flex: 1, padding: '8px', background: shareType === "email" ? 'var(--surface)' : 'transparent', color: shareType === "email" ? 'var(--text)' : 'var(--text-muted)', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer', boxShadow: shareType === "email" ? '0 2px 8px rgba(0,0,0,0.2)' : 'none' }}>Email</button>
                   </div>
@@ -279,31 +279,31 @@ export default function ShareModal({ file, onShare, onCancel }) {
               {shareType === "email" && (
                 <div>
                   <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>Recipient Email</label>
-                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="colleague@company.com" style={{ width: '100%', padding: '12px 14px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: 12, color: 'var(--text)', outline: 'none' }} />
+                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="colleague@company.com" style={{ width: '100%', padding: '12px 14px', background: "var(--bg-card)", border: '1px solid var(--border)', borderRadius: 12, color: 'var(--text)', outline: 'none' }} />
                 </div>
               )}
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                 <div>
                   <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>Password Protection</label>
-                  <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Optional" style={{ width: '100%', padding: '12px 14px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: 12, color: 'var(--text)', outline: 'none' }} autoComplete="new-password" />
+                  <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Optional" style={{ width: '100%', padding: '12px 14px', background: "var(--bg-card)", border: '1px solid var(--border)', borderRadius: 12, color: 'var(--text)', outline: 'none' }} autoComplete="new-password" />
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>View Limit</label>
-                  <input type="number" min="1" value={maxViews} onChange={(e) => setMaxViews(e.target.value)} placeholder="Unlimited" style={{ width: '100%', padding: '12px 14px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: 12, color: 'var(--text)', outline: 'none' }} />
+                  <input type="number" min="1" value={maxViews} onChange={(e) => setMaxViews(e.target.value)} placeholder="Unlimited" style={{ width: '100%', padding: '12px 14px', background: "var(--bg-card)", border: '1px solid var(--border)', borderRadius: 12, color: 'var(--text)', outline: 'none' }} />
                 </div>
               </div>
 
               <div>
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>Expiration Date</label>
-                <input type="datetime-local" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} style={{ width: '100%', padding: '12px 14px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: 12, color: 'var(--text)', outline: 'none' }} />
+                <input type="datetime-local" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} style={{ width: '100%', padding: '12px 14px', background: "var(--bg-card)", border: '1px solid var(--border)', borderRadius: 12, color: 'var(--text)', outline: 'none' }} />
               </div>
 
               <div style={{ marginTop: 8 }}>
                 <button 
                   onClick={submit} 
                   disabled={loading || (shareType === "email" && !email)}
-                  style={{ width: '100%', padding: '16px', background: 'var(--accent-blue)', color: '#fff', border: 'none', borderRadius: 14, fontWeight: 700, fontSize: 16, cursor: (loading || (shareType === "email" && !email)) ? 'not-allowed' : 'pointer', opacity: (loading || (shareType === "email" && !email)) ? 0.6 : 1, transition: '0.2s' }}
+                  style={{ width: '100%', padding: '16px', background: 'var(--accent-blue)', color: "var(--text)", border: 'none', borderRadius: 14, fontWeight: 700, fontSize: 16, cursor: (loading || (shareType === "email" && !email)) ? 'not-allowed' : 'pointer', opacity: (loading || (shareType === "email" && !email)) ? 0.6 : 1, transition: '0.2s' }}
                 >
                   {loading ? "Generating Secure Link..." : shareType === "email" ? "Send Email Invitation" : "Create Share Link"}
                 </button>

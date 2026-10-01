@@ -37,7 +37,7 @@ function BrandMark({ size = 48 }) {
       background: "linear-gradient(135deg, #d90007, #ff4d4d)", 
       display: "inline-flex", alignItems: "center",
       justifyContent: "center", boxShadow: "0 12px 24px -6px rgba(217,0,7,0.4)",
-      flexShrink: 0, overflow: "hidden", border: "1px solid rgba(255,255,255,0.15)"
+      flexShrink: 0, overflow: "hidden", border: "1px solid var(--border)"
     }}>
       <img src={BRAND.logoImage} alt="" style={{ width: "65%", height: "65%", objectFit: "contain" }} />
     </span>
@@ -56,7 +56,7 @@ function FloatingInput({ label, type = "text", value, onChange, placeholder, aut
         transformOrigin: "left top",
         fontSize: focused || hasValue ? 12 : 15,
         fontWeight: 500,
-        color: focused ? "var(--cv-accent-blue)" : error ? "var(--cv-danger)" : "var(--cv-text-muted)",
+        color: focused ? "var(--cv-accent-blue)" : error ? "var(--cv-danger)" : "var(--text-muted)",
         transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
         pointerEvents: "none", zIndex: 1,
       }}>
@@ -73,9 +73,9 @@ function FloatingInput({ label, type = "text", value, onChange, placeholder, aut
         style={{
           width: "100%", padding: "26px 16px 10px",
           background: "rgba(0, 0, 0, 0.25)",
-          border: `1px solid ${error ? "var(--cv-danger)" : focused ? "rgba(59,130,246,0.5)" : "var(--cv-border)"}`,
+          border: `1px solid ${error ? "var(--cv-danger)" : focused ? "rgba(59,130,246,0.5)" : "var(--border)"}`,
           borderRadius: "var(--cv-radius-lg)",
-          color: "var(--cv-text)", fontSize: 15, outline: "none",
+          color: "var(--text)", fontSize: 15, outline: "none",
           transition: "all 0.2s ease",
           boxShadow: focused ? `0 0 0 4px ${error ? "rgba(239,68,68,0.1)" : "rgba(59,130,246,0.15)"}` : "none",
         }}
@@ -132,9 +132,9 @@ function OtpInput({ value, onChange }) {
           style={{
             width: 52, height: 60,
             textAlign: "center", fontSize: 24, fontWeight: 800,
-            background: "var(--cv-bg-card)",
-            border: `2px solid ${digits[i]?.trim() ? "var(--cv-accent)" : "var(--cv-border)"}`,
-            borderRadius: 14, color: "var(--cv-text)", outline: "none",
+            background: "var(--bg-card)",
+            border: `2px solid ${digits[i]?.trim() ? "var(--cv-accent)" : "var(--border)"}`,
+            borderRadius: 14, color: "var(--text)", outline: "none",
             transition: "border-color 0.18s ease, transform 0.1s ease",
             transform: digits[i]?.trim() ? "scale(1.05)" : "scale(1)",
             boxShadow: digits[i]?.trim() ? "0 0 0 3px rgba(99,102,241,0.15)" : "none",
@@ -192,14 +192,14 @@ function PasswordStrength({ password }) {
         {[0, 1, 2, 3].map((i) => (
           <div key={i} style={{
             flex: 1, height: 3, borderRadius: 99,
-            background: i < score ? colors[score - 1] : "var(--cv-border)",
+            background: i < score ? colors[score - 1] : "var(--border)",
             transition: "background 0.3s ease",
           }} />
         ))}
       </div>
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
         {checks.map((c) => (
-          <span key={c.label} style={{ fontSize: 11, color: c.ok ? "#10b981" : "var(--cv-text-muted)", fontWeight: 500 }}>
+          <span key={c.label} style={{ fontSize: 11, color: c.ok ? "#10b981" : "var(--text-muted)", fontWeight: 500 }}>
             {c.ok ? "\u2714" : "\u25CB"} {c.label}
           </span>
         ))}
@@ -526,9 +526,9 @@ export default function AuthScreen({ onAuth, onBack, onNeedsVerification, initia
 
       <div className="cv-auth-card" style={{
         width: "100%", maxWidth: 440,
-        background: "var(--cv-bg-card)",
+        background: "var(--bg-card)",
         borderRadius: 24, 
-        border: "1px solid var(--cv-border)",
+        border: "1px solid var(--border)",
         boxShadow: "0 40px 80px -20px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.05)",
         overflow: "hidden",
         position: "relative",
@@ -544,7 +544,7 @@ export default function AuthScreen({ onAuth, onBack, onNeedsVerification, initia
           {/* Brand */}
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 28, justifyContent: "center" }}>
             <BrandMark size={36} />
-            <div style={{ fontSize: 18, fontWeight: 800, color: "var(--cv-text)", letterSpacing: "-0.02em" }}>
+            <div style={{ fontSize: 18, fontWeight: 800, color: "var(--text)", letterSpacing: "-0.02em" }}>
               {BRAND.name}
             </div>
           </div>
@@ -763,7 +763,7 @@ export default function AuthScreen({ onAuth, onBack, onNeedsVerification, initia
               background: canSubmit
                 ? "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)"
                 : "rgba(255, 255, 255, 0.05)",
-              color: canSubmit ? "#fff" : "var(--cv-text-muted)",
+              color: canSubmit ? "#fff" : "var(--text-muted)",
               border: canSubmit ? "none" : "1px solid rgba(255,255,255,0.05)",
               borderRadius: 14, fontSize: 16, fontWeight: 600,
               cursor: canSubmit ? "pointer" : "not-allowed",

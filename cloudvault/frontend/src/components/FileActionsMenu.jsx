@@ -79,7 +79,7 @@ const moreButton = {
   height: 38,
   borderRadius: 10,
   border: "1px solid var(--border)",
-  background: "rgba(255,255,255,.08)",
+  background: "var(--bg-card)",
   color: "var(--text)",
   cursor: "pointer",
   fontSize: 18,

@@ -70,9 +70,9 @@ export default function SettingsPage({ account, api, token, onBack, onUpdated, n
   };
 
   const premiumCard = {
-    background: "rgba(255, 255, 255, 0.03)",
+    background: "var(--bg-card)",
     backdropFilter: "blur(24px)",
-    border: "1px solid rgba(255, 255, 255, 0.08)",
+    border: "1px solid var(--border)",
     borderRadius: 16,
     padding: 28,
     boxShadow: "0 8px 32px rgba(0, 0, 0, 0.2)",
@@ -163,8 +163,8 @@ function Field({ label, value, onChange, type = "text", placeholder }) {
           padding: "14px 16px",
           borderRadius: 12,
           border: `1px solid ${focused ? "var(--accent)" : "rgba(255,255,255,0.1)"}`,
-          background: "rgba(0,0,0,0.2)",
-          color: "#fff",
+          background: "var(--bg-card)",
+          color: "var(--text)",
           fontFamily: "var(--font)",
           fontSize: 15,
           outline: "none",
@@ -177,8 +177,8 @@ function Field({ label, value, onChange, type = "text", placeholder }) {
 }
 
 const backBtn = { display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", color: "var(--accent)", cursor: "pointer", fontWeight: 600, marginBottom: 20, padding: 0, fontSize: 15, transition: "color 0.2s ease" };
-const sectionTitle = { fontSize: 18, fontWeight: 700, marginBottom: 16, color: "#fff" };
+const sectionTitle = { fontSize: 18, fontWeight: 700, marginBottom: 16, color: "var(--text)" };
 const hint = { fontSize: 14, color: "rgba(255,255,255,0.5)", marginBottom: 16, lineHeight: 1.5 };
-const primaryBtn = { padding: "12px 24px", borderRadius: 12, border: "none", background: "linear-gradient(135deg, var(--accent), #f43f5e)", color: "#fff", fontWeight: 700, cursor: "pointer", fontFamily: "var(--font)", fontSize: 15, boxShadow: "0 4px 14px rgba(244, 63, 94, 0.3)", transition: "transform 0.2s, box-shadow 0.2s" };
-const secondaryBtn = { ...primaryBtn, background: "rgba(255,255,255,0.05)", color: "#fff", border: "1px solid rgba(255,255,255,0.1)", boxShadow: "none" };
+const primaryBtn = { padding: "12px 24px", borderRadius: 12, border: "none", background: "linear-gradient(135deg, var(--accent), #f43f5e)", color: "var(--text)", fontWeight: 700, cursor: "pointer", fontFamily: "var(--font)", fontSize: 15, boxShadow: "0 4px 14px rgba(244, 63, 94, 0.3)", transition: "transform 0.2s, box-shadow 0.2s" };
+const secondaryBtn = { ...primaryBtn, background: "var(--bg-card)", color: "var(--text)", border: "1px solid var(--border)", boxShadow: "none" };
 const dangerBtn = { ...primaryBtn, background: "linear-gradient(135deg, #ef4444, #b91c1c)", boxShadow: "0 4px 14px rgba(239, 68, 68, 0.3)" };

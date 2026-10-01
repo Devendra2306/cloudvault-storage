@@ -82,7 +82,7 @@ export default function ProfileMenu({ account, onNavigate, onSignOut }) {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            color: "#fff",
+            color: "var(--text)",
             fontWeight: 700,
             fontSize: 14,
           }}
@@ -115,7 +115,7 @@ export default function ProfileMenu({ account, onNavigate, onSignOut }) {
               width: 44, height: 44, borderRadius: "50%",
               background: avatar ? `url(${avatar}) center/cover` : "var(--gradient)",
               display: "flex", alignItems: "center", justifyContent: "center",
-              color: "#fff", fontWeight: 700, fontSize: 16, flexShrink: 0
+              color: "var(--text)", fontWeight: 700, fontSize: 16, flexShrink: 0
             }}>
               {!avatar && initials}
             </div>
@@ -129,7 +129,7 @@ export default function ProfileMenu({ account, onNavigate, onSignOut }) {
                     padding: "2px 6px",
                     borderRadius: 99,
                     background: "var(--accent-blue, #2f81f7)",
-                    color: "#fff",
+                    color: "var(--text)",
                     textTransform: "uppercase",
                     letterSpacing: "0.05em"
                   }}>

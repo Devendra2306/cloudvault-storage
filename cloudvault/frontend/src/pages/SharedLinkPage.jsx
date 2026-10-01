@@ -37,7 +37,7 @@ const HEADER = {
   alignItems: "center",
   justifyContent: "space-between",
   borderBottom: "1px solid var(--border)",
-  background: "rgba(0,0,0,0.4)",
+  background: "var(--bg-card)",
   backdropFilter: "blur(20px)",
   WebkitBackdropFilter: "blur(20px)",
   position: "relative",
@@ -137,7 +137,7 @@ const AVATAR_FALLBACK = {
   justifyContent: "center",
   fontWeight: 700,
   fontSize: 16,
-  color: "#fff",
+  color: "var(--text)",
   flexShrink: 0,
 };
 
@@ -206,7 +206,7 @@ const BTN_PREVIEW = {
 const BTN_DOWNLOAD = {
   ...BTN_BASE,
   background: "var(--gradient)",
-  color: "#fff",
+  color: "var(--text)",
   boxShadow: "0 8px 24px rgba(217,0,7,0.25)",
 };
 
@@ -233,7 +233,7 @@ const FOOTER = {
   fontSize: 12,
   color: "var(--text-muted)",
   fontWeight: 500,
-  background: "rgba(0,0,0,0.3)",
+  background: "var(--bg-card)",
   backdropFilter: "blur(20px)",
   WebkitBackdropFilter: "blur(20px)",
   position: "relative",

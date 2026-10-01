@@ -122,7 +122,7 @@ const dangerBtn = {
   borderRadius: 10,
   border: "none",
   background: "var(--danger)",
-  color: "#fff",
+  color: "var(--text)",
   fontWeight: 700,
   cursor: "pointer",
   fontFamily: "var(--font)",

@@ -81,6 +81,6 @@ const card = { background: "var(--bg-card)", border: "1px solid var(--border)", 
 const sectionTitle = { fontSize: 15, fontWeight: 700, margin: 0 };
 const hint = { fontSize: 13, color: "var(--text-muted)", margin: "8px 0 12px" };
 const row = { padding: "10px 0", borderBottom: "1px solid var(--border)" };
-const primaryBtn = { padding: "10px 18px", borderRadius: 10, border: "none", background: "var(--accent)", color: "#fff", fontWeight: 700, cursor: "pointer" };
+const primaryBtn = { padding: "10px 18px", borderRadius: 10, border: "none", background: "var(--accent)", color: "var(--text)", fontWeight: 700, cursor: "pointer" };
 const secondaryBtn = { ...primaryBtn, background: "transparent", border: "1px solid var(--border)", color: "var(--text)" };
 const linkBtn = { background: "none", border: "none", color: "var(--accent-blue)", cursor: "pointer", fontSize: 12, fontWeight: 600 };
