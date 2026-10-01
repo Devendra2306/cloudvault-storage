@@ -54,13 +54,15 @@ const createFileShare = async (req, res, next) => {
     const share = await prisma.fileShare.create({
       data: {
         fileId: id,
-        token,
+        sharedBy: userId,
+        shareToken: token,
         shareType,
         permission,
         password: password ? await bcrypt.hash(password, 10) : null,
-        passwordProtected: Boolean(password),
         expiresAt: expiresAt ? new Date(expiresAt) : null,
         maxViews: maxViews || null,
+        ...(sharedWithUser && { sharedWith: sharedWithUser.id }),
+        ...(recipientEmail && { sharedWithEmail: recipientEmail }),
       },
     });
 
