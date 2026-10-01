@@ -18,7 +18,7 @@ import AdminPanel from "./components/AdminPanel.jsx";
 import FileActionsMenu from "./components/FileActionsMenu.jsx";
 import { FileListSkeleton } from "./components/Skeleton.jsx";
 import { useDebounce } from "./hooks/useDebounce.js";
-import { Folder, Image as ImageIcon, Film, FileText, FileType, FileSpreadsheet, Presentation, Archive as ArchiveIcon, ShieldCheck, Trash2, Box, Activity, Bell, Settings, LogOut, FileSearch, Search, X, ChevronRight, HardDrive, Filter, LayoutGrid } from "lucide-react";
+import { Folder, Image as ImageIcon, Film, FileText, FileType, FileSpreadsheet, Presentation, Archive as ArchiveIcon, ShieldCheck, Trash2, Box, Activity, Bell, Settings, LogOut, FileSearch, Search, X, ChevronRight, HardDrive, Filter, LayoutGrid, Database } from "lucide-react";
 
 import { uploadWithFolderStructure } from "./lib/folderUpload.js";
 import { buildFolderTree } from "./lib/folders.js";
@@ -1215,7 +1215,7 @@ export default function CloudVault() {
       </div>
 
       {/* Main Content */}
-      <div className="main-content" style={{ marginLeft: isMobile ? 0 : 260, padding: "20px 32px", minHeight: "100vh" }}>
+      <div className="main-content" style={{ marginLeft: isMobile ? 0 : 280, padding: "20px 32px", minHeight: "100vh" }}>
         <AppPages
           appPage={appPage}
           setAppPage={setAppPage}
