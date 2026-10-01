@@ -2,29 +2,21 @@
  * AI Service — Google Gemini Integration
  * Provides CloudVault-aware AI assistant capabilities
  */
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const Groq = require('groq-sdk');
 const prisma = require('../config/database');
 
-let genAI = null;
-let model = null;
+let groq = null;
 
 /**
  * Initialize Gemini (lazy, once)
  */
-function getDynamicModel(systemPrompt) {
-  const apiKey = process.env.GEMINI_API_KEY;
+function getDynamicModel() {
+  const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) return null;
 
-  if (!genAI) genAI = new GoogleGenerativeAI(apiKey);
+  if (!groq) groq = new Groq({ apiKey });
   
-  return genAI.getGenerativeModel({
-    model: 'gemini-1.5-flash',
-    systemInstruction: systemPrompt,
-    generationConfig: {
-      maxOutputTokens: 1024,
-      temperature: 0.7,
-    },
-  });
+  return groq;
 }
 
 /**
@@ -110,34 +102,37 @@ async function getUserContext(userId) {
 async function getAIResponse(message, history, userId) {
   const userContext = await getUserContext(userId);
   const systemPrompt = buildSystemPrompt(userContext);
-  const gemini = getDynamicModel(systemPrompt);
+  const groqClient = getDynamicModel();
 
-  // If no Gemini API key, use smart fallback
-  if (!gemini) {
+  // If no API key, use smart fallback
+  if (!groqClient) {
     return getSmartFallback(message, userContext);
   }
 
   try {
-    // Convert our history format to Gemini format
-    const geminiHistory = [];
+    const messages = [{ role: 'system', content: systemPrompt }];
+    
     if (history && history.length > 0) {
       for (const msg of history) {
-        geminiHistory.push({
-          role: msg.role === 'assistant' ? 'model' : 'user',
-          parts: [{ text: msg.content }],
+        messages.push({
+          role: msg.role === 'assistant' ? 'assistant' : 'user',
+          content: msg.content,
         });
       }
     }
+    
+    messages.push({ role: 'user', content: message });
 
-    const chat = gemini.startChat({
-      history: geminiHistory,
+    const chatCompletion = await groqClient.chat.completions.create({
+      messages,
+      model: 'llama-3.1-8b-instant',
+      temperature: 0.7,
+      max_tokens: 1024,
     });
 
-    const result = await chat.sendMessage(message);
-    const response = result.response;
-    return response.text();
+    return chatCompletion.choices[0]?.message?.content || "";
   } catch (error) {
-    console.error('Gemini API error:', error.message);
+    console.error('Groq API error:', error.message);
 
     // Rate limit or quota exceeded — fall back gracefully
     if (error.status === 429 || error.message?.includes('quota')) {

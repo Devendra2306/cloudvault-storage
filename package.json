@@ -30,6 +30,7 @@
     "firebase": "^12.14.0",
     "firebase-admin": "^13.0.0",
     "form-data": "^4.0.5",
+    "groq-sdk": "^1.6.0",
     "helmet": "^8.2.0",
     "joi": "^18.2.1",
     "jsonwebtoken": "^9.0.3",
