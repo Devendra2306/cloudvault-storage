@@ -47,13 +47,13 @@ const HEADER = {
 const LOGO_ICON = {
   width: 34,
   height: 34,
-  background: "var(--gradient)",
+  background: "var(--accent-blue)",
   borderRadius: 10,
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
   fontSize: 17,
-  boxShadow: "0 4px 16px rgba(217,0,7,0.25)",
+  boxShadow: "0 4px 16px rgba(59,130,246,0.25)",
 };
 
 const CARD = {
@@ -131,7 +131,7 @@ const AVATAR_FALLBACK = {
   width: 40,
   height: 40,
   borderRadius: "50%",
-  background: "var(--gradient)",
+  background: "var(--accent-blue)",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
@@ -205,9 +205,9 @@ const BTN_PREVIEW = {
 
 const BTN_DOWNLOAD = {
   ...BTN_BASE,
-  background: "var(--gradient)",
+  background: "var(--accent-blue)",
   color: "var(--text)",
-  boxShadow: "0 8px 24px rgba(217,0,7,0.25)",
+  boxShadow: "0 8px 24px rgba(59,130,246,0.25)",
 };
 
 const BTN_DISABLED = {
@@ -251,7 +251,7 @@ function ShareSkeleton() {
 
   return (
     <div style={PAGE_BG}>
-      <div style={AMBIENT_ORB("-120px", "-100px", "rgba(217,0,7,0.3)")} />
+      <div style={AMBIENT_ORB("-120px", "-100px", "rgba(59,130,246,0.15)")} />
       <div style={AMBIENT_ORB("60%", "70%", "rgba(59,130,246,0.2)", 350)} />
       <header style={HEADER}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -371,7 +371,7 @@ export default function SharedLinkPage({ token }) {
   if (passwordRequired && !shareData) {
     return (
       <div style={PAGE_BG}>
-        <div style={AMBIENT_ORB("-120px", "-100px", "rgba(217,0,7,0.3)")} />
+        <div style={AMBIENT_ORB("-120px", "-100px", "rgba(59,130,246,0.15)")} />
         <header style={HEADER}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={LOGO_ICON}>☁️</div>
@@ -380,7 +380,7 @@ export default function SharedLinkPage({ token }) {
         </header>
         <main style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
           <div style={{ ...CARD, maxWidth: 420 }}>
-            <div style={{ ...FILE_ICON_WRAP, background: "rgba(217,0,7,0.1)", border: "1px solid rgba(217,0,7,0.2)" }}>
+            <div style={{ ...FILE_ICON_WRAP, background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.2)" }}>
               🔒
             </div>
             <h2 style={{ ...FILE_NAME, fontSize: 22, marginBottom: 8 }}>Password Protected</h2>
@@ -434,7 +434,7 @@ export default function SharedLinkPage({ token }) {
   if (error && !shareData) {
     return (
       <div style={PAGE_BG}>
-        <div style={AMBIENT_ORB("-120px", "-100px", "rgba(217,0,7,0.3)")} />
+        <div style={AMBIENT_ORB("-120px", "-100px", "rgba(59,130,246,0.15)")} />
         <header style={HEADER}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={LOGO_ICON}>☁️</div>
@@ -462,7 +462,7 @@ export default function SharedLinkPage({ token }) {
   return (
     <div style={PAGE_BG}>
       {/* Ambient background orbs */}
-      <div style={AMBIENT_ORB("-120px", "-100px", "rgba(217,0,7,0.3)")} />
+      <div style={AMBIENT_ORB("-120px", "-100px", "rgba(59,130,246,0.15)")} />
       <div style={AMBIENT_ORB("60%", "70%", "rgba(59,130,246,0.2)", 350)} />
 
       {/* Header */}
@@ -558,8 +558,8 @@ export default function SharedLinkPage({ token }) {
                   ...(downloading ? BTN_DISABLED : {}),
                   transform: hoverDownload && !downloading ? "translateY(-2px)" : "none",
                   boxShadow: hoverDownload && !downloading
-                    ? "0 12px 32px rgba(217,0,7,0.35)"
-                    : "0 8px 24px rgba(217,0,7,0.25)",
+                    ? "0 12px 32px rgba(59,130,246,0.35)"
+                    : "0 8px 24px rgba(59,130,246,0.25)",
                 }}
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>

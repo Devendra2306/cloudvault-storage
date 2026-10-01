@@ -8,7 +8,7 @@ const { sendShareInvitationEmail } = require('../config/email');
 const { createNotification, logActivity } = require('../services/userAccount');
 const { getObjectStream } = require('../config/s3');
 
-const frontendUrl = () => process.env.APP_URL || 'http://localhost:3000';
+const frontendUrl = () => process.env.APP_URL || 'https://www.cloudvault.co.in';
 const shareUrlFor = (token) => `${frontendUrl()}/share/${token}`;
 const sanitizeShare = (share) => ({ ...share, password: share.password ? undefined : null });
 
