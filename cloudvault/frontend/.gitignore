@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+
+# Production build outputs
+dist/
+dist-ssr/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Cache and local artifacts
+.firebase/
+.vercel/
+*.log
+e2e_test.js
+
+# OS files
+.DS_Store
+Thumbs.db

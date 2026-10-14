@@ -1,9 +1,71 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Environment variables
 .env
 .env.local
-**/.env.local
-node_modules/
+.env.*.local
+*.env
+*.env.local
+
+# Databases & SQLite
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+*.sqlite-journal
+prisma/*.db
+prisma/*.db-journal
+
+# Build & compiled outputs
+dist/
+dist-*/
+build/
+out/
+.next/
+dist-ssr/
+*.tsbuildinfo
+
+# Uploads & temporary file storage
 uploads/
 test-uploads/
-dev.db
+tmp/
+temp/
 
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Caches & tools
+.cache/
+.firebase/
+.turbo/
+.vercel/
+*.cache
+lighthouse-report.json
+
+# Test & coverage
+coverage/
+.nyc_output/
+e2e_test.js
+
+# OS & Editor files
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Temporary scripts & nested repo clone
+fix_*.py
+cloudvault-storage/
+
+# Generated Prisma
 /src/generated/prisma
