@@ -170,7 +170,7 @@ const getFolder = async (req, res, next) => {
     const [files, subfolders] = await Promise.all([
       includeFiles === 'true'
         ? prisma.file.findMany({
-            where: { folderId: id, deletedAt: null },
+            where: { folderId: id, deletedAt: null, trashedAt: null },
             orderBy: { name: 'asc' },
           })
         : [],
@@ -186,7 +186,10 @@ const getFolder = async (req, res, next) => {
       success: true,
       data: {
         folder,
-        files,
+        files: files.map((file) => ({
+          ...file,
+          size: Number(file.size),
+        })),
         subfolders,
       },
     });
