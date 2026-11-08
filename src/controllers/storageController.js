@@ -1,4 +1,5 @@
 const prisma = require('../config/database');
+const { NotFoundError } = require('../middleware/errorHandler');
 
 /**
  * Get storage usage statistics
@@ -24,6 +25,7 @@ const getStorageUsage = async (req, res, next) => {
       where: {
         userId,
         deletedAt: null,
+        trashedAt: null,
       },
     });
 
@@ -41,6 +43,7 @@ const getStorageUsage = async (req, res, next) => {
       where: {
         userId,
         deletedAt: null,
+        trashedAt: null,
       },
       _sum: {
         size: true,
@@ -78,9 +81,9 @@ const getStorageUsage = async (req, res, next) => {
       }
     });
 
-    const storageUsed = Number(user.storageUsed);
-    const storageQuota = Number(user.storageQuota);
-    const storagePercentage = (storageUsed / storageQuota) * 100;
+    const storageUsed = Number(user.storageUsed || 0);
+    const storageQuota = Number(user.storageQuota || 26843545600);
+    const storagePercentage = storageQuota > 0 ? (storageUsed / storageQuota) * 100 : 0;
 
     res.json({
       success: true,
