@@ -31,13 +31,19 @@ export default function SettingsPage({ account, api, token, onBack, onUpdated, n
   };
 
   const changePassword = async () => {
+    if (!currentPassword) {
+      return notify("Current password is required", "error");
+    }
+    if (!newPassword || newPassword.length < 8) {
+      return notify("New password must be at least 8 characters", "error");
+    }
     setSaving(true);
     try {
       await api("/users/me/password", {
         method: "PUT",
         body: JSON.stringify({ currentPassword, newPassword }),
       });
-      notify("Password changed", "success");
+      notify("Password changed successfully", "success");
       setCurrentPassword("");
       setNewPassword("");
     } catch (e) {
@@ -48,11 +54,19 @@ export default function SettingsPage({ account, api, token, onBack, onUpdated, n
 
   const resendVerify = async () => {
     try {
-      await api("/account/verify-email/resend", { method: "POST" });
-      notify("Verification email sent", "success");
+      await api("/auth/resend-verification", { method: "POST" });
+      notify("Verification email sent! Check your inbox.", "success");
     } catch (e) {
       notify(e.message, "error");
     }
+  };
+
+  const handleThemeSelect = (themeId) => {
+    try {
+      localStorage.setItem("cv_theme", themeId);
+      document.documentElement.setAttribute("data-theme", themeId);
+    } catch {}
+    onThemeChange?.(themeId);
   };
 
   const deleteAccount = async () => {
@@ -124,7 +138,7 @@ export default function SettingsPage({ account, api, token, onBack, onUpdated, n
             <button
               key={item.id}
               type="button"
-              onClick={() => onThemeChange?.(item.id)}
+              onClick={() => handleThemeSelect(item.id)}
               style={theme === item.id ? { ...primaryBtn, padding: "12px 16px" } : { ...secondaryBtn, padding: "12px 16px" }}
             >
               {item.label}
