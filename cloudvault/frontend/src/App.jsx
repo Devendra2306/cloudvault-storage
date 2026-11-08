@@ -206,7 +206,7 @@ function QuickAction({ label, onClick, tone = "neutral", disabled = false }) {
   );
 }
 
-function FileCardList({ file, onDelete, onShare, onPreview, onRename, onDownload, onMove, onCopy, onTags, onEdit, onPrint, onAnnotate }) {
+function FileCardList({ file, onDelete, onShare, onPreview, onRename, onDownload, onMove, onCopy, onTags, onEdit, onPrint, onAnnotate, onStar }) {
   return (
     <div className="file-list-card">
       <div style={{ fontSize: 34, flexShrink: 0, width: 48, height: 48, borderRadius: 14, background: "rgba(56,189,248,.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>{fileIcon(file.mimeType)}</div>
@@ -220,14 +220,14 @@ function FileCardList({ file, onDelete, onShare, onPreview, onRename, onDownload
         <QuickAction label="Download" onClick={() => onDownload(file)} />
         <QuickAction label="Share" onClick={() => onShare(file)} tone="accent" />
         <QuickAction label="Rename" onClick={() => onRename(file)} />
-        <FileActionsMenu file={file} onMove={onMove} onCopy={onCopy} onTags={onTags} onEdit={onEdit} onDelete={onDelete} onPrint={onPrint} onAnnotate={onAnnotate} />
+        <FileActionsMenu file={file} onMove={onMove} onCopy={onCopy} onTags={onTags} onEdit={onEdit} onDelete={onDelete} onPrint={onPrint} onAnnotate={onAnnotate} onStar={onStar} />
       </div>
     </div>
   );
 }
 
 // ── File Card (Grid View) ─────────────────────────────────────────────────────
-function FileCardGrid({ file, token, onDelete, onShare, onPreview, onRename, onDownload, onMove, onCopy, onTags, onEdit, onPrint, onAnnotate }) {
+function FileCardGrid({ file, token, onDelete, onShare, onPreview, onRename, onDownload, onMove, onCopy, onTags, onEdit, onPrint, onAnnotate, onStar }) {
   const isImage = file.mimeType?.startsWith("image/");
 
   return (
@@ -256,7 +256,7 @@ function FileCardGrid({ file, token, onDelete, onShare, onPreview, onRename, onD
           {fmt(file.size)}
         </div>
         <div style={{ position: "absolute", right: 10, top: 10 }}>
-          <FileActionsMenu file={file} onMove={onMove} onCopy={onCopy} onTags={onTags} onEdit={onEdit} onDelete={onDelete} onPrint={onPrint} onAnnotate={onAnnotate} />
+          <FileActionsMenu file={file} onMove={onMove} onCopy={onCopy} onTags={onTags} onEdit={onEdit} onDelete={onDelete} onPrint={onPrint} onAnnotate={onAnnotate} onStar={onStar} />
         </div>
       </div>
       {/* Info */}
@@ -795,6 +795,25 @@ export default function CloudVault() {
         catch (e) { notify(e.message, "error"); }
       }
     });
+  };
+
+  const handleToggleStar = async (file) => {
+    try {
+      const nextStarred = !file.isStarred;
+      const res = await api(`/files/${file.id}`, {
+        method: "PUT",
+        body: JSON.stringify({ isStarred: nextStarred }),
+      });
+      if (res.success) {
+        notify(nextStarred ? "File starred ⭐" : "File unstarred", "success");
+        setFiles((prev) => prev.map((f) => (f.id === file.id ? { ...f, isStarred: nextStarred } : f)));
+        if (activeView === "starred") {
+          setStarredFiles((prev) => prev.filter((f) => f.id !== file.id));
+        }
+      }
+    } catch (e) {
+      notify(e.message || "Failed to update star", "error");
+    }
   };
 
   const requestDeleteFolder = (folder) => {
@@ -1486,6 +1505,7 @@ export default function CloudVault() {
               {filteredFiles.map(f => (
                 <FileCard key={f.id} file={f} token={token}
                   onDelete={requestDeleteFile}
+                  onStar={handleToggleStar}
                   onShare={(file) => setSharingFile(file)}
                   onPreview={setPreview}
                   onRename={setRenaming}

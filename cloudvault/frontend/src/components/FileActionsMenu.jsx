@@ -9,6 +9,7 @@ export default function FileActionsMenu({
   onDelete,
   onPrint,
   onAnnotate,
+  onStar,
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -25,6 +26,7 @@ export default function FileActionsMenu({
   
   const items = [
     ...(isImage ? [{ cue: "✂️", label: "Edit image", onClick: () => onEdit && onEdit(file) }] : []),
+    { cue: file?.isStarred ? "⭐" : "☆", label: file?.isStarred ? "Unstar" : "Star", onClick: () => onStar && onStar(file) },
     { cue: "🖨️", label: "Send to Print", onClick: () => onPrint && onPrint(file) },
     { cue: "💬", label: "Annotate", onClick: () => onAnnotate && onAnnotate(file) },
     { cue: "#", label: "Tags", onClick: () => onTags(file) },
