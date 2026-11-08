@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
 const prisma = require('../config/database');
+const { deleteCache } = require('../config/redis');
 const { sendVerificationEmail } = require('../config/email');
 const {
   formatAccountUser,
@@ -139,6 +140,9 @@ const deleteAccount = async (req, res, next) => {
       data: { revokedAt: new Date() },
     });
 
+    await deleteCache(`user_auth_${user.id}`);
+    await deleteCache(`user_profile_${user.id}`);
+
     res.json({ success: true, message: 'Account scheduled for deletion' });
   } catch (e) {
     next(e);
@@ -153,6 +157,7 @@ const toggleTwoFactor = async (req, res, next) => {
       data: { twoFactorEnabled: Boolean(enabled) },
     });
     await logActivity(req.user.id, enabled ? '2fa_enabled' : '2fa_disabled', 'security', req.user.id, null, req);
+    await deleteCache(`user_profile_${req.user.id}`);
     res.json({
       success: true,
       data: { twoFactorEnabled: user.twoFactorEnabled },
