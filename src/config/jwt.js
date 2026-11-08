@@ -1,12 +1,18 @@
 const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
 
-const JWT_SECRET = process.env.JWT_SECRET;
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
+let JWT_SECRET = process.env.JWT_SECRET;
+let JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
 
 if (!JWT_SECRET || !JWT_REFRESH_SECRET) {
-  console.error("CRITICAL ERROR: JWT_SECRET or JWT_REFRESH_SECRET is not set in environment variables!");
-  process.exit(1);
+  if (process.env.NODE_ENV === 'production') {
+    console.error("CRITICAL ERROR: JWT_SECRET or JWT_REFRESH_SECRET is not set in environment variables!");
+    process.exit(1);
+  } else {
+    console.warn("WARNING: JWT_SECRET or JWT_REFRESH_SECRET not set; using local development fallback.");
+    JWT_SECRET = JWT_SECRET || 'dev_jwt_secret_cloudvault_super_secure';
+    JWT_REFRESH_SECRET = JWT_REFRESH_SECRET || 'dev_jwt_refresh_secret_cloudvault_super_secure';
+  }
 }
 
 const JWT_ACCESS_EXPIRY = process.env.JWT_ACCESS_EXPIRY || '15m';
