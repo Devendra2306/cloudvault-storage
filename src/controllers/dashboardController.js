@@ -33,14 +33,14 @@ const getDashboard = async (req, res, next) => {
       }),
       // Get recent files
       prisma.file.findMany({
-        where: { userId, deletedAt: null },
+        where: { userId, deletedAt: null, trashedAt: null },
         orderBy: { lastAccessedAt: 'desc' },
         take: 10,
         include: { folder: { select: { id: true, name: true } } },
       }),
       // Get starred files
       prisma.file.findMany({
-        where: { userId, isStarred: true, deletedAt: null },
+        where: { userId, isStarred: true, deletedAt: null, trashedAt: null },
         orderBy: { updatedAt: 'desc' },
         take: 10,
         include: { folder: { select: { id: true, name: true } } },
@@ -66,15 +66,15 @@ const getDashboard = async (req, res, next) => {
         include: { file: true },
       }),
       // Get quick stats
-      prisma.file.count({ where: { userId, deletedAt: null } }),
+      prisma.file.count({ where: { userId, deletedAt: null, trashedAt: null } }),
       prisma.folder.count({ where: { userId, deletedAt: null } }),
       prisma.fileShare.count({ where: { sharedBy: userId, isActive: true } }),
       prisma.file.count({ where: { userId, trashedAt: { not: null } } })
     ]);
 
-    const storageUsed = Number(user.storageUsed);
-    const storageQuota = Number(user.storageQuota);
-    const storagePercentage = (storageUsed / storageQuota) * 100;
+    const storageUsed = Number(user?.storageUsed || 0);
+    const storageQuota = Number(user?.storageQuota || 26843545600);
+    const storagePercentage = storageQuota > 0 ? (storageUsed / storageQuota) * 100 : 0;
 
     const dataPayload = {
       storage: {
