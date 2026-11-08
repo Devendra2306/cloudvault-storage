@@ -180,11 +180,11 @@ const schemas = {
       'any.only': 'Share type must be one of: link, user, email',
     }),
     permission: Joi.string().valid('view', 'download', 'edit').default('view'),
-    sharedWithEmail: Joi.string().email().optional(),
-    email: Joi.string().email().optional(),
-    password: Joi.string().min(4).max(50).optional(),
-    expiresAt: Joi.date().iso().optional(),
-    maxViews: Joi.number().integer().min(1).optional(),
+    sharedWithEmail: Joi.string().email().allow('', null).optional(),
+    email: Joi.string().email().allow('', null).optional(),
+    password: Joi.string().min(4).max(50).allow('', null).optional(),
+    expiresAt: Joi.date().iso().allow('', null).optional(),
+    maxViews: Joi.number().integer().min(1).allow('', null).optional(),
   }),
 
   shareFileWithUser: Joi.object({
