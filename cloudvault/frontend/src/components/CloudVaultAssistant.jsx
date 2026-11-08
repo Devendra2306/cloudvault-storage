@@ -16,9 +16,15 @@ const SUGGESTIONS = [
 
 export default function CloudVaultAssistant({ elevated = false }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState([
-    { role: 'assistant', content: 'Hi there! 👋 I\'m **CloudVault AI**. I can help you with storage, file sharing, uploads, and more.\n\nTry one of the suggestions below or ask me anything!' }
-  ]);
+  const [messages, setMessages] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem("cv_assistant_messages");
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return [
+      { role: 'assistant', content: 'Hi there! 👋 I\'m **CloudVault AI**. I can help you with storage, file sharing, uploads, and more.\n\nTry one of the suggestions below or ask me anything!' }
+    ];
+  });
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
@@ -30,19 +36,24 @@ export default function CloudVaultAssistant({ elevated = false }) {
 
   useEffect(() => {
     scrollToBottom();
+    try {
+      sessionStorage.setItem("cv_assistant_messages", JSON.stringify(messages));
+    } catch {}
   }, [messages, isLoading]);
 
-  // Keyboard shortcut: Alt+C to toggle
+  // Keyboard shortcut: Alt+C to toggle, Escape to close
   useEffect(() => {
     const handler = (e) => {
       if (e.altKey && e.key === 'c') {
         e.preventDefault();
         setIsOpen(prev => !prev);
+      } else if (e.key === 'Escape' && isOpen) {
+        setIsOpen(false);
       }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, []);
+  }, [isOpen]);
 
   // Auto-focus input when opened
   useEffect(() => {
@@ -61,11 +72,12 @@ export default function CloudVaultAssistant({ elevated = false }) {
 
     try {
       const history = messages.slice(1); // skip initial greeting
-      
+      const token = localStorage.getItem("cv_token") || sessionStorage.getItem("cv_token");
+
       const response = await apiFetch('/chat/ask', {
         method: 'POST',
         body: JSON.stringify({ message: trimmed, history })
-      });
+      }, token);
 
       if (response && (response.reply || response.error)) {
         setMessages(prev => [...prev, { 
@@ -96,6 +108,9 @@ export default function CloudVaultAssistant({ elevated = false }) {
   };
 
   const clearChat = () => {
+    try {
+      sessionStorage.removeItem("cv_assistant_messages");
+    } catch {}
     setMessages([
       { role: 'assistant', content: 'Chat cleared! 🧹 How can I help you?' }
     ]);
