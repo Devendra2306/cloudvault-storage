@@ -1,5 +1,9 @@
 const { sendEmail, emailTemplates } = require('../services/emailService');
 
+const getAppUrl = () => {
+  return process.env.APP_URL || (process.env.NODE_ENV === 'production' ? 'https://www.cloudvault.co.in' : 'http://localhost:3000');
+};
+
 /**
  * Send welcome email
  */
@@ -11,7 +15,7 @@ const sendWelcomeEmail = async (to, fullName) => {
  * Send verification email with a one-time link.
  */
 const sendVerificationEmail = async (to, token) => {
-  const verifyUrl = `${process.env.APP_URL || 'http://localhost:3000'}/verify-email?token=${token}`;
+  const verifyUrl = `${getAppUrl()}/verify-email?token=${token}`;
   return sendEmail(to, 'verification', {
     name: to.split('@')[0],
     verifyLink: verifyUrl,
@@ -22,7 +26,7 @@ const sendVerificationEmail = async (to, token) => {
  * Send password reset email
  */
 const sendPasswordResetEmail = async (to, token) => {
-  const resetUrl = `${process.env.APP_URL || 'http://localhost:3000'}/reset-password?token=${token}`;
+  const resetUrl = `${getAppUrl()}/reset-password?token=${token}`;
   const result = await sendEmail(to, 'forgotPassword', { name: to.split('@')[0], resetLink: resetUrl });
   return result;
 };
@@ -58,7 +62,7 @@ const sendShareInvitationEmail = async ({ to, senderName, fileName, shareUrl, pe
   const html = `
     <div style="margin:0;padding:32px;background:#0b0f14;font-family:Inter,Arial,sans-serif;color:#f8fafc;">
       <div style="max-width:620px;margin:0 auto;background:#111827;border:1px solid rgba(255,255,255,.12);border-radius:22px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.35);">
-        <div style="padding:28px 32px;background:linear-gradient(135deg,#f0163a,#4090ff);">
+        <div style="padding:28px 32px;background:linear-gradient(135deg,#3b82f6,#2563eb);">
           <div style="font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.78);">CloudVault Share</div>
           <h1 style="margin:10px 0 0;font-size:30px;line-height:1.15;color:#fff;">${senderName || 'Someone'} shared a file with you</h1>
         </div>
@@ -68,7 +72,7 @@ const sendShareInvitationEmail = async ({ to, senderName, fileName, shareUrl, pe
             <div style="color:#94a3b8;font-size:13px;line-height:1.6;">${expiryText}</div>
             <div style="color:#94a3b8;font-size:13px;line-height:1.6;">${passwordProtected ? 'A password is required to open this shared link.' : 'No password is required.'}</div>
           </div>
-          <a href="${shareUrl}" style="display:inline-block;padding:14px 22px;background:#f0163a;color:#fff;text-decoration:none;border-radius:12px;font-weight:800;">Open shared file</a>
+          <a href="${shareUrl}" style="display:inline-block;padding:14px 22px;background:#3b82f6;color:#fff;text-decoration:none;border-radius:12px;font-weight:800;">Open shared file</a>
           <p style="margin:24px 0 0;color:#64748b;font-size:12px;line-height:1.6;">If the button does not work, paste this URL into your browser:<br>${shareUrl}</p>
         </div>
       </div>
