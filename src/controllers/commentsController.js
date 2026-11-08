@@ -43,6 +43,8 @@ const addComment = async (req, res, next) => {
       return res.status(400).json({ success: false, error: 'Content is required' });
     }
 
+    const trimmedContent = content.trim().slice(0, 2000);
+
     // Check access
     const file = await prisma.file.findFirst({
       where: {
@@ -62,7 +64,7 @@ const addComment = async (req, res, next) => {
       data: {
         fileId,
         userId: req.user.id,
-        content: content.trim()
+        content: trimmedContent
       },
       include: {
         user: { select: { id: true, fullName: true, email: true, avatarUrl: true } }
@@ -101,7 +103,7 @@ const deleteComment = async (req, res, next) => {
 
     // Only comment author or file owner can delete
     const file = await prisma.file.findUnique({ where: { id: comment.fileId } });
-    if (comment.userId !== req.user.id && file.userId !== req.user.id) {
+    if (comment.userId !== req.user.id && file?.userId !== req.user.id) {
       return res.status(403).json({ success: false, error: 'Not authorized to delete this comment' });
     }
 
