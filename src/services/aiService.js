@@ -84,8 +84,8 @@ async function getUserContext(userId) {
     return {
       name: user.fullName || 'User',
       plan: user.plan,
-      storageUsed: formatBytes(user.storageUsed),
-      storageQuota: formatBytes(BigInt(user.storageQuota) + BigInt(user.extraStorageBytes)),
+      storageUsed: formatBytes(user.storageUsed || 0),
+      storageQuota: formatBytes(BigInt(user.storageQuota || 0) + BigInt(user.extraStorageBytes || 0)),
       fileCount: user._count.files,
       folderCount: user._count.folders,
       createdAt: user.createdAt.toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' }),
@@ -114,10 +114,12 @@ async function getAIResponse(message, history, userId) {
     
     if (history && history.length > 0) {
       for (const msg of history) {
-        messages.push({
-          role: msg.role === 'assistant' ? 'assistant' : 'user',
-          content: msg.content,
-        });
+        if (msg && typeof msg.content === 'string' && msg.content.trim()) {
+          messages.push({
+            role: msg.role === 'assistant' ? 'assistant' : 'user',
+            content: msg.content.trim(),
+          });
+        }
       }
     }
     
