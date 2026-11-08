@@ -1,13 +1,21 @@
 import { useState } from "react";
 
-export default function TagsDialog({ file, allTags, onSave, onCancel }) {
-  const [tags, setTags] = useState(file.tags || []);
+export default function TagsDialog({ file, allTags = [], onSave, onCancel }) {
+  const [tags, setTags] = useState(file?.tags || []);
   const [input, setInput] = useState("");
 
   const addTag = (raw) => {
-    const t = raw.trim().toLowerCase();
-    if (!t || tags.includes(t) || tags.length >= 20) return;
-    setTags([...tags, t]);
+    if (!raw) return;
+    const pieces = String(raw).split(",");
+    const next = [...tags];
+
+    for (const piece of pieces) {
+      const t = piece.replace(/[\x00-\x1F\x7F]/g, "").trim().toLowerCase().slice(0, 50);
+      if (t && !next.includes(t) && next.length < 20) {
+        next.push(t);
+      }
+    }
+    setTags(next);
     setInput("");
   };
 
@@ -35,16 +43,19 @@ export default function TagsDialog({ file, allTags, onSave, onCancel }) {
           width: "min(440px, 92vw)",
         }}
       >
-        <h3 style={{ color: "var(--text)", fontWeight: 700, marginBottom: 4 }}>Edit tags</h3>
-        <p style={{ color: "var(--text-muted)", fontSize: 13, marginBottom: 16 }}>{file.name}</p>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+          <h3 style={{ color: "var(--text)", fontWeight: 700, margin: 0 }}>Edit tags</h3>
+          <span style={{ fontSize: 12, color: "var(--text-muted)" }}>{tags.length}/20</span>
+        </div>
+        <p style={{ color: "var(--text-muted)", fontSize: 13, marginBottom: 16 }}>{file?.name}</p>
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
           {tags.map((t) => (
             <span
               key={t}
               style={{
-                background: "rgba(240,22,58,.15)",
-                color: "var(--accent)",
+                background: "rgba(59,130,246,.15)",
+                color: "var(--accent-blue, #3b82f6)",
                 padding: "4px 10px",
                 borderRadius: 20,
                 fontSize: 12,
@@ -54,11 +65,11 @@ export default function TagsDialog({ file, allTags, onSave, onCancel }) {
                 gap: 6,
               }}
             >
-              {t}
+              #{t}
               <button
                 type="button"
                 onClick={() => setTags(tags.filter((x) => x !== t))}
-                style={{ background: "none", border: "none", color: "inherit", cursor: "pointer" }}
+                style={{ background: "none", border: "none", color: "inherit", cursor: "pointer", padding: 0, fontSize: 14 }}
               >
                 ×
               </button>
@@ -70,12 +81,13 @@ export default function TagsDialog({ file, allTags, onSave, onCancel }) {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter") {
+            if (e.key === "Enter" || e.key === ",") {
               e.preventDefault();
               addTag(input);
             }
           }}
-          placeholder="Add tag and press Enter"
+          placeholder="Add tags (press Enter or comma)"
+          disabled={tags.length >= 20}
           style={{
             width: "100%",
             padding: "10px 12px",
