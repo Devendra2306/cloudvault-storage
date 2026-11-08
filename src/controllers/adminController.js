@@ -1,4 +1,5 @@
 const prisma = require('../config/database');
+const { deleteCache } = require('../config/redis');
 const { NotFoundError, ForbiddenError, ValidationError } = require('../middleware/errorHandler');
 
 /**
@@ -104,6 +105,10 @@ const updateUserQuota = async (req, res, next) => {
       throw new NotFoundError('User not found');
     }
 
+    if (storageQuota === undefined || isNaN(Number(storageQuota)) || Number(storageQuota) < 0) {
+      throw new ValidationError('A valid non-negative storageQuota in bytes is required');
+    }
+
     const updatedUser = await prisma.user.update({
       where: { id },
       data: { storageQuota: BigInt(storageQuota) },
@@ -114,6 +119,9 @@ const updateUserQuota = async (req, res, next) => {
         updatedAt: true,
       },
     });
+
+    await deleteCache(`user_auth_${id}`);
+    await deleteCache(`user_profile_${id}`);
 
     res.json({
       success: true,
@@ -169,6 +177,9 @@ const updateUserStatus = async (req, res, next) => {
         updatedAt: true,
       },
     });
+
+    await deleteCache(`user_auth_${id}`);
+    await deleteCache(`user_profile_${id}`);
 
     res.json({
       success: true,
