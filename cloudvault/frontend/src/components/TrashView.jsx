@@ -1,8 +1,8 @@
 import { fmt, timeAgo, fileIcon } from "../lib/fileTypes.js";
 
 export default function TrashView({
-  trashedFiles,
-  trashedFolders,
+  trashedFiles = [],
+  trashedFolders = [],
   loading,
   onRestoreFile,
   onRestoreFolder,
@@ -10,6 +10,18 @@ export default function TrashView({
   onEmptyTrash,
   onBack,
 }) {
+  const handleEmptyTrash = () => {
+    if (window.confirm("Permanently delete all items in trash? This action cannot be undone.")) {
+      onEmptyTrash?.();
+    }
+  };
+
+  const handlePermanentDelete = (file) => {
+    if (window.confirm(`Permanently delete "${file?.name}"? This cannot be undone.`)) {
+      onPermanentDelete?.(file);
+    }
+  };
+
   return (
     <div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
@@ -23,7 +35,7 @@ export default function TrashView({
           </p>
         </div>
         {(trashedFiles.length > 0 || trashedFolders.length > 0) && (
-          <button type="button" onClick={onEmptyTrash} style={dangerBtn}>
+          <button type="button" onClick={handleEmptyTrash} style={dangerBtn}>
             Empty trash
           </button>
         )}
@@ -66,7 +78,7 @@ export default function TrashView({
                   name={f.name}
                   meta={`${fmt(f.size)} · ${timeAgo(f.trashedAt || f.deletedAt)}`}
                   onRestore={() => onRestoreFile(f.id)}
-                  onDelete={() => onPermanentDelete(f)}
+                  onDelete={() => handlePermanentDelete(f)}
                 />
               ))}
             </section>
