@@ -3,17 +3,27 @@ import { User, Settings, Shield, HardDrive, CreditCard, Sparkles, HelpCircle, Lo
 
 export default function ProfileMenu({ account, onNavigate, onSignOut }) {
   const [open, setOpen] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
   const ref = useRef(null);
 
   useEffect(() => {
-    const close = (e) => {
+    const handleClick = (e) => {
       if (ref.current && !ref.current.contains(e.target)) setOpen(false);
     };
-    if (open) document.addEventListener("click", close);
-    return () => document.removeEventListener("click", close);
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    if (open) {
+      document.addEventListener("mousedown", handleClick);
+      document.addEventListener("keydown", handleKeyDown);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClick);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
   }, [open]);
 
-  const avatar = account?.avatarUrl;
+  const avatar = !avatarError && account?.avatarUrl ? account.avatarUrl : null;
   const initials = (account?.fullName || account?.email || "?").slice(0, 1).toUpperCase();
   const planName = account?.planDetails?.name || account?.plan || "Free";
 
