@@ -442,17 +442,10 @@ const forgotPassword = async (req, res, next) => {
     await prisma.verificationToken.create({
       data: {
         userId: user.id,
-        token: otpToken,
+        token: `otp:${otp}:${otpToken}`,
         tokenType: 'password_reset_otp',
         expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 min
-        // Store OTP in token field as: "otp:XXXXXX:uuid"
       },
-    });
-
-    // Re-create with OTP embedded in token field
-    await prisma.verificationToken.update({
-      where: { token: otpToken },
-      data: { token: `otp:${otp}:${otpToken}` },
     });
 
     try {
@@ -491,7 +484,10 @@ const verifyOtp = async (req, res, next) => {
       orderBy: { createdAt: 'desc' },
     });
 
-    const matching = tokens.find((t) => t.token === `otp:${otp}:${t.token.split(':')[2]}`);
+    const matching = tokens.find((t) => {
+      const parts = (t.token || '').split(':');
+      return parts[0] === 'otp' && parts[1] === String(otp).trim();
+    });
 
     if (!matching) throw new ValidationError('Invalid OTP');
     if (matching.expiresAt < new Date()) throw new ValidationError('OTP has expired. Please request a new one.');
