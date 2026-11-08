@@ -45,13 +45,14 @@ const _multerS3 = multer({
     bucket: BUCKET,
     contentType: multerS3.AUTO_CONTENT_TYPE,
     metadata: function (req, file, cb) {
+      const sanitizedName = sanitize(file?.originalname || 'file') || 'file';
       cb(null, {
-        originalName: sanitize(file.originalname),
+        originalName: sanitizedName,
         userId: req.user.id,
       });
     },
     key: function (req, file, cb) {
-      const sanitizedName = sanitize(file.originalname);
+      const sanitizedName = sanitize(file?.originalname || 'file') || 'file';
       const ext = path.extname(sanitizedName);
       cb(null, `uploads/${req.user.id}/${uuidv4()}${ext}`);
     }
