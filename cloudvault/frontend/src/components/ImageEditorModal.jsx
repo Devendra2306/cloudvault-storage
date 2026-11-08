@@ -62,8 +62,18 @@ export default function ImageEditorModal({ file, token, onClose, onUploadComplet
     setCrop(centerAspectCrop(width, height, width / height));
   };
 
+  const handleReset = () => {
+    setScale(1);
+    setRotate(0);
+    setQuality(0.8);
+    if (imgRef.current) {
+      const { width, height } = imgRef.current;
+      setCrop(centerAspectCrop(width, height, width / height));
+    }
+  };
+
   const handleSave = async () => {
-    if (!completedCrop || !imgRef.current) return;
+    if (!completedCrop || !imgRef.current || completedCrop.width <= 0 || completedCrop.height <= 0) return;
 
     setSaving(true);
     try {
@@ -205,6 +215,44 @@ export default function ImageEditorModal({ file, token, onClose, onUploadComplet
                 onChange={(e) => setScale(Number(e.target.value))}
                 style={{ width: "100%" }}
               />
+            </div>
+
+            <div>
+              <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--text-secondary)", marginBottom: 8 }}>ROTATION ({rotate}°)</label>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button
+                  type="button"
+                  onClick={() => setRotate((r) => (r + 90) % 360)}
+                  style={{
+                    flex: 1,
+                    padding: "8px 12px",
+                    borderRadius: 8,
+                    border: "1px solid var(--border)",
+                    background: "var(--bg-primary)",
+                    color: "var(--text)",
+                    cursor: "pointer",
+                    fontSize: 12,
+                    fontWeight: 600,
+                  }}
+                >
+                  ↻ Rotate 90°
+                </button>
+                <button
+                  type="button"
+                  onClick={handleReset}
+                  style={{
+                    padding: "8px 12px",
+                    borderRadius: 8,
+                    border: "1px solid var(--border)",
+                    background: "var(--bg-primary)",
+                    color: "var(--text-muted)",
+                    cursor: "pointer",
+                    fontSize: 12,
+                  }}
+                >
+                  Reset
+                </button>
+              </div>
             </div>
 
             <div>
