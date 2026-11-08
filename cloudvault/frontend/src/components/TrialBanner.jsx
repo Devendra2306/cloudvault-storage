@@ -3,16 +3,25 @@ import { fmt } from "../lib/fileTypes.js";
 import { X } from "lucide-react";
 
 export default function TrialBanner({ account, onUpgrade }) {
-  const [isVisible, setIsVisible] = useState(true);
+  const [isVisible, setIsVisible] = useState(() => {
+    return sessionStorage.getItem("cv_trial_banner_dismissed") !== "true";
+  });
 
   if (!account?.onTrial || !isVisible) return null;
 
-  const days = account.trialDaysLeft ?? 0;
+  const days = Math.max(0, account.trialDaysLeft ?? 0);
+  const used = Number(account.storageUsed || 0);
+  const quota = Number(account.storageQuota || 0);
+
+  const handleDismiss = () => {
+    setIsVisible(false);
+    sessionStorage.setItem("cv_trial_banner_dismissed", "true");
+  };
 
   return (
     <div
       style={{
-        background: "linear-gradient(90deg, rgba(240,22,58,.12), rgba(64,144,255,.1))",
+        background: "linear-gradient(90deg, rgba(59,130,246,.12), rgba(139,92,246,.12))",
         borderBottom: "1px solid var(--border)",
         padding: "10px 20px",
         display: "flex",
@@ -26,7 +35,7 @@ export default function TrialBanner({ account, onUpgrade }) {
       }}
     >
       <span style={{ color: "var(--text-secondary)" }}>
-        <strong style={{ color: "var(--text)" }}>Pro trial</strong> — {days} day{days !== 1 ? "s" : ""} left • {fmt(account.storageUsed)} used
+        <strong style={{ color: "var(--text)" }}>Pro trial</strong> — {days} {days === 1 ? "day" : "days"} left • {fmt(used)}{quota > 0 ? ` of ${fmt(quota)}` : ""} used
       </span>
       <button
         type="button"
@@ -35,8 +44,8 @@ export default function TrialBanner({ account, onUpgrade }) {
           padding: "6px 16px",
           borderRadius: 8,
           border: "none",
-          background: "var(--accent)",
-          color: "var(--text)",
+          background: "var(--accent-blue, #3b82f6)",
+          color: "#fff",
           fontWeight: 700,
           cursor: "pointer",
           fontSize: 12,
@@ -45,7 +54,7 @@ export default function TrialBanner({ account, onUpgrade }) {
         Upgrade
       </button>
       <button
-        onClick={() => setIsVisible(false)}
+        onClick={handleDismiss}
         style={{
           position: 'absolute',
           right: '16px',
