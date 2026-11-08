@@ -12,10 +12,6 @@ const getProfile = async (req, res, next) => {
     const cacheKey = `user_profile_${req.user.id}`;
     const cachedProfile = await getCache(cacheKey);
     if (cachedProfile) {
-      // Restore BigInts
-      cachedProfile.storageUsed = BigInt(cachedProfile.storageUsed);
-      cachedProfile.storageQuota = BigInt(cachedProfile.storageQuota);
-      if (cachedProfile.extraStorageBytes) cachedProfile.extraStorageBytes = BigInt(cachedProfile.extraStorageBytes);
       return res.json({ success: true, data: cachedProfile });
     }
 
@@ -94,7 +90,7 @@ const updateProfile = async (req, res, next) => {
 
     res.json({
       success: true,
-      data: user,
+      data: formatAccountUser(user),
     });
   } catch (error) {
     next(error);
