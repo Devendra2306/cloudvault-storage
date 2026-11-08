@@ -20,8 +20,10 @@ const listTrash = async (req, res, next) => {
     if (type === 'all' || type === 'files') {
       const whereFiles = {
         userId,
-        trashedAt: { not: null },
-        deletedAt: { not: null },
+        OR: [
+          { trashedAt: { not: null } },
+          { deletedAt: { not: null } },
+        ],
       };
       
       [files, totalFiles] = await Promise.all([
