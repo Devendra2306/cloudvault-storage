@@ -49,68 +49,86 @@ export default function Turnstile({ onVerified, onError, onExpire, theme = "auto
     };
   }, []);
 
+  const renderWidget = () => {
+    if (!containerRef.current || !window.turnstile) return;
+    const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY;
+    const isLocalHost = ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
+    const isTestKey = siteKey?.startsWith("1x");
+
+    if (!siteKey) {
+      const errorMsg = "Turnstile site key not configured";
+      setError(errorMsg);
+      onError?.(errorMsg);
+      setIsLoading(false);
+      return;
+    }
+
+    if (isTestKey && !isLocalHost) {
+      const errorMsg = "Turnstile production site key is not configured";
+      setError(errorMsg);
+      onError?.(errorMsg);
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      if (widgetIdRef.current) {
+        window.turnstile.remove(widgetIdRef.current);
+        widgetIdRef.current = null;
+      }
+
+      widgetIdRef.current = window.turnstile.render(containerRef.current, {
+        sitekey: siteKey,
+        theme,
+        size,
+        callback: (token) => {
+          setError(null);
+          onVerified?.(token);
+        },
+        "error-callback": (err) => {
+          console.error("TURNSTILE: Verification error:", err);
+          const message = "Verification failed. For local testing, use the Turnstile test site key; for production, make sure this hostname is allowed in Cloudflare.";
+          setError(message);
+          onError?.(message);
+        },
+        "expired-callback": () => {
+          setError("Verification expired. Please try again.");
+          onExpire?.();
+        },
+      });
+    } catch (e) {
+      console.error("TURNSTILE: Error rendering widget:", e);
+      setError("Failed to render Turnstile widget");
+      onError?.("Failed to render Turnstile widget");
+    }
+  };
+
   useEffect(() => {
     if (isLoaded && containerRef.current && window.turnstile && !widgetIdRef.current) {
-      const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY;
-      const isLocalHost = ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
-      const isTestKey = siteKey?.startsWith("1x");
-      
-      if (!siteKey) {
-        const errorMsg = "Turnstile site key not configured";
-        setError(errorMsg);
-        onError?.(errorMsg);
-        setIsLoading(false);
-        return;
-      }
-
-      if (isTestKey && !isLocalHost) {
-        const errorMsg = "Turnstile production site key is not configured";
-        setError(errorMsg);
-        onError?.(errorMsg);
-        setIsLoading(false);
-        return;
-      }
-
-      console.log("TURNSTILE: Rendering widget with site key:", siteKey);
-
-      try {
-        widgetIdRef.current = window.turnstile.render(containerRef.current, {
-          sitekey: siteKey,
-          theme,
-          size,
-          callback: (token) => {
-            console.log("TURNSTILE: Verification successful");
-            setError(null);
-            onVerified?.(token);
-          },
-          "error-callback": (err) => {
-            console.error("TURNSTILE: Verification error:", err);
-            const message = "Verification failed. For local testing, use the Turnstile test site key; for production, make sure this hostname is allowed in Cloudflare.";
-            setError(message);
-            onError?.(message);
-          },
-          "expired-callback": () => {
-            console.log("TURNSTILE: Token expired");
-            setError("Verification expired. Please try again.");
-            onExpire?.();
-          },
-        });
-      } catch (e) {
-        console.error("TURNSTILE: Error rendering widget:", e);
-        setError("Failed to render Turnstile widget");
-        onError?.("Failed to render Turnstile widget");
-      }
+      renderWidget();
     }
-  }, [isLoaded, theme, size, onVerified, onError, onExpire]);
+    return () => {
+      if (widgetIdRef.current && window.turnstile) {
+        try {
+          window.turnstile.remove(widgetIdRef.current);
+        } catch (e) {
+          console.error("TURNSTILE: Error removing widget:", e);
+        }
+        widgetIdRef.current = null;
+      }
+    };
+  }, [isLoaded, theme, size]);
 
   const reset = () => {
+    setError(null);
     if (widgetIdRef.current && window.turnstile) {
       try {
         window.turnstile.reset(widgetIdRef.current);
-        setError(null);
-      } catch (e) {
-        console.error("TURNSTILE: Error resetting widget:", e);
+      } catch {
+        renderWidget();
       }
+    } else {
+      renderWidget();
     }
   };
 
