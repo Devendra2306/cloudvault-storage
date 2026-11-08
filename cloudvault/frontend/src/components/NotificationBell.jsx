@@ -96,7 +96,7 @@ export default function NotificationBell({ notifications, unreadCount, onMarkAll
                 style={{
                   padding: "12px 14px",
                   borderBottom: "1px solid var(--border)",
-                  background: n.read ? "transparent" : "rgba(240,22,58,.06)",
+                  background: n.read ? "transparent" : "rgba(59,130,246,0.08)",
                 }}
               >
                 <div style={{ fontWeight: 600, fontSize: 13 }}>{n.title}</div>

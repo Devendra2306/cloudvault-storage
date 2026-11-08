@@ -49,4 +49,27 @@ const markAllRead = async (req, res, next) => {
   }
 };
 
-module.exports = { listNotifications, markRead, markAllRead };
+const deleteNotification = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    await prisma.notification.deleteMany({
+      where: { id, userId: req.user.id },
+    });
+    res.json({ success: true, message: 'Notification deleted' });
+  } catch (e) {
+    next(e);
+  }
+};
+
+const clearAllNotifications = async (req, res, next) => {
+  try {
+    await prisma.notification.deleteMany({
+      where: { userId: req.user.id },
+    });
+    res.json({ success: true, message: 'All notifications cleared' });
+  } catch (e) {
+    next(e);
+  }
+};
+
+module.exports = { listNotifications, markRead, markAllRead, deleteNotification, clearAllNotifications };
