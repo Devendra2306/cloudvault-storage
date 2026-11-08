@@ -296,7 +296,7 @@ const revokeFileShare = async (req, res, next) => {
 const accessSharedFile = async (req, res, next) => {
   try {
     const { token } = req.params;
-    const { password } = req.body;
+    const password = req.body?.password || req.query?.password || req.headers['x-share-password'];
 
     const share = await prisma.fileShare.findUnique({
       where: { shareToken: token },
@@ -401,7 +401,7 @@ const accessSharedFile = async (req, res, next) => {
 const downloadSharedFile = async (req, res, next) => {
   try {
     const { token } = req.params;
-    const { password } = req.body;
+    const password = req.body?.password || req.query?.password || req.headers['x-share-password'];
 
     const share = await prisma.fileShare.findUnique({
       where: { shareToken: token },
@@ -451,7 +451,7 @@ const downloadSharedFile = async (req, res, next) => {
 const previewSharedFile = async (req, res, next) => {
   try {
     const { token } = req.params;
-    const { password } = req.body;
+    const password = req.body?.password || req.query?.password || req.headers['x-share-password'];
 
     const share = await prisma.fileShare.findUnique({
       where: { shareToken: token },
