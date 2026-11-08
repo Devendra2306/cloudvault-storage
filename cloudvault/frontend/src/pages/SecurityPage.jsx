@@ -5,13 +5,20 @@ export default function SecurityPage({ api, account, onBack, notify }) {
   const [sessions, setSessions] = useState([]);
   const [history, setHistory] = useState([]);
   const [twoFa, setTwoFa] = useState(account?.twoFactorEnabled || false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api("/account/sessions").then((d) => setSessions(d.sessions || [])).catch(() => {});
-    api("/account/security/login-history").then((d) => setHistory(d.history || [])).catch(() => {});
+    setLoading(true);
+    Promise.allSettled([
+      api("/account/sessions").then((d) => setSessions(d?.sessions || [])),
+      api("/account/security/login-history").then((d) => setHistory(d?.history || [])),
+    ]).finally(() => setLoading(false));
   }, [api]);
 
   const toggle2fa = async () => {
+    if (twoFa && !window.confirm("Are you sure you want to disable two-factor authentication? This makes your account less secure.")) {
+      return;
+    }
     try {
       const next = !twoFa;
       await api("/account/security/2fa", { method: "POST", body: JSON.stringify({ enabled: next }) });
@@ -23,6 +30,9 @@ export default function SecurityPage({ api, account, onBack, notify }) {
   };
 
   const revokeAll = async () => {
+    if (!window.confirm("Are you sure you want to sign out of all other devices and active sessions?")) {
+      return;
+    }
     try {
       await api("/account/sessions", { method: "DELETE" });
       setSessions([]);
@@ -30,6 +40,13 @@ export default function SecurityPage({ api, account, onBack, notify }) {
     } catch (e) {
       notify(e.message, "error");
     }
+  };
+
+  const getDeviceIcon = (info = "") => {
+    const lower = info.toLowerCase();
+    if (lower.includes("mobile") || lower.includes("android") || lower.includes("iphone")) return "📱";
+    if (lower.includes("mac") || lower.includes("windows") || lower.includes("linux")) return "💻";
+    return "🌐";
   };
 
   return (
@@ -50,13 +67,20 @@ export default function SecurityPage({ api, account, onBack, notify }) {
           <h3 style={sectionTitle}>Active sessions</h3>
           <button type="button" onClick={revokeAll} style={linkBtn}>Sign out everywhere</button>
         </div>
-        {sessions.length === 0 ? (
+        {loading ? (
+          <p style={hint}>Loading sessions...</p>
+        ) : sessions.length === 0 ? (
           <p style={hint}>No active sessions besides this one.</p>
         ) : (
           sessions.map((s) => (
-            <div key={s.id} style={row}>
-              <div style={{ fontSize: 13, fontWeight: 600 }}>{s.deviceInfo?.slice(0, 60) || "Unknown device"}</div>
-              <div style={{ fontSize: 12, color: "var(--text-muted)" }}>{s.ipAddress} · {timeAgo(s.createdAt)}</div>
+            <div key={s.id} style={{ ...row, display: "flex", alignItems: "center", gap: 12 }}>
+              <span style={{ fontSize: 22 }}>{getDeviceIcon(s.deviceInfo)}</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {s.deviceInfo?.slice(0, 60) || "Unknown device"}
+                </div>
+                <div style={{ fontSize: 12, color: "var(--text-muted)" }}>{s.ipAddress || "Unknown IP"} · {timeAgo(s.createdAt)}</div>
+              </div>
             </div>
           ))
         )}
