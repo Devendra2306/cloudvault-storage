@@ -113,9 +113,6 @@ const getBillingSummary = async (req, res, next) => {
     let data = await getCache(cacheKey);
     
     if (data) {
-      data.account.storageUsed = BigInt(data.account.storageUsed);
-      data.account.storageQuota = BigInt(data.account.storageQuota);
-      if (data.account.extraStorageBytes) data.account.extraStorageBytes = BigInt(data.account.extraStorageBytes);
       return res.json({ success: true, data });
     }
 
