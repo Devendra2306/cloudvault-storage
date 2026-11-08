@@ -22,6 +22,18 @@ const forgotPasswordLimiter = rateLimit({
   message: { success: false, error: 'Too many password reset requests, please try again after an hour' }
 });
 
+const otpLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5,
+  message: { success: false, error: 'Too many OTP attempts, please try again later' }
+});
+
+const resendLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5,
+  message: { success: false, error: 'Too many verification email requests, please try again later' }
+});
+
 /**
  * @route   POST /api/v1/auth/register
  * @desc    Register a new user
@@ -34,7 +46,7 @@ router.post('/register', registerLimiter, validate(schemas.register), authContro
  * @desc    Resend email verification OTP
  * @access  Public
  */
-router.post('/resend-verification', authController.resendVerification);
+router.post('/resend-verification', resendLimiter, authController.resendVerification);
 
 /**
  * @route   POST /api/v1/auth/login
@@ -76,7 +88,7 @@ router.post('/forgot-password', forgotPasswordLimiter, validate(schemas.forgotPa
  * @desc    Verify OTP for password reset
  * @access  Public
  */
-router.post('/verify-otp', validate(schemas.verifyOtp), authController.verifyOtp);
+router.post('/verify-otp', otpLimiter, validate(schemas.verifyOtp), authController.verifyOtp);
 
 /**
  * @route   POST /api/v1/auth/reset-password
