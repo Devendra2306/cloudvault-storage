@@ -51,10 +51,17 @@ export const apiFetch = async (path, opts = {}, token, retried = false) => {
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: "Unknown error" }));
     const rawMessage = err.message || err.error || "";
-    const safeMessage = rawMessage.toLowerCase().includes("token")
-      ? "Something went wrong. Please try again."
-      : rawMessage || `Request failed (${res.status})`;
-    throw new Error(safeMessage);
+    let safeMessage = rawMessage;
+    if (rawMessage.toLowerCase().includes("jwt") || rawMessage.toLowerCase().includes("invalid token")) {
+      safeMessage = "Session expired or invalid. Please log in again.";
+    } else if (!safeMessage) {
+      safeMessage = `Request failed (${res.status})`;
+    }
+    const errorObj = new Error(safeMessage);
+    errorObj.status = res.status;
+    errorObj.details = err.details;
+    errorObj.code = err.code;
+    throw errorObj;
   }
 
   const contentType = res.headers.get("content-type") || "";
