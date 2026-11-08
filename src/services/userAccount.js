@@ -5,6 +5,7 @@ const { isEmailVerificationEnforced } = require('../config/emailPolicy');
 const MS_DAY = 24 * 60 * 60 * 1000;
 
 function resolvePlan(user) {
+  if (!user) return 'free';
   const now = Date.now();
   if (user.trialEndsAt && new Date(user.trialEndsAt).getTime() > now) {
     return 'pro';
@@ -13,6 +14,7 @@ function resolvePlan(user) {
 }
 
 function getStorageQuotaBytes(user) {
+  if (!user) return BigInt(PLANS.free.storageBytes);
   const planId = resolvePlan(user);
   const base = PLANS[planId]?.storageBytes || PLANS.free.storageBytes;
   return BigInt(base) + BigInt(user.extraStorageBytes || 0);
@@ -39,6 +41,7 @@ function trialDaysLeft(trialEndsAt) {
 }
 
 function formatAccountUser(user) {
+  if (!user) return null;
   const plan = resolvePlan(user);
   const quota = getStorageQuotaBytes(user);
   const used = BigInt(user.storageUsed || 0);
