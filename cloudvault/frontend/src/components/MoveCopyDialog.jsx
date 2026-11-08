@@ -49,11 +49,12 @@ function FolderPicker({ value, onChange, folders, disabledId }) {
   );
 }
 
-export default function MoveCopyDialog({ file, mode, folders, currentFolderId, onConfirm, onCancel }) {
+export default function MoveCopyDialog({ file, mode, folders = [], currentFolderId, onConfirm, onCancel }) {
   const [targetFolderId, setTargetFolderId] = useState(currentFolderId || "");
-  const [newName, setNewName] = useState(file.name);
+  const [newName, setNewName] = useState(file?.name || "");
 
   const flatFolders = flattenFolders(folders);
+  const isSameFolder = mode === "move" && (targetFolderId || "") === (file?.folderId || "");
 
   return (
     <div
@@ -81,16 +82,16 @@ export default function MoveCopyDialog({ file, mode, folders, currentFolderId, o
         }}
       >
         <h3 style={{ color: "var(--text)", fontWeight: 700, fontSize: 18, marginBottom: 8 }}>
-          {mode === "move" ? "Move" : "Copy"} file
+          {mode === "move" ? "Move" : "Copy"} {file?.isFolder ? "folder" : "file"}
         </h3>
-        <p style={{ color: "var(--text-muted)", fontSize: 13, marginBottom: 20 }}>{file.name}</p>
+        <p style={{ color: "var(--text-muted)", fontSize: 13, marginBottom: 20 }}>{file?.name}</p>
 
         <label style={{ fontSize: 12, fontWeight: 600, color: "var(--text-secondary)" }}>Destination folder</label>
         <FolderPicker
           value={targetFolderId}
           onChange={setTargetFolderId}
           folders={flatFolders}
-          disabledId={file.folderId}
+          disabledId={file?.isFolder ? file?.id : undefined}
         />
 
         {mode === "copy" && (
@@ -120,13 +121,18 @@ export default function MoveCopyDialog({ file, mode, folders, currentFolderId, o
           </button>
           <button
             type="button"
+            disabled={isSameFolder}
             onClick={() =>
               onConfirm({
                 targetFolderId: targetFolderId || null,
-                newName: mode === "copy" ? newName : undefined,
+                newName: mode === "copy" ? (newName?.trim() || file?.name) : undefined,
               })
             }
-            style={btnPrimary}
+            style={{
+              ...btnPrimary,
+              opacity: isSameFolder ? 0.5 : 1,
+              cursor: isSameFolder ? "not-allowed" : "pointer",
+            }}
           >
             {mode === "move" ? "Move" : "Copy"}
           </button>
@@ -136,11 +142,16 @@ export default function MoveCopyDialog({ file, mode, folders, currentFolderId, o
   );
 }
 
-function flattenFolders(tree, depth = 0) {
+function flattenFolders(tree, depth = 0, visited = new Set()) {
+  if (!Array.isArray(tree)) return [];
   const out = [];
   for (const f of tree) {
+    if (!f || visited.has(f.id)) continue;
+    visited.add(f.id);
     out.push({ ...f, depth });
-    if (f.children?.length) out.push(...flattenFolders(f.children, depth + 1));
+    if (f.children?.length) {
+      out.push(...flattenFolders(f.children, depth + 1, visited));
+    }
   }
   return out;
 }
