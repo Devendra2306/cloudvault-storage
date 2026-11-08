@@ -213,7 +213,9 @@ const listFiles = async (req, res, next) => {
       ...(mimeType && { mimeType }),
       ...(isStarred === 'true' && { isStarred: true }),
       ...(isPublic === 'true' && { isPublic: true }),
-      ...(trashed === 'true' ? { trashedAt: { not: null } } : { deletedAt: null }),
+      ...(trashed === 'true'
+        ? { OR: [{ trashedAt: { not: null } }, { deletedAt: { not: null } }] }
+        : { trashedAt: null, deletedAt: null }),
       ...(search && {
         OR: [
           { name: { contains: search } },

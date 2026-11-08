@@ -29,6 +29,7 @@ const search = async (req, res, next) => {
       const fileWhere = {
         userId,
         deletedAt: null,
+        trashedAt: null,
         OR: [
           { name: { contains: searchQuery } },
           { originalName: { contains: searchQuery } },

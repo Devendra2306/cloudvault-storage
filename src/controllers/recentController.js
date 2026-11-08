@@ -10,7 +10,13 @@ const getRecentFiles = async (req, res, next) => {
     const userId = req.user.id;
 
     const recentFiles = await prisma.recentFile.findMany({
-      where: { userId },
+      where: {
+        userId,
+        file: {
+          trashedAt: null,
+          deletedAt: null,
+        },
+      },
       orderBy: { accessedAt: 'desc' },
       take: parseInt(limit),
       include: {
