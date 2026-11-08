@@ -183,7 +183,7 @@ const getPrintJob = async (req, res, next) => {
       include: { files: true }
     });
 
-    if (!printJob) {
+    if (!printJob || (printJob.expiresAt && printJob.expiresAt < new Date())) {
       return res.status(404).json({ success: false, error: 'Code not found or expired' });
     }
 
@@ -224,8 +224,8 @@ const downloadPrintJob = async (req, res, next) => {
       include: { job: true }
     });
 
-    if (!printFile || printFile.job.code !== code) {
-      return res.status(404).json({ success: false, error: 'File not found' });
+    if (!printFile || printFile.job.code !== code || (printFile.job.expiresAt && printFile.job.expiresAt < new Date())) {
+      return res.status(404).json({ success: false, error: 'File not found or expired' });
     }
 
     const bucket = printFile.isDriveRef ? BUCKET : PRINT_BUCKET;
