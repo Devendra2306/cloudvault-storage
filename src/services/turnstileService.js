@@ -98,6 +98,11 @@ async function verifyTurnstileToken(token, remoteIp = null) {
       });
     });
 
+    req.setTimeout(8000, () => {
+      req.destroy();
+      resolve({ success: false, error: 'Verification timed out' });
+    });
+
     req.on('error', (error) => {
       console.error('TURNSTILE SERVICE: Request error:', error);
       resolve({ success: false, error: 'Network error during verification' });
