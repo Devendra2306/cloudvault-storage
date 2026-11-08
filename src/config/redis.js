@@ -51,11 +51,13 @@ const getRedisClient = () => {
   return redisClient;
 };
 
+const isClientReady = () => Boolean(redisClient && redisClient.isOpen);
+
 /**
  * Set value in Redis
  */
 const setCache = async (key, value, expirySeconds = 3600) => {
-  if (!redisClient) return null;
+  if (!isClientReady()) return null;
   try {
     await redisClient.setEx(key, expirySeconds, JSON.stringify(value));
     return true;
@@ -69,7 +71,7 @@ const setCache = async (key, value, expirySeconds = 3600) => {
  * Get value from Redis
  */
 const getCache = async (key) => {
-  if (!redisClient) return null;
+  if (!isClientReady()) return null;
   try {
     const value = await redisClient.get(key);
     return value ? JSON.parse(value) : null;
@@ -83,7 +85,7 @@ const getCache = async (key) => {
  * Delete value from Redis
  */
 const deleteCache = async (key) => {
-  if (!redisClient) return null;
+  if (!isClientReady()) return null;
   try {
     await redisClient.del(key);
     return true;
@@ -97,7 +99,7 @@ const deleteCache = async (key) => {
  * Delete multiple keys matching pattern
  */
 const deleteCachePattern = async (pattern) => {
-  if (!redisClient) return null;
+  if (!isClientReady()) return null;
   try {
     const keys = await redisClient.keys(pattern);
     if (keys.length > 0) {
