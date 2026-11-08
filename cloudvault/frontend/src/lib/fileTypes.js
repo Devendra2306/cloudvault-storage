@@ -1,13 +1,17 @@
 export const fmt = (bytes) => {
-  if (bytes === 0) return "0 B";
+  const b = Number(bytes);
+  if (!b || isNaN(b) || b <= 0) return "0 B";
   const k = 1024;
-  const s = ["B", "KB", "MB", "GB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return `${(bytes / k ** i).toFixed(1)} ${s[i]}`;
+  const s = ["B", "KB", "MB", "GB", "TB"];
+  const i = Math.min(s.length - 1, Math.floor(Math.log(b) / Math.log(k)));
+  return `${(b / k ** i).toFixed(1)} ${s[i]}`;
 };
 
 export const timeAgo = (iso) => {
-  const s = Math.floor((Date.now() - new Date(iso)) / 1000);
+  if (!iso) return "just now";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "just now";
+  const s = Math.floor((Date.now() - d.getTime()) / 1000);
   if (s < 60) return "just now";
   if (s < 3600) return `${Math.floor(s / 60)}m ago`;
   if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
