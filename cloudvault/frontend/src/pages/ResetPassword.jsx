@@ -9,6 +9,19 @@ export default function ResetPassword({ token, onBack, onSuccess }) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
+  const getStrength = (pwd) => {
+    let score = 0;
+    if (pwd.length >= 8) score++;
+    if (/[a-z]/.test(pwd) && /[A-Z]/.test(pwd)) score++;
+    if (/\d/.test(pwd)) score++;
+    if (/[^a-zA-Z0-9]/.test(pwd)) score++;
+    return score;
+  };
+
+  const strength = getStrength(newPassword);
+  const strengthLabels = ["Too short", "Weak", "Fair", "Good", "Strong"];
+  const strengthColors = ["#ef4444", "#f97316", "#eab308", "#3b82f6", "#22c55e"];
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -28,11 +41,11 @@ export default function ResetPassword({ token, onBack, onSuccess }) {
         body: JSON.stringify({ token, newPassword }),
       });
       const data = await res.json();
-      if (!res.ok || !data.success) throw new Error(data.message || "Failed to reset password");
+      if (!res.ok || !data.success) throw new Error(data.message || data.error || "Failed to reset password");
       setSuccess(true);
       setTimeout(() => (onSuccess || onBack)?.(), 1400);
-    } catch {
-      setError("Something went wrong. Please try again.");
+    } catch (err) {
+      setError(err.message || "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -53,7 +66,32 @@ export default function ResetPassword({ token, onBack, onSuccess }) {
         {!success && (
           <form onSubmit={handleSubmit}>
             <Field label="New password" value={newPassword} onChange={setNewPassword} />
+            {newPassword.length > 0 && (
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ display: "flex", gap: 4, height: 4, marginBottom: 4 }}>
+                  {[1, 2, 3, 4].map((step) => (
+                    <div
+                      key={step}
+                      style={{
+                        flex: 1,
+                        borderRadius: 2,
+                        background: strength >= step ? strengthColors[strength] : "var(--border)",
+                        transition: "background .3s",
+                      }}
+                    />
+                  ))}
+                </div>
+                <div style={{ fontSize: 11, color: strengthColors[strength], fontWeight: 600 }}>
+                  Strength: {strengthLabels[strength]}
+                </div>
+              </div>
+            )}
             <Field label="Confirm password" value={confirmPassword} onChange={setConfirmPassword} />
+            {confirmPassword.length > 0 && newPassword !== confirmPassword && (
+              <p style={{ color: "var(--danger)", fontSize: 12, marginTop: -8, marginBottom: 12 }}>
+                Passwords do not match
+              </p>
+            )}
             {error && <p role="alert" style={{ color: "var(--danger)", fontSize: 13, lineHeight: 1.5, marginBottom: 14 }}>{error}</p>}
             <button type="submit" disabled={loading} className="btn-primary" style={{ width: "100%" }}>
               {loading ? "Updating..." : "Update password"}
