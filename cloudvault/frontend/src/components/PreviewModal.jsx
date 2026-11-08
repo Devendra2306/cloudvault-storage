@@ -57,11 +57,27 @@ export default function PreviewModal({ file, token, onClose, customFetchBlob }) 
       }
     })();
 
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        if (fullscreen) {
+          setFullscreen(false);
+        } else {
+          onClose?.();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
     return () => {
       cancelled = true;
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = originalOverflow;
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
-  }, [file.id, token, kind]);
+  }, [file.id, token, kind, fullscreen, onClose]);
 
   const toolbarBtn = (label, onClick, disabled = false) => (
     <button
