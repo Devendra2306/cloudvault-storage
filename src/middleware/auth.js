@@ -4,6 +4,20 @@ const { getCache, setCache } = require('../config/redis');
 
 const isDev = process.env.NODE_ENV !== 'production';
 
+const toSafeBigIntString = (val, defaultVal = '0') => {
+  if (val === null || val === undefined) return defaultVal;
+  return typeof val === 'bigint' ? val.toString() : String(val);
+};
+
+const toSafeBigInt = (val, defaultVal = 0n) => {
+  if (val === null || val === undefined) return defaultVal;
+  try {
+    return BigInt(val);
+  } catch {
+    return defaultVal;
+  }
+};
+
 /**
  * Authentication middleware — verifies JWT and attaches user to request.
  */
@@ -47,15 +61,15 @@ const authenticate = async (req, res, next) => {
           // Convert BigInt to String for Redis JSON serialization
           const userForCache = {
             ...user,
-            storageUsed: user.storageUsed.toString(),
-            storageQuota: user.storageQuota.toString(),
+            storageUsed: toSafeBigIntString(user.storageUsed, '0'),
+            storageQuota: toSafeBigIntString(user.storageQuota, '26843545600'),
           };
           await setCache(cacheKey, userForCache, 60);
         }
       } else {
-        // Convert strings back to BigInt
-        user.storageUsed = BigInt(user.storageUsed);
-        user.storageQuota = BigInt(user.storageQuota);
+        // Convert strings back to BigInt safely
+        user.storageUsed = toSafeBigInt(user.storageUsed, 0n);
+        user.storageQuota = toSafeBigInt(user.storageQuota, 26843545600n);
       }
 
       if (!user) {
@@ -131,14 +145,14 @@ const optionalAuthenticate = async (req, res, next) => {
         if (user) {
           const userForCache = {
             ...user,
-            storageUsed: user.storageUsed.toString(),
-            storageQuota: user.storageQuota.toString(),
+            storageUsed: toSafeBigIntString(user.storageUsed, '0'),
+            storageQuota: toSafeBigIntString(user.storageQuota, '26843545600'),
           };
           await setCache(cacheKey, userForCache, 60);
         }
       } else {
-        user.storageUsed = BigInt(user.storageUsed);
-        user.storageQuota = BigInt(user.storageQuota);
+        user.storageUsed = toSafeBigInt(user.storageUsed, 0n);
+        user.storageQuota = toSafeBigInt(user.storageQuota, 26843545600n);
       }
 
       if (user && user.isActive) {
